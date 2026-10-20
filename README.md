@@ -14,9 +14,10 @@ A mobile-first static application built with HTML, CSS and native JavaScript ES 
 ## Structure
 
 - `src/data`: workout catalog, extensible type registry, separate demonstration definitions.
-- `src/domain`: pure filtering/planning functions and future session contract.
+- `src/domain`: pure planning functions, timeline compiler, monotonic workout engine and future session contract.
 - `src/storage`: validated, versioned local weekly-plan persistence.
-- `src/ui`: reusable DOM components, views and data-driven workout-block details; content is inserted as text.
+- `src/ui`: reusable DOM components, workout details and active-screen controller with lifecycle cleanup; content is inserted as text.
+- `src/platform`: optional Web Audio cues generated locally, with failure isolation.
 - `src/main.js`: hash routing, event orchestration, storage synchronization, service-worker registration.
 - `styles/app.css`: mobile-first styling and fixed bottom navigation.
 - `tests`: unit and browser integration tests.
@@ -26,7 +27,7 @@ A mobile-first static application built with HTML, CSS and native JavaScript ES 
 
 Today has seven fixed Monday–Sunday slots. Add/change opens Library in assignment mode; cancel makes no change. The same workout may occupy multiple days. There is no automatic weekly rollover or scheduling. Library supports case-insensitive name search and the Hybrid/Focus type registry. The three sample cards remain explicitly marked **Demo** and originate only in `demo-workouts.js`. The real **KB Focus 001 — Upper Body + ABS** definition lives independently in `focus-001-upper-abs.js` and is composed into `catalog.js`. It specifies a 10-minute Upper EMOM followed by 10 minutes of ABS intervals, with no prescribed load; warm-up is separate. Tuesday is a recommendation only and never changes assignments automatically.
 
-Stats and Dashboard intentionally display empty states. Detail → Active Workout → Save Result is a navigation scaffold. No timer runs, no exercise prescription is invented, and no session or result is saved. Additional real workout definitions, result forms, session persistence, statistics, authentication and Supabase remain out of scope. Focus 001 currently exposes its complete detail only; execution and saving remain future phases.
+Stats and Dashboard intentionally display empty states. Focus 001 supports Detail → Start Workout → Active Workout → Workout Complete. The three Demo cards retain their original scaffold. No sessions, results or statistics are saved. Additional definitions, result forms, session persistence, authentication and Supabase remain out of scope.
 
 ## Data contracts
 
@@ -49,3 +50,15 @@ The worker precaches the static application, including every imported module. It
 ## Remaining validation
 
 Automated coverage uses Chromium at mobile and desktop sizes, including widths 320–1280. Manual Safari/iOS and Android installation, accessibility/assistive technology, real device safe areas and upgrades from older production workers remain pending. No production deployment or merge is authorized by this phase.
+
+## Workout timer (phase 3)
+
+Start Workout explicitly creates an in-memory session. A direct active-screen URL shows a ready screen and never autostarts. The initial 3, 2, 1 countdown lasts 3 seconds outside the workout; GO appears at the start of the first EMOM minute. Upper runs ten 60-second minutes, then immediately enters ABS at workout 10:00. ABS runs ten 40-second WORK / 20-second REST intervals; completion occurs at 20:00 after the final rest. The immutable Focus 001 version 1 definition is unchanged.
+
+`compileWorkout` derives segments, exercise order and round positions from `phases`, `exerciseIds` and `timer`. It validates phase/workout durations and currently supports EMOM and work/rest intervals; future formats add a compiler branch. `WorkoutTimer` accepts an injected monotonic clock (default `performance.now`), never counts visual ticks, and excludes paused time. The UI samples every 100 ms; elapsed position and block changes remain correct after delayed callbacks. The paused screen freezes both countdown and workout time, and stops its visual ticker. Completion clears the visual ticker; leaving the session clears timers and audio. Visibility/pageshow refresh the position without adding time or replaying a backlog of sound cues.
+
+Sound defaults to Off. Enabling it uses an explicit click to resume Web Audio. Optional cues identify start, the last three seconds of each timed segment, segment/exercise changes, block transition and completion. Unsupported or blocked audio does not stop the workout. No continuous sound, remote audio asset or vibration dependency is used.
+
+End Workout and in-app departure request confirmation, including while paused or counting down. Hash/Back navigation is guarded and cancelled navigation keeps the same live controller. Reload/close uses the browser's standard beforeunload warning where supported. No active progress is persisted: confirmed reloads, browser process termination or OS eviction lose it. Mobile browsers may suspend audio and callbacks or stop advancing their monotonic clock during device sleep; this is not a promise of continuous execution with a locked screen. Real iOS/Android lock/resume behavior and audible cues need device testing. Pausing before locking is recommended.
+
+Tests use injected clocks and Playwright's simulated clock: no real 20-minute wait is required. They cover every minute/interval boundary, 3-second lead-in, final rest, immediate block transition, pause/resume, late updates, direct-link safety, exit cancellation, missing audio, responsive layouts and offline completion under the project subpath. Demo/library/planning regression tests remain enabled.

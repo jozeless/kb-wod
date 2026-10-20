@@ -1,3 +1,4 @@
+import { createActiveWorkout } from './ui/active-workout.js';
 import { days, assignWorkout } from './domain/planning.js';
 import { loadPlan, savePlan, planKey } from './storage/weekly-plan.js';
 import { todayView, libraryView, workoutView } from './ui/views.js';
@@ -5,6 +6,20 @@ import { heading, emptyState, el } from './ui/components.js';
 const app = document.querySelector('#app');
 const status = document.querySelector('#status');
 let state;
+let session = null;
+let activeHash = '';
+function stopSession() { session?.dispose(); session = null; }
+function allowExit() {
+  if (session?.inProgress && !window.confirm('End this workout? Your progress will not be saved.')) return false;
+  stopSession(); return true;
+}
+function startWorkout(workout) {
+  if (session && !allowExit()) return;
+  activeHash = `#active/${workout.id}/${workout.version}`;
+  session = createActiveWorkout(workout, () => { if (allowExit()) go('#today'); }, () => { stopSession(); go('#today'); });
+  if (location.hash === activeHash) render(); else go(activeHash);
+}
+
 function reloadPlan() { state = loadPlan(window.localStorage); status.textContent = state.error ?? ''; }
 // Access to localStorage itself may throw in restricted browser contexts.
 try { reloadPlan(); } catch { state = { plan: {}, error: 'Local storage is unavailable. Planning changes are disabled.' }; status.textContent = state.error; }
@@ -28,9 +43,10 @@ function render(focus = true) {
   const requestedDay = new URLSearchParams(query).get('day');
   const day = days.includes(requestedDay) ? requestedDay : null;
   let view;
-  if (page === 'today') view = todayView(state.plan, go, d => assign(d, null), Boolean(state.error));
+  if (session && location.hash === activeHash) view = session.root;
+  else if (page === 'today') view = todayView(state.plan, go, d => assign(d, null), Boolean(state.error));
   else if (page === 'library') view = libraryView(day, go, assign);
-  else if (['workout', 'active', 'result'].includes(page)) view = workoutView(id, version, page, go);
+  else if (['workout', 'active', 'result'].includes(page)) view = workoutView(id, version, page, go, startWorkout);
   else if (page === 'stats' || page === 'dashboard') view = el('div', {}, heading('COMING LATER', page === 'stats' ? 'Stats' : 'Dashboard', page === 'stats' ? 'Performance over time, by workout.' : 'A place for your training totals.'), emptyState('No statistics yet', 'Sessions and results are not collected in this phase. No totals or sample statistics are shown.'));
   else view = emptyState('Page not found', 'Use the navigation below to continue.');
   app.replaceChildren(view);
@@ -39,7 +55,25 @@ function render(focus = true) {
   });
   if (focus) { app.focus(); window.scrollTo(0, 0); }
 }
-window.addEventListener('hashchange', () => render());
+// Intercept app links before changing history; hashchange also covers Back/Forward
+// and externally assigned hashes. A cancelled exit keeps the same live controller.
+document.addEventListener('click', event => {
+  const link = event.target.closest('a[href]');
+  if (!link || !session || link.hash === activeHash) return;
+  const url = new URL(link.href);
+  if (url.origin === location.origin && url.pathname === location.pathname) {
+    event.preventDefault(); if (allowExit()) go(url.hash);
+  }
+});
+window.addEventListener('hashchange', () => {
+  if (session && location.hash !== activeHash && !allowExit()) {
+    history.replaceState(null, '', activeHash); return;
+  }
+  render();
+});
+window.addEventListener('beforeunload', event => {
+  if (session?.inProgress) { event.preventDefault(); event.returnValue = ''; }
+});
 window.addEventListener('storage', e => { if (e.key === planKey || e.key === null) { try { reloadPlan(); render(false); } catch { /* Keep current state if storage becomes unavailable. */ } } });
 render(false);
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(() => { status.textContent = 'Offline preparation is unavailable. You can continue online.'; });

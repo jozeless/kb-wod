@@ -77,7 +77,7 @@ test('real Focus card, complete prescription and manual Tuesday assignment', asy
  await expect(abs).toContainText('40 seconds, then rest for 20 seconds');await expect(abs).toContainText('1 to 10');
  await expect(page.getByText('Warm-up is separate from the 20-minute workout.')).toBeVisible();
  expect(await page.evaluate(()=>localStorage.getItem('kb2.weekly-plan.v1'))).toBe(before);
- await expect(page.getByRole('button',{name:'Start Workout'})).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'Start Workout'})).toBeVisible();
  await page.getByRole('link',{name:'Today',exact:true}).click();
  await tuesday.getByRole('button',{name:'Change workout'}).click();
  await page.getByRole('button',{name:'Assign to Tuesday: Upper Body + ABS'}).click();

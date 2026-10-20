@@ -30,3 +30,21 @@ test('invalid storage preserved and errors surfaced', () => {
  assert.ok(loadPlan({getItem:()=>{throw Error('blocked')}}).error);
  assert.throws(()=>savePlan({setItem:()=>{throw Error('quota')}}, {}));
 });
+
+test('real Focus definition: timing, ordered exercises, version and future results', async () => {
+ const { workouts, findWorkout } = await import('../src/data/catalog.js');
+ const w = findWorkout('focus-001-upper-abs', 1);
+ assert.equal(workouts.filter(x=>x.demo).length, 3);assert.equal(w.demo,false);
+ assert.equal(new Set(workouts.map(x=>`${x.id}/${x.version}`)).size, workouts.length);
+ assert.equal(w.durationSeconds,1200);assert.equal(w.phases.reduce((sum,p)=>sum+p.durationSeconds,0),1200);
+ assert.equal(w.warmup.included,false);assert.equal(w.equipment.requiredWeightKg,null);
+ assert.deepEqual(w.phases.map(p=>p.rounds),[2,2]);
+ assert.equal(w.phases[0].timer.intervalSeconds*w.phases[0].timer.intervals,600);
+ const t=w.phases[1].timer;assert.equal((t.workSeconds+t.restSeconds)*t.intervals,600);
+ for(const p of w.phases){assert.equal(p.exerciseIds.length,5);for(const id of p.exerciseIds)assert.ok(w.exercises.find(ex=>ex.id===id));}
+ assert.deepEqual(w.exercises.map(ex=>ex.name),['KB Floor Press','Supported Single-Arm KB Row','KB Push Press','KB Horn Curls','ATW + Front Rise','KB Dead Bug + Pullover','KB Bear Plank Row + Kick Through','KB V-Up + Pulse','Hollow Flutters + KB Chest Press','KB Sit-Ups']);
+ assert.equal(w.exercises.filter(ex=>ex.attribution).length,1);
+ assert.ok(w.exercises.every(ex=>ex.equipment==='kettlebell'));
+ assert.equal(w.resultFields.find(f=>f.id==='perceivedExertion').max,10);
+ assert.equal(w.resultFields.find(f=>f.id==='absIntervalsCompleted').max,10);
+});

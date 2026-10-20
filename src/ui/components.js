@@ -19,7 +19,10 @@ export function workoutCard(workout, onSelect, action = 'View workout') {
   return el('button', { type: 'button', className: 'workout-card', onClick: () => onSelect(workout), 'aria-label': `${action}: ${workout.name}` },
     workout.image ? el('img', { src: workout.image, alt: '', loading: 'lazy' }) : null,
     el('span', { className: 'badge' }, `${typeLabel(workout.type)}${workout.demo ? " · Demo" : ""}`),
-    el('strong', {}, workout.name), el('span', { className: 'card-footer' }, `${action} →`));
+    el('strong', {}, workout.name),
+    workout.durationSeconds ? el('span', {}, `${workout.durationSeconds / 60} minutes`) : null,
+    workout.phases.length ? el('span', {}, workout.phases.map(p => `${p.name} ${p.durationSeconds / 60} min`).join(' / ')) : null,
+    el('span', { className: 'card-footer' }, `${action} →`));
 }
 export function emptyState(title, text) {
   return el('section', { className: 'empty-state' }, el('h2', {}, title), el('p', {}, text));

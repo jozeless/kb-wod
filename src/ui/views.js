@@ -1,4 +1,5 @@
 import { workouts, workoutTypes, findWorkout, typeLabel } from '../data/catalog.js';
+import { workoutDetails } from './workout-details.js';
 import { days, filterWorkouts } from '../domain/planning.js';
 import { el, button, heading, workoutCard, emptyState } from './components.js';
 const detailUrl = w => `#workout/${encodeURIComponent(w.id)}/${w.version}`;
@@ -19,7 +20,7 @@ export function todayView(plan, go, remove, locked) {
   return el('div', {}, heading('YOUR WEEK', 'Today', 'Plan Monday through Sunday. Nothing changes unless you change it.'), list);
 }
 export function libraryView(day, go, assign) {
-  const container = el('div', {}, heading(day ? `PLAN ${day.toUpperCase()}` : 'YOUR COLLECTION', day ? `Choose for ${day}` : 'Library', 'Demonstration workouts only. Training configurations are not defined yet.'));
+  const container = el('div', {}, heading(day ? `PLAN ${day.toUpperCase()}` : 'YOUR COLLECTION', day ? `Choose for ${day}` : 'Library', 'Choose a workout or explore the clearly labeled demonstration cards.'));
   if (day) container.append(button('Cancel assignment', () => go('#today'), true));
   const search = el('input', { type: 'search', id: 'search', placeholder: 'Search workouts' });
   const select = el('select', { id: 'workout-type' }, el('option', { value: '' }, 'All types'), ...workoutTypes.map(t => el('option', { value: t.id }, t.label)));
@@ -38,9 +39,13 @@ export function libraryView(day, go, assign) {
 export function workoutView(id, version, stage, go) {
   const w = findWorkout(id, version);
   if (!w) return emptyState('Workout unavailable', 'This workout version is not in the library. Use Today or Library to continue.');
-  const view = el('div', {}, button('← Library', () => go('#library'), true), heading(`${typeLabel(w.type)} · DEMO · VERSION ${w.version}`, w.name, stage === 'active' ? 'Active Workout' : stage === 'result' ? 'Save Result' : 'Workout Detail'));
+  const view = el('div', {}, button('← Library', () => go('#library'), true), heading(`${w.code ? w.code + " · " : ""}${typeLabel(w.type)}${w.demo ? " · DEMO" : ""} · VERSION ${w.version}`, w.name, stage === 'active' ? 'Active Workout' : stage === 'result' ? 'Save Result' : 'Workout Detail'));
   if (stage === 'result') {
     view.append(emptyState('Result saving is not configured', 'Result fields will be defined in a later phase. No session or result has been saved.'), button('Return to Today', () => go('#today'))); return view;
+  }
+  if (w.phases.length && stage === 'workout') {
+    view.append(workoutDetails(w), emptyState('Execution coming later', 'Automatic timers and session saving are not implemented yet.'));
+    return view;
   }
   const exercises = el('section', { className: stage === 'active' ? 'exercise-list compact' : 'exercise-list' }, el('h2', {}, 'Exercises'));
   if (!w.exercises.length) exercises.append(el('p', {}, 'Exercises, weights and repetitions are not defined yet.'));

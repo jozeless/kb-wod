@@ -16,7 +16,7 @@ A mobile-first static application built with HTML, CSS and native JavaScript ES 
 - `src/data`: workout catalog, extensible type registry, separate demonstration definitions.
 - `src/domain`: pure filtering/planning functions and future session contract.
 - `src/storage`: validated, versioned local weekly-plan persistence.
-- `src/ui`: reusable DOM components and views; content is inserted as text.
+- `src/ui`: reusable DOM components, views and data-driven workout-block details; content is inserted as text.
 - `src/main.js`: hash routing, event orchestration, storage synchronization, service-worker registration.
 - `styles/app.css`: mobile-first styling and fixed bottom navigation.
 - `tests`: unit and browser integration tests.
@@ -24,13 +24,13 @@ A mobile-first static application built with HTML, CSS and native JavaScript ES 
 
 ## Scope
 
-Today has seven fixed Monday–Sunday slots. Add/change opens Library in assignment mode; cancel makes no change. The same workout may occupy multiple days. There is no automatic weekly rollover or scheduling. Library supports case-insensitive name search and the Hybrid/Focus type registry. All three sample cards are explicitly marked **Demo**, originate only in `demo-workouts.js`, and can be replaced through `catalog.js`.
+Today has seven fixed Monday–Sunday slots. Add/change opens Library in assignment mode; cancel makes no change. The same workout may occupy multiple days. There is no automatic weekly rollover or scheduling. Library supports case-insensitive name search and the Hybrid/Focus type registry. The three sample cards remain explicitly marked **Demo** and originate only in `demo-workouts.js`. The real **KB Focus 001 — Upper Body + ABS** definition lives independently in `focus-001-upper-abs.js` and is composed into `catalog.js`. It specifies a 10-minute Upper EMOM followed by 10 minutes of ABS intervals, with no prescribed load; warm-up is separate. Tuesday is a recommendation only and never changes assignments automatically.
 
-Stats and Dashboard intentionally display empty states. Detail → Active Workout → Save Result is a navigation scaffold. No timer runs, no exercise prescription is invented, and no session or result is saved. Real workout definitions, result forms, session persistence, statistics, authentication and Supabase remain out of scope.
+Stats and Dashboard intentionally display empty states. Detail → Active Workout → Save Result is a navigation scaffold. No timer runs, no exercise prescription is invented, and no session or result is saved. Additional real workout definitions, result forms, session persistence, statistics, authentication and Supabase remain out of scope. Focus 001 currently exposes its complete detail only; execution and saving remain future phases.
 
 ## Data contracts
 
-A workout definition has `id`, positive integer `version`, `name`, `type`, optional `image`, `exercises`, `phases`, `resultFields`, `demo`, and `archived`. Exercise/phase/result details will be specified in a later phase; empty arrays mean **undefined**, not a ready-to-run workout. Future exercise records can supply `name`, `weightKg`, and `reps`; additional configuration belongs in the domain rather than view logic.
+A workout definition has `id`, positive integer `version`, `name`, `type`, optional `image`, `exercises`, `phases`, `resultFields`, `demo`, and `archived`. The real Focus definition uses exercise IDs with rep/cycle targets, ordered phase references, EMOM/interval timer configuration and future result field descriptors. Empty arrays on the Demo definitions mean **undefined**, not a ready-to-run workout. Exercise targets specify `min`, `max` and `unit`; no completed values or fixed loads are supplied. Future result descriptors cover EMOM minutes, per-exercise/per-round loads and repetitions, modifications, shoulder discomfort, technically correct ABS intervals and perceived exertion 1–10. These descriptors do not collect or persist results.
 
 Identity is the `(id, version)` pair. Do not edit a used version in place: append a new definition. Archive definitions without deleting versions referenced by assignments or sessions. The current catalog has no authoring UI.
 

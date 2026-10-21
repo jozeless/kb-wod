@@ -1,5 +1,5 @@
-const CACHE = 'kb2-static-v3';
-const ASSETS = ['./', './index.html', './styles/app.css', './src/main.js', './src/data/catalog.js', './src/data/focus-001-upper-abs.js', './src/data/demo-workouts.js', './src/domain/planning.js', './src/domain/workout-timer.js', './src/platform/workout-audio.js', './src/ui/active-workout.js', './src/storage/weekly-plan.js', './src/ui/components.js', './src/ui/views.js', './src/ui/workout-details.js', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
+const CACHE = 'kb2-static-v4';
+const ASSETS = ['./', './index.html', './styles/app.css', './src/main.js', './src/data/catalog.js', './src/data/focus-001-upper-abs.js', './src/data/demo-workouts.js', './src/domain/planning.js', './src/domain/workout-timer.js', './src/domain/workout-cues.js', './src/storage/weight-preferences.js', './src/ui/weight-field.js', './src/platform/workout-audio.js', './src/ui/active-workout.js', './src/storage/weekly-plan.js', './src/ui/components.js', './src/ui/views.js', './src/ui/workout-details.js', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS))));
 // Keep prototype caches untouched. A new worker waits for existing tabs to close.
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('kb2-static-') && key !== CACHE).map(key => caches.delete(key))))));

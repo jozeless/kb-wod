@@ -1,3 +1,4 @@
+import { createWeightField } from './weight-field.js';
 import { el } from './components.js';
 function prescription(ex, phase) {
   if (!ex.target) return `${phase.timer.workSeconds} seconds work / ${phase.timer.restSeconds} seconds rest`;
@@ -18,7 +19,7 @@ export function workoutDetails(workout) {
     const list = el('ol', { className: 'prescriptions' });
     for (const id of phase.exerciseIds) {
       const ex = workout.exercises.find(e => e.id === id);
-      list.append(el('li', {}, el('strong', {}, ex.name), el('p', {}, prescription(ex, phase)), ex.attribution ? el('p', { className: 'muted' }, ex.attribution) : null));
+      list.append(el('li', {}, el('div', { className: 'exercise-weight-row' }, el('strong', {}, ex.name), createWeightField(workout, ex).root), el('p', {}, prescription(ex, phase)), ex.attribution ? el('p', { className: 'muted' }, ex.attribution) : null));
     }
     section.append(list, el('h3', {}, 'Measurable goals'), el('ul', {}, ...phase.objectives.map(goal => el('li', {}, goal))));
     details.append(section);

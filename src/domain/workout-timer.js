@@ -1,0 +1,78 @@
+/** Compile data into a timeline. New formats can add a compiler without changing UI. */
+export function compileWorkout(workout) {
+  const segments = [];
+  let cursor = 0;
+  const add = (phase, interval, exercise, kind, seconds) => {
+    if (!Number.isFinite(seconds) || seconds <= 0) throw new Error('Invalid interval duration');
+    segments.push({ startMs: cursor, endMs: cursor + seconds * 1000, phase, interval,
+      round: Math.floor(interval / phase.exerciseIds.length) + 1, exercise, kind });
+    cursor += seconds * 1000;
+  };
+  if (!workout.phases.length) throw new Error('Workout has no phases');
+  for (const phase of workout.phases) {
+    const start = cursor;
+    if (!phase.exerciseIds.length || !Number.isInteger(phase.timer.intervals) || phase.timer.intervals < 1) throw new Error('Invalid phase');
+    for (let i = 0; i < phase.timer.intervals; i++) {
+      const exercise = workout.exercises.find(ex => ex.id === phase.exerciseIds[i % phase.exerciseIds.length]);
+      if (!exercise) throw new Error('Unknown exercise');
+      if (phase.format === 'emom') add(phase, i, exercise, 'EMOM', phase.timer.intervalSeconds);
+      else if (phase.format === 'intervals') {
+        add(phase, i, exercise, 'WORK', phase.timer.workSeconds);
+        add(phase, i, exercise, 'REST', phase.timer.restSeconds);
+      } else throw new Error(`Unsupported workout format: ${phase.format}`);
+    }
+    if (cursor - start !== phase.durationSeconds * 1000) throw new Error('Phase duration mismatch');
+  }
+  if (cursor !== workout.durationSeconds * 1000) throw new Error('Workout duration mismatch');
+  return { segments, durationMs: cursor };
+}
+
+/** No intervals here: snapshots derive from an injected monotonic clock, not ticks. */
+export class WorkoutTimer {
+  constructor(workout, now = () => performance.now()) {
+    this.timeline = compileWorkout(workout);
+    this.now = now;
+    this.status = 'idle';
+    this.accumulatedMs = 0;
+    this.anchor = 0;
+    this.countdownMs = 3000;
+  }
+  start() {
+    if (this.status !== 'idle') return;
+    this.status = 'running'; this.anchor = this.now();
+  }
+  elapsed() {
+    return this.accumulatedMs + (this.status === 'running' ? Math.max(0, this.now() - this.anchor) : 0);
+  }
+  pause() {
+    this.snapshot();
+    if (this.status !== 'running') return;
+    this.accumulatedMs = this.elapsed(); this.status = 'paused';
+  }
+  resume() {
+    if (this.status !== 'paused') return;
+    this.anchor = this.now(); this.status = 'running';
+  }
+  end() { this.accumulatedMs = this.elapsed(); this.status = 'ended'; }
+  snapshot() {
+    const raw = this.elapsed();
+    const { durationMs, segments } = this.timeline;
+    const elapsedMs = Math.min(durationMs, Math.max(0, raw - this.countdownMs));
+    if (raw >= durationMs + this.countdownMs && this.status === 'running') {
+      this.accumulatedMs = durationMs + this.countdownMs; this.status = 'complete';
+    }
+    const base = { status: this.status, elapsedMs, durationMs, totalRemainingMs: durationMs - elapsedMs, progress: elapsedMs / durationMs };
+    if (raw < this.countdownMs) return { ...base, stage: 'countdown', countdown: Math.ceil((this.countdownMs - raw) / 1000) };
+    if (elapsedMs === durationMs) return { ...base, stage: 'complete' };
+    const index = segments.findIndex(s => elapsedMs < s.endMs);
+    const current = segments[index];
+    const next = segments.slice(index + 1).find(s => s.kind !== 'REST');
+    return { ...base, stage: 'exercise', ...current, segmentIndex: index,
+      remainingMs: current.endMs - elapsedMs, nextExercise: next?.exercise ?? null,
+      go: elapsedMs < 500 };
+  }
+}
+export function formatTime(milliseconds) {
+  const seconds = Math.ceil(Math.max(0, milliseconds) / 1000);
+  return `${Math.floor(seconds / 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
+}

@@ -5,13 +5,25 @@ export function compileWorkout(workout) {
   const add = (phase, interval, exercise, kind, seconds) => {
     if (!Number.isFinite(seconds) || seconds <= 0) throw new Error('Invalid interval duration');
     segments.push({ startMs: cursor, endMs: cursor + seconds * 1000, phase, interval,
-      round: Math.floor(interval / phase.exerciseIds.length) + 1, exercise, kind });
+      round: interval === null ? null : Math.floor(interval / phase.exerciseIds.length) + 1, exercise, kind });
     cursor += seconds * 1000;
   };
   if (!workout.phases.length) throw new Error('Workout has no phases');
   for (const phase of workout.phases) {
     const start = cursor;
-    if (!phase.exerciseIds.length || !Number.isInteger(phase.timer.intervals) || phase.timer.intervals < 1) throw new Error('Invalid phase');
+    if (!phase.exerciseIds.length) throw new Error('Phase has no exercises');
+    const circuit = phase.exerciseIds.map(id => {
+      const exercise = workout.exercises.find(ex => ex.id === id);
+      if (!exercise) throw new Error('Unknown exercise');
+      return exercise;
+    });
+    if (phase.format === 'amrap') {
+      if (phase.timer.durationSeconds !== phase.durationSeconds) throw new Error('AMRAP duration mismatch');
+      add(phase, null, null, 'AMRAP', phase.timer.durationSeconds);
+      segments.at(-1).circuit = circuit;
+      continue;
+    }
+    if (!Number.isInteger(phase.timer.intervals) || phase.timer.intervals < 1) throw new Error('Invalid phase');
     for (let i = 0; i < phase.timer.intervals; i++) {
       const exercise = workout.exercises.find(ex => ex.id === phase.exerciseIds[i % phase.exerciseIds.length]);
       if (!exercise) throw new Error('Unknown exercise');
@@ -68,7 +80,7 @@ export class WorkoutTimer {
     const current = segments[index];
     const next = segments.slice(index + 1).find(s => s.kind !== 'REST');
     return { ...base, stage: 'exercise', ...current, segmentIndex: index,
-      remainingMs: current.endMs - elapsedMs, nextExercise: next?.exercise ?? null,
+      remainingMs: current.endMs - elapsedMs, nextExercise: next?.exercise ?? null, nextPhase: next?.phase ?? null,
       go: elapsedMs < 500 };
   }
 }

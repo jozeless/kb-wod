@@ -1,7 +1,10 @@
 import { test, expect } from '@playwright/test';
 const detail='./#workout/focus-001-upper-abs/1';
-async function start(page) {
- await page.clock.install();await page.goto(detail);await page.getByRole('button',{name:'Start Workout',exact:true}).click();
+async function start(page, pausedClock = false) {
+ if (pausedClock) {
+  await page.clock.install({time:new Date('2026-01-01T00:00:00Z')});
+  await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
+ } else await page.clock.install();await page.goto(detail);await page.getByRole('button',{name:'Start Workout',exact:true}).click();
  await expect(page.locator('.phase-clock')).toHaveText('3');
 }
 test('countdown, automatic blocks, final rest and completion without saving',async({page})=>{
@@ -72,11 +75,21 @@ test('optional audio cues cover start, last seconds, changes, block and finish',
    createGain(){return {gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){},disconnect(){}};}
   };
  });
- await start(page);await page.getByRole('button',{name:'Sound: Off'}).click();await expect(page.getByRole('button',{name:'Sound: On'})).toHaveAttribute('aria-pressed','true');
- await page.clock.runFor(3000);expect(await page.evaluate(()=>window.testTones)).toContain(880);
- await page.clock.fastForward(57000);await page.clock.runFor(3000);
+ await start(page, true);await expect(page.getByRole('button',{name:'Sound: On'})).toHaveAttribute('aria-pressed','true');
+ await page.clock.runFor(3000);expect(await page.evaluate(()=>window.testTones)).toEqual([880]);
+ await page.clock.fastForward(56900);await page.clock.runFor(3100);
  expect((await page.evaluate(()=>window.testTones)).filter(t=>t===520)).toHaveLength(3);
- expect(await page.evaluate(()=>window.testTones)).toContain(740);
- await page.clock.fastForward(540000);expect(await page.evaluate(()=>window.testTones)).toContain(1100);
- await page.clock.fastForward(600000);expect(await page.evaluate(()=>window.testTones)).toContain(1320);
+ expect(await page.evaluate(()=>window.testTones)).toContain(980);
+ expect(await page.evaluate(()=>window.testTones)).not.toContain(740); // minute overrides exercise-change
+ const beforePause=await page.evaluate(()=>window.testTones.length);
+ await page.getByRole('button',{name:'Pause',exact:true}).click();await page.clock.fastForward(120000);
+ await page.getByRole('button',{name:'Resume',exact:true}).click();expect(await page.evaluate(()=>window.testTones.length)).toBe(beforePause);
+ await page.getByRole('button',{name:'Sound: On'}).click();await expect(page.getByRole('button',{name:'Sound: Off'})).toHaveAttribute('aria-pressed','false');
+ await page.clock.fastForward(60000);expect(await page.evaluate(()=>window.testTones.length)).toBe(beforePause);
+ await page.getByRole('button',{name:'Sound: Off'}).click();await page.clock.runFor(100);expect(await page.evaluate(()=>window.testTones.length)).toBe(beforePause);
+ await page.clock.fastForward(479800);await page.clock.runFor(100);
+ expect((await page.evaluate(()=>window.testTones)).filter(t=>t===980)).toHaveLength(2); // includes 10:00, not a block duplicate
+ expect(await page.evaluate(()=>window.testTones)).not.toContain(1100);
+ await page.clock.fastForward(39900);await page.clock.runFor(100);expect(await page.evaluate(()=>window.testTones)).toContain(740);
+ await page.clock.fastForward(559900);await page.clock.runFor(100);expect(await page.evaluate(()=>window.testTones)).toContain(1320);
 });

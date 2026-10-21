@@ -1,3 +1,5 @@
+import { createCueTracker } from '../domain/workout-cues.js';
+import { createWeightField } from './weight-field.js';
 import { WorkoutTimer, formatTime } from '../domain/workout-timer.js';
 import { createWorkoutAudio } from '../platform/workout-audio.js';
 import { el, button, heading } from './components.js';
@@ -5,6 +7,9 @@ import { el, button, heading } from './components.js';
 export function createActiveWorkout(workout, onEnd, onToday) {
   const engine = new WorkoutTimer(workout);
   const audio = createWorkoutAudio();
+  const cues = createCueTracker();
+  const weight = createWeightField(workout);
+  weight.root.hidden = true;
   const phase = el('p', { className: 'eyebrow', 'aria-live': 'polite' });
   const exercise = el('h2', { className: 'active-exercise', 'aria-live': 'polite' });
   const target = el('p', { className: 'active-target' });
@@ -13,13 +18,13 @@ export function createActiveWorkout(workout, onEnd, onToday) {
   const position = el('p', {});
   const next = el('p', {});
   const progress = el('progress', { max: '1', value: '0', 'aria-label': 'Workout progress' });
-  const panel = el('section', { className: 'active-panel', 'aria-label': 'Active workout' }, phase, exercise, target, clock, total, position, next, progress);
+  const panel = el('section', { className: 'active-panel', 'aria-label': 'Active workout' }, phase, exercise, target, weight.root, clock, total, position, next, progress);
   const pause = button('Pause', () => {
     if (engine.status === 'paused') { engine.resume(); startTicker(); }
     else { engine.pause(); stopTicker(); update(); }
   });
   const sound = button('Sound: Off', async () => {
-    await audio.toggle(); sound.textContent = audio.enabled ? 'Sound: On' : 'Sound: Off'; sound.setAttribute('aria-pressed', String(audio.enabled));
+    await audio.toggle(); updateSound();
   }, true);
   sound.setAttribute('aria-pressed', 'false');
   const end = button('End Workout', () => onEnd(), true);
@@ -28,16 +33,19 @@ export function createActiveWorkout(workout, onEnd, onToday) {
     el('p', { className: 'muted' }, 'Keep this screen open. Mobile browsers may suspend timers and audio when locked; the display catches up when the browser clock advances.'));
   let ticker = null;
   let disposed = false;
-  let last = null;
+  function updateSound() { sound.textContent = audio.enabled ? 'Sound: On' : 'Sound: Off'; sound.setAttribute('aria-pressed', String(audio.enabled)); }
+  // This runs inside the Start Workout click, before its gesture is lost.
+  audio.enable().then(updateSound);
   function setText(node, text) { if (node.textContent !== text) node.textContent = text; }
-  function update() {
+  function update(audible = true) {
     if (disposed) return;
     const s = engine.snapshot();
+    const cue = cues.next(s, audible && !document.hidden);
+    if (cue) audio.cue(cue);
     if (s.stage === 'complete') {
-      if (last?.stage !== 'complete') audio.cue('complete');
       stopTicker();
       root.replaceChildren(heading('FINISHED', 'Workout Complete', workout.name), el('p', { className: 'completion-duration' }, `Scheduled duration: ${formatTime(s.durationMs)}`), el('p', {}, 'No session or performance results have been saved.'), button('Return to Today', onToday));
-      last = s; return;
+      return;
     }
     panel.className = `active-panel ${s.stage === 'countdown' ? 'countdown' : s.kind.toLowerCase()}${s.status === 'paused' ? ' paused' : ''}`;
     pause.textContent = s.status === 'paused' ? 'Resume' : 'Pause';
@@ -49,6 +57,7 @@ export function createActiveWorkout(workout, onEnd, onToday) {
       target.textContent = 'The countdown is outside your workout time.';
       position.textContent = ''; next.textContent = '';
     } else {
+      weight.root.hidden = false; weight.setExercise(s.exercise);
       setText(phase, `${s.phase.name} · ${s.kind}${s.status === 'paused' ? ' · PAUSED' : ''}`);
       setText(exercise, s.exercise.name);
       const prescription = s.exercise.target;
@@ -57,19 +66,16 @@ export function createActiveWorkout(workout, onEnd, onToday) {
       clock.setAttribute('aria-label', `Phase time remaining: ${formatTime(s.remainingMs)}`);
       position.textContent = `Round ${s.round} of ${s.phase.rounds} · ${s.kind === 'EMOM' ? 'Minute' : 'Interval'} ${s.interval + 1} of ${s.phase.timer.intervals}`;
       next.textContent = s.nextExercise ? `Next: ${s.nextExercise.name}` : 'Next: Workout Complete';
-      // Delayed/background renders catch up visually without replaying obsolete cues.
-      if (last?.stage === 'countdown') audio.cue('start');
-      else if (last?.stage === 'exercise' && s.segmentIndex !== last.segmentIndex) audio.cue(s.phase.id !== last.phase.id ? 'block' : 'change');
-      else if (s.status === 'running' && Math.ceil(s.remainingMs / 1000) <= 3 && Math.ceil(s.remainingMs / 1000) !== Math.ceil((last?.remainingMs ?? 0) / 1000)) audio.cue('tick');
+
     }
-    last = s;
   }
   function stopTicker() { if (ticker !== null) clearInterval(ticker); ticker = null; }
-  function startTicker() { update(); if (!disposed && ticker === null && engine.status === 'running') ticker = setInterval(update, 100); }
-  function onVisibility() { if (!document.hidden) update(); }
+  function startTicker(audible = true) { update(audible); if (!disposed && ticker === null && engine.status === 'running') ticker = setInterval(update, 100); }
+  function onVisibility() { if (!document.hidden) update(false); }
+  function onPageShow() { startTicker(false); }
   document.addEventListener('visibilitychange', onVisibility);
   window.addEventListener('pagehide', stopTicker);
-  window.addEventListener('pageshow', startTicker);
+  window.addEventListener('pageshow', onPageShow);
   engine.start(); startTicker();
   return {
     root,
@@ -78,7 +84,7 @@ export function createActiveWorkout(workout, onEnd, onToday) {
       disposed = true; engine.end(); stopTicker(); audio.dispose();
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('pagehide', stopTicker);
-      window.removeEventListener('pageshow', startTicker);
+      window.removeEventListener('pageshow', onPageShow);
     },
   };
 }

@@ -1,3 +1,4 @@
+import { supportsResults } from '../domain/result-schemas.js';
 import { draftActions } from './session-history.js';
 import { currentWorkouts, workoutTypes, findWorkout, typeLabel } from '../data/catalog.js';
 import { workoutDetails } from './workout-details.js';
@@ -43,7 +44,7 @@ export function workoutView(id, version, stage, go, startWorkout) {
   const view = el('div', {}, button('← Library', () => go('#library'), true), heading(`${w.code ? w.code + " · " : ""}${typeLabel(w.type)}${w.demo ? " · DEMO" : ""} · VERSION ${w.version}`, w.name, stage === 'active' ? 'Active Workout' : stage === 'result' ? 'Save Result' : 'Workout Detail'));
   if (w.phases.length && stage === 'active') {
     view.append(emptyState('Ready when you are', 'This link does not start the timer automatically.'), button('Start Workout', () => startWorkout(w)));
-    if (w.execution?.mode === 'two-block-results') view.append(draftActions(w, go));
+    if (supportsResults(w)) view.append(draftActions(w, go));
     return view;
   }
   if (stage === 'result') {
@@ -51,7 +52,7 @@ export function workoutView(id, version, stage, go, startWorkout) {
   }
   if (w.phases.length && stage === 'workout') {
     view.append(workoutDetails(w), button('Start Workout', () => startWorkout(w)));
-    if (w.execution?.mode === 'two-block-results') view.append(button('View saved sessions', () => go(`#history/${w.id}`), true), draftActions(w, go));
+    if (supportsResults(w)) view.append(button('View saved sessions', () => go(`#history/${w.id}`), true), draftActions(w, go));
     return view;
   }
   const exercises = el('section', { className: stage === 'active' ? 'exercise-list compact' : 'exercise-list' }, el('h2', {}, 'Exercises'));

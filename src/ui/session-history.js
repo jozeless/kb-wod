@@ -1,3 +1,4 @@
+import { resultSchema, partialLabel } from '../domain/result-schemas.js';
 import { listSessions, getSession } from '../storage/session-store.js';
 import { el, button, heading, emptyState } from './components.js';
 import { formatTime } from '../domain/workout-timer.js';
@@ -15,7 +16,7 @@ export function historyView(workoutId, go) {
   const list = el('div', { className: 'library-grid' }); root.append(list);
   void listSessions(workoutId).then(records => {
     const saved = records.filter(record => record.status === 'completed');
-    if (!saved.length) list.append(emptyState('No saved sessions', 'Complete both blocks and choose Save Workout to record a session.'));
+    if (!saved.length) list.append(emptyState('No saved sessions', 'Complete all workout blocks and choose Save Workout to record a session.'));
     for (const record of saved) list.append(button(`${record.workoutSnapshot.name} · Version ${record.workoutVersion} · ${new Date(record.startedAt).toLocaleString()}`, () => go(`#session/${record.id}`), true));
   }).catch(() => list.append(emptyState('History unavailable', 'Local session storage could not be read. Please retry.')));
   return root;
@@ -29,10 +30,14 @@ export function savedSessionView(id, go) {
       el('p', {}, `Active duration: ${formatTime(record.activeDurationMs)}`), el('p', {}, `Finished: ${new Date(record.completedAt).toLocaleString()}`));
     for (const phase of record.workoutSnapshot.phases) {
       const section = el('section', { className: 'exercise-list', 'aria-label': `${phase.name} saved results` }, el('h2', {}, `${phase.name} Results`));
-      for (const result of record.results[phase.id]) {
+      const schema = resultSchema(record.workoutSnapshot), block = record.results[phase.id];
+      const amrap = schema.blocks[phase.id]?.kind === 'amrap';
+      if (amrap) section.append(el('p', {}, `Full rounds completed: ${value(block.fullRounds)}`));
+      for (const result of amrap ? block.exercises : block) {
         const exercise = record.workoutSnapshot.exercises.find(ex => ex.id === result.exerciseId);
-        section.append(el('h3', {}, exercise.name), el('p', {}, `Weight (kg): ${value(result.weightKg)}`),
-          el('p', {}, result.rounds ? `Round 1: ${value(result.rounds[0])} · Round 2: ${value(result.rounds[1])}${exercise.target?.unit.includes('per arm') ? ' · repetitions per arm' : ''}` : `Intervals completed: ${value(result.intervalsCompleted)}`));
+        const unit = exercise.target?.unit.includes('per arm') ? ' · repetitions per arm' : exercise.target?.unit.includes('per side') ? ' · count per side' : '';
+        const counts = result.rounds ? result.rounds.map((count, index) => `Round ${index + 1}: ${value(count)}`).join(' · ') + unit : amrap ? `${partialLabel(exercise)}: ${value(result.partialReps)}` : `Intervals completed: ${value(result.intervalsCompleted)}`;
+        section.append(el('h3', {}, exercise.name), el('p', {}, `${schema.weightLabel}: ${value(result.weightKg)}`), el('p', {}, counts));
       }
       root.append(section);
     }

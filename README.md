@@ -16,7 +16,7 @@ A mobile-first static application built with HTML, CSS and native JavaScript ES 
 - `src/data`: workout catalog, extensible type registry, separate demonstration definitions.
 - `src/domain`: planning, timeline compiler, monotonic timer, versioned session/result validation.
 - `src/storage`: separate weekly planning, weight preferences and transactional IndexedDB sessions.
-- `src/ui`: reusable views, legacy active controller, Focus v2 block/results flow and basic saved-session history; content is inserted as text.
+- `src/ui`: reusable views, legacy active controller, shared Focus v2 / Hybrid v2 block/results flow and basic saved-session history; content is inserted as text.
 - `src/platform`: optional Web Audio cues generated locally, with failure isolation.
 - `src/main.js`: hash routing, event orchestration, storage synchronization, service-worker registration.
 - `styles/app.css`: mobile-first styling and fixed bottom navigation.
@@ -27,7 +27,7 @@ A mobile-first static application built with HTML, CSS and native JavaScript ES 
 
 Today has seven fixed Monday–Sunday slots. Add/change opens Library in assignment mode; cancel makes no change. The same workout may occupy multiple days. There is no automatic weekly rollover or scheduling. Library supports case-insensitive name search and the Hybrid/Focus type registry. The three sample cards remain explicitly marked **Demo** and originate only in `demo-workouts.js`. The real **KB Focus 001 — Upper Body + ABS** retains immutable version 1 (`focus-001-upper-abs.js`, Upper EMOM + ABS intervals). The current Library option is immutable version 2 (`focus-001-v2.js`), with two independent 10-minute 40/20 blocks and results between them. Version 1 remains available through existing weekly assignments and direct versioned URLs. No assignment is upgraded automatically; warm-up remains separate. Tuesday is a recommendation only and never changes assignments automatically.
 
-Stats and Dashboard retain empty states. Focus v2 supports Upper → Upper Results → explicit Continue to ABS → ABS → ABS Results → explicit Save Workout, with a basic local history. Focus v1, Hybrid and the three Demo cards retain their previous execution/scaffold behavior. Advanced statistics, authentication and Supabase remain out of scope.
+Stats and Dashboard retain empty states. Focus v2 supports Upper → Upper Results → explicit Continue to ABS → ABS → ABS Results → explicit Save Workout, with a basic local history. Focus v1, Hybrid v1 and the three Demo cards retain their previous execution/scaffold behavior. Advanced statistics, authentication and Supabase remain out of scope.
 
 ## Data contracts
 
@@ -37,7 +37,7 @@ Identity is the `(id, version)` pair. Do not edit a used version in place: appen
 
 Weekly assignments are a separate `{ Monday: {workoutId, version} | null, ... }` mapping stored at `kb2.weekly-plan.v1`. An unavailable definition remains assigned until manually changed. Invalid storage is preserved and planning is disabled rather than silently overwriting it. Write failures are surfaced. Storage events refresh another open tab; simultaneous writes are not transactional and can still race. Local storage is not a backup.
 
-Focus v2 sessions use IndexedDB database `kb2.training.sessions`, schema version 1, object store `sessions` keyed by session UUID and indexed by `workoutId`. The formerly reserved localStorage key `kb2.sessions.v1` remains untouched. Sessions contain identity/version, a deep definition snapshot and actual results. Editing a workout or weekly assignment never rewrites completed history.
+Focus v2 and Hybrid v2 sessions use IndexedDB database `kb2.training.sessions`, schema version 1, object store `sessions` keyed by session UUID and indexed by `workoutId`. The formerly reserved localStorage key `kb2.sessions.v1` remains untouched. Sessions contain identity/version, a deep definition snapshot and actual results. Editing a workout or weekly assignment never rewrites completed history.
 
 Prototype keys (`kbwod_history`, `kbwod_weight_*`) and auth storage are never read, changed or deleted. Old code remains recoverable in Git history. No migration or remote request is performed.
 
@@ -51,7 +51,7 @@ The worker precaches the static application, including every imported module. It
 
 Automated coverage uses Chromium at mobile and desktop sizes, including widths 320–1280. Manual Safari/iOS and Android installation, accessibility/assistive technology, real device safe areas and upgrades from older production workers remain pending. No production deployment or merge is authorized by this phase.
 
-## Legacy workout timer (Focus v1 and Hybrid)
+## Legacy workout timer (Focus v1 and Hybrid v1)
 
 Start Workout explicitly creates an in-memory session. A direct active-screen URL shows a ready screen and never autostarts. The initial 3, 2, 1 countdown lasts 3 seconds outside the workout; GO appears at the start of the first EMOM minute. Upper runs ten 60-second minutes, then immediately enters ABS at workout 10:00. ABS runs ten 40-second WORK / 20-second REST intervals; completion occurs at 20:00 after the final rest. The immutable Focus 001 version 1 definition is unchanged.
 
@@ -67,7 +67,7 @@ Tests use injected clocks and Playwright's simulated clock: no real 20-minute wa
 
 Workout Detail shows an optional Weight (kg) input beside each exercise. Empty means unspecified, zero is a valid value and nonnegative decimal values are accepted; no default or mandatory load is imposed. Inputs save immediately on valid edits. Clearing a field removes that preference. Invalid input never replaces a previously saved valid value; storage failures are shown in the field. Unreadable/corrupt stored values are preserved and the affected input is disabled rather than silently replacing them.
 
-Each value has its own key: `kb2.weight-preference.v1:<encoded workout ID>:<version>:<encoded exercise ID>`. The active screen uses the same field component and storage key for its current exercise, including repeated rounds. Values are training preferences, not historical/session results, and do not modify the catalog or weekly plan. Existing prototype data and reserved result storage remain untouched. Preferences depend on the browser/origin and are not a backup; simultaneous edits to the same exercise in different tabs are last-write-wins. No Supabase is implemented. Only Focus v2 currently saves session results, separately in IndexedDB.
+Each value has its own key: `kb2.weight-preference.v1:<encoded workout ID>:<version>:<encoded exercise ID>`. The active screen uses the same field component and storage key for its current exercise, including repeated rounds. Values are training preferences, not historical/session results, and do not modify the catalog or weekly plan. Existing prototype data and reserved result storage remain untouched. Preferences depend on the browser/origin and are not a backup; simultaneous edits to the same exercise in different tabs are last-write-wins. No Supabase is implemented. Focus v2 and Hybrid v2 save session results, separately in IndexedDB.
 
 ## KB Hybrid 001 — Strength & Sweat
 
@@ -79,7 +79,7 @@ AMRAP compiles to one timeline segment containing all circuit exercises. There a
 
 The user-provided `assets/audio/start.wav` and `assets/audio/minute.wav` are included without altering their bytes. Format, duration and SHA-256 fingerprints are documented in `assets/audio/README.md`. Local preloading, gesture-based Web Audio unlocking, per-context decoding and single-voice playback use the originals. Start plays once at the end of the 3-second countdown, minute at elapsed 01:00–19:00, and only the existing completion signal plays at 20:00. Muting/pausing stops current playback; missed signals are not queued. Missing, corrupt or not-yet-ready samples use the synthesized fallback without changing time or replaying later.
 
-The PWA cache is `kb2-static-v7`. Both WAVs are mandatory precache assets, alongside the application modules, to ensure a successfully installed version has offline audio. The waiting-worker lifecycle and cleanup limited to old `kb2-static-*` caches remain unchanged. New Focus v2 modules are included; general navigation and the visual design remain unchanged.
+The PWA cache is `kb2-static-v8`. Both WAVs are mandatory precache assets, alongside the application modules, to ensure a successfully installed version has offline audio. The waiting-worker lifecycle and cleanup limited to old `kb2-static-*` caches remain unchanged. Shared block/result modules and both versioned result schemas are included; general navigation and the visual design remain unchanged.
 
 New browser tests decode the actual PCM files, invoke native buffer-source playback and render the decoded audio through OfflineAudioContext to verify non-silent output. They check one start, 19 minute samples, completion priority, no overlap, pause/mute and offline playback under `/kb-wod/`, plus fallback for corrupt WAV responses. Existing timer, Hybrid, Focus, weights and planning tests remain enabled. Native playback scheduling is automated; speaker audibility and mobile hardware/autoplay/lock behavior still require device validation.
 
@@ -87,7 +87,7 @@ New browser tests decode the actual PCM files, invoke native buffer-source playb
 
 Focus v2 uses ten 40-second WORK / 20-second REST intervals in each block, preserving exercise order and rep targets. Upper begins after a 3-second lead-in. At 10:00 it stops completely and opens Upper Results; no ticker runs and no stale cues accumulate while filling the form. Continue to ABS validates and commits the draft before starting a new 3-second countdown and the ABS block. There is no second start.wav. ABS ends after its final rest at 20:00 active time, sounds the existing completion cue and opens ABS Results. The block timer begins at 10:00; lead-ins, pauses and result-form time are excluded from `activeDurationMs`.
 
-A short 620 Hz beep marks each second-40 REST boundary for v2 only. minute.wav marks active minutes 1–19, including Upper minute 10. Completion wins at minute 20. Existing cue precedence, mute control, foreground catch-up and single-voice playback remain. Hybrid and v1 continue using the same previous timelines and sounds.
+A short 620 Hz beep marks each second-40 REST boundary for v2 only. minute.wav marks active minutes 1–19, including Upper minute 10. Completion wins at minute 20. Existing cue precedence, mute control, foreground catch-up and single-voice playback remain. Hybrid v1 and Focus v1 continue using the same previous timelines and sounds.
 
 Upper records optional load and actual Round 1/2 counts per exercise. Unilateral targets explain repetitions per arm when both arms match; differences can be written in Workout notes. ABS records optional load and 0/1/2 correctly completed intervals per exercise, optional integer effort 1–10 and notes. No counts or effort are inferred from elapsed time. Blank numeric values are stored as null; explicit zero remains zero. Upper results can be reviewed and corrected from ABS Results before saving.
 
@@ -96,11 +96,23 @@ Session weights are initially prefilled from the current v2 preferences. If abse
 ### IndexedDB lifecycle
 
 - A UUID is generated once and an initial draft must commit before any training starts. An unavailable database blocks starting with a retryable error.
-- Drafts include schemaVersion, workoutId/workoutVersion, workoutSnapshot, startedAt/completedAt, activeDurationMs, status, stage, blockIndex, checkpointMs, completedBlocks, sound/initial-start flags, raw form entries and validated final results. `completedAt` marks the end of ABS; `savedAt` marks successful final commit.
+- Drafts include schemaVersion, workoutId/workoutVersion, workoutSnapshot, startedAt/completedAt, activeDurationMs, status, stage, blockIndex, checkpointMs, completedBlocks, sound/initial-start flags, raw form entries and validated final results. `completedAt` marks the end of the final active block; `savedAt` marks successful final commit.
 - Form inputs enqueue ordered draft writes immediately, including invalid/incomplete values so they can be corrected after recovery. The UI says Draft saved locally only when queued writes have completed. Upper is recoverably checkpointed before ABS can start.
 - Reloading the session's draft URL restores a result form automatically. Workout Detail also exposes Resume draft actions. Active checkpoints are saved roughly every second and on explicit pause/departure; reload restores the latest committed position **paused**, requiring Resume. Time away is excluded and old cues are never replayed.
 - Sudden browser/OS termination may lose uncommitted inputs or the newest active checkpoint. Beforeunload warnings are best-effort; browser storage can also be evicted. IndexedDB is local persistence, not a backup.
 - Save Workout validates all blocks, disables editing while saving, and commits the same UUID in a read/write transaction. Confirmation appears only after transaction completion. Repeated saves return the existing completed record; later autosaves cannot overwrite it. Failed commits keep inputs and allow retry without creating another session.
-- Saved sessions can be opened from View saved sessions in Focus v2 detail or directly after saving. The basic history renders the stored snapshot and results; there are no graphs or remote sync. Draft writes in separate tabs are last-write-wins until completion; completed records are protected.
+- Saved sessions can be opened from View saved sessions in Focus v2 or Hybrid v2 detail or directly after saving. The basic history renders the stored snapshot and results; there are no graphs or remote sync. Draft writes in separate tabs are last-write-wins until completion; completed records are protected.
 
 Automated tests exercise exact block boundaries and sounds, a long stopped result-form period, the second countdown without a second start.wav, numeric validation, null versus zero, per-round/session loads, reload recovery, paused checkpoint restoration, duplicate-save prevention, transaction failure/retry, offline history and unchanged legacy assignments/Hybrid/v1 execution. Mobile/desktop Chromium is covered; Safari/iOS/Android and eviction/lock behavior still require device checks.
+
+## Hybrid 001 version 2 — three-block results
+
+Library selects immutable Hybrid v2 (`src/data/hybrid-001-v2.js`). Its nine movements, targets and 8-minute EMOM / 8-minute 40/20 / 4-minute continuous AMRAP phases are identical to v1. Existing v1 assignments and versioned links remain unchanged. Strength Results and Conditioning Results stop all training time and scheduled cues. Explicit Continue to Conditioning / Continue to Finisher commits the draft before a new three-second lead-in. Finisher Results requires explicit Save Workout. Only active block time counts toward 20 minutes; offsets are calculated from phase durations, not assumed equal.
+
+`src/ui/block-training.js` and `block-result-form.js` share the lifecycle and presentation with Focus v2. `src/domain/result-schemas.js` dispatches separate Focus and Hybrid validators; the old Focus UI module paths remain compatibility exports. The IndexedDB schema and transaction implementation are unchanged. All three active stages restore paused; all three result forms restore their entries. Earlier block results can be reviewed before saving.
+
+Strength stores optional actual kg and four actual counts per exercise, with per-side guidance for the unilateral combination. Conditioning stores optional kg and integer correctly completed intervals from 0 to 2. Finisher stores optional integer full rounds and independent additional partial counts bounded by each target: 0–6 thrusters, 0–8 wood choppers, 0–6 lateral-lunge/curl combinations, plus optional kg per exercise, effort 1–10 and notes. Counts are never inferred or converted automatically. Empty fields persist as null; explicit zero persists as zero.
+
+Hybrid results use keys `strength` (exercise records with four-element `rounds`), `conditioning` (exercise records with `intervalsCompleted`) and `combo-finisher` (`fullRounds` and exercise records with `partialReps`), alongside `perceivedEffort` and `notes`. Snapshot-based history renders each format with its correct labels. Initial weights read v2 preferences with read-only v1 fallback. Subsequent transitions preserve actual session values, and results never write preferences or older sessions.
+
+Start WAV plays only once. Active minute WAVs include 08:00 and 16:00, stop at 19:00, and yield to completion at 20:00. Only Conditioning adds the eight 620 Hz rest beeps; Strength and AMRAP have no automatic rest beep. Result-form dwell time is silent and excluded. Automated tests cover exact boundaries, all stage recoveries, four Strength rounds, interval/partial validation, null/zero, preference and Focus preservation, idempotent saving, offline history and mobile widths. Real mobile audio/OS suspension and storage eviction still require device checks.

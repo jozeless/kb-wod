@@ -14,8 +14,10 @@ SHA-256:
 
 The application preloads local URLs and unlocks Web Audio from Start Workout. Start plays once at the end of the 3-second lead-in; minute plays at elapsed minutes 1–19. At 20:00 the existing completion tone takes precedence. Sound On/Off, pause and single-voice cleanup prevent replay and overlap. Missing, undecodable or not-yet-ready samples fall back to existing synthesized tones without delaying the workout or playing a stale sample later.
 
-Both WAVs are mandatory precache assets in `kb2-static-v7`, so a worker installs only after caching both files along with the application shell. The existing waiting-worker lifecycle is retained: close older app tabs to allow an installed update to activate. Synthesized fallback remains available at runtime if sample fetching/decoding fails.
+Both WAVs are mandatory precache assets in `kb2-static-v8`, so a worker installs only after caching both files along with the application shell. The existing waiting-worker lifecycle is retained: close older app tabs to allow an installed update to activate. Synthesized fallback remains available at runtime if sample fetching/decoding fails.
 
 `tests/custom-audio.spec.js` uses the actual files and native Chromium Web Audio decoding, buffer-source playback and offline audio rendering. It checks scheduled playback at start and all 19 minute boundaries for Hybrid and Focus, completion priority, non-overlap, mute/pause, corrupt-WAV fallback and cached offline playback. Hardware audibility, iOS/Android autoplay policies and locked-screen behavior still need real-device validation.
 
 Focus v2 adds a short synthesized rest beep (620 Hz) at each 40-second WORK boundary. It retains the same start/minute originals, suppresses a second start for the ABS lead-in, and emits no scheduled cues while stopped for results. Legacy Focus v1 and Hybrid cue behavior is unchanged.
+
+Hybrid v2 uses the same samples once at initial start and at active minutes 1–19, including 8 and 16. Its two later lead-ins do not replay start. Only the eight Conditioning rest boundaries add the 620 Hz beep; EMOM and AMRAP do not. All three results screens stop scheduled cues. Legacy Hybrid v1 remains unchanged.

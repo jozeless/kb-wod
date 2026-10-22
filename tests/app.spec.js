@@ -74,7 +74,7 @@ test('real Focus card, complete prescription and manual Tuesday assignment', asy
  await expect(upper.locator('ol li').first()).toContainText('5–6 reps per arm');
  await expect(upper.locator('ol li').last()).toContainText('4–6 controlled cycles');
  await expect(upper).toContainText('1–3 repetitions in reserve');await expect(upper).toContainText('shoulder discomfort');
- await expect(abs).toContainText('40 seconds, then rest for 20 seconds');await expect(abs).toContainText('1 to 10');
+ await expect(abs).toContainText('40 seconds, rest for 20 seconds');await expect(abs).toContainText('1 to 10');
  await expect(page.getByText('Warm-up is separate from the 20-minute workout.')).toBeVisible();
  expect(await page.evaluate(()=>localStorage.getItem('kb2.weekly-plan.v1'))).toBe(before);
  await expect(page.getByRole('button',{name:'Start Workout'})).toBeVisible();
@@ -83,6 +83,6 @@ test('real Focus card, complete prescription and manual Tuesday assignment', asy
  await page.getByRole('button',{name:'Assign to Tuesday: Upper Body + ABS'}).click();
  await page.reload();await expect(tuesday.getByText('Upper Body + ABS')).toBeVisible();
  await expect(monday.getByText('Hybrid Foundation')).toBeVisible();
- expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('kb2.weekly-plan.v1')).Tuesday)).toEqual({workoutId:'focus-001-upper-abs',version:1});
+ expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('kb2.weekly-plan.v1')).Tuesday)).toEqual({workoutId:'focus-001-upper-abs',version:2});
  expect(await page.evaluate(()=>localStorage.getItem('kb2.sessions.v1'))).toBeNull();
 });

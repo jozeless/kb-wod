@@ -1,3 +1,6 @@
+import { createFocusTraining } from './ui/focus-training.js';
+import { historyView, savedSessionView } from './ui/session-history.js';
+import { findWorkout } from './data/catalog.js';
 import { createActiveWorkout } from './ui/active-workout.js';
 import { days, assignWorkout } from './domain/planning.js';
 import { loadPlan, savePlan, planKey } from './storage/weekly-plan.js';
@@ -10,14 +13,21 @@ let session = null;
 let activeHash = '';
 function stopSession() { session?.dispose(); session = null; }
 function allowExit() {
-  if (session?.inProgress && !window.confirm('End this workout? Your progress will not be saved.')) return false;
+  if (session?.inProgress && !window.confirm(session.exitMessage || 'End this workout? Your progress will not be saved.')) return false;
   stopSession(); return true;
 }
 function startWorkout(workout) {
   if (session && !allowExit()) return;
   activeHash = `#active/${workout.id}/${workout.version}`;
-  session = createActiveWorkout(workout, () => { if (allowExit()) go('#today'); }, () => { stopSession(); go('#today'); });
+  if (workout.execution?.mode === 'two-block-results') {
+    session = focusSession(workout);
+    activeHash += `?draft=${session.id}`;
+  } else session = createActiveWorkout(workout, () => { if (allowExit()) go('#today'); }, () => { stopSession(); go('#today'); });
   if (location.hash === activeHash) render(); else go(activeHash);
+}
+
+function focusSession(workout, draftId) {
+  return createFocusTraining(workout, { draftId, recover: Boolean(draftId), onExit: () => { stopSession(); go('#today'); }, onHistory: id => { stopSession(); go(`#session/${id}`); } });
 }
 
 function reloadPlan() { state = loadPlan(window.localStorage); status.textContent = state.error ?? ''; }
@@ -44,10 +54,15 @@ function render(focus = true) {
   const day = days.includes(requestedDay) ? requestedDay : null;
   let view;
   if (session && location.hash === activeHash) view = session.root;
+  else if (page === 'active' && new URLSearchParams(query).get('draft') && findWorkout(id, version)?.execution?.mode === 'two-block-results') {
+    session = focusSession(findWorkout(id, version), new URLSearchParams(query).get('draft')); activeHash = location.hash; view = session.root;
+  }
+  else if (page === 'history') view = historyView(id, go);
+  else if (page === 'session') view = savedSessionView(id, go);
   else if (page === 'today') view = todayView(state.plan, go, d => assign(d, null), Boolean(state.error));
   else if (page === 'library') view = libraryView(day, go, assign);
   else if (['workout', 'active', 'result'].includes(page)) view = workoutView(id, version, page, go, startWorkout);
-  else if (page === 'stats' || page === 'dashboard') view = el('div', {}, heading('COMING LATER', page === 'stats' ? 'Stats' : 'Dashboard', page === 'stats' ? 'Performance over time, by workout.' : 'A place for your training totals.'), emptyState('No statistics yet', 'Sessions and results are not collected in this phase. No totals or sample statistics are shown.'));
+  else if (page === 'stats' || page === 'dashboard') view = el('div', {}, heading('COMING LATER', page === 'stats' ? 'Stats' : 'Dashboard', page === 'stats' ? 'Performance over time, by workout.' : 'A place for your training totals.'), emptyState('No statistics yet', 'Advanced statistics are not available yet. Saved sessions can be viewed from the workout detail.'));
   else view = emptyState('Page not found', 'Use the navigation below to continue.');
   app.replaceChildren(view);
   document.querySelectorAll('nav a').forEach(a => {
@@ -72,6 +87,7 @@ window.addEventListener('hashchange', () => {
   render();
 });
 window.addEventListener('beforeunload', event => {
+  session?.checkpoint?.();
   if (session?.inProgress) { event.preventDefault(); event.returnValue = ''; }
 });
 window.addEventListener('storage', e => { if (e.key === planKey || e.key === null) { try { reloadPlan(); render(false); } catch { /* Keep current state if storage becomes unavailable. */ } } });

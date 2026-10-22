@@ -4,10 +4,10 @@ test('navigation, search and filters', async ({page}) => {
  await page.goto('./'); await expect(page.getByRole('heading',{name:'Today',exact:true})).toBeVisible();
  await expect(page.locator('.day-slot')).toHaveCount(7);
  await page.getByRole('link',{name:'Library',exact:true}).click();
- await expect(page.locator('.workout-card')).toHaveCount(5);
+ await expect(page.locator('.workout-card')).toHaveCount(7);
  await page.getByLabel('Search workouts').fill('FLOW'); await expect(page.locator('.workout-card')).toHaveCount(1);
  await page.getByLabel('Workout Type').selectOption('focus'); await expect(page.getByText('No matching workouts')).toBeVisible();
- await page.getByLabel('Search workouts').fill(''); await expect(page.locator('.workout-card')).toHaveCount(2);
+ await page.getByLabel('Search workouts').fill(''); await expect(page.locator('.workout-card')).toHaveCount(3);
  for (const name of ['Stats','Dashboard']) { await page.getByRole('link',{name,exact:true}).click(); await expect(page.getByRole('heading',{name,exact:true})).toBeVisible(); await expect(page.getByText('No statistics yet')).toBeVisible(); }
  expect(errors).toEqual([]);
 });
@@ -47,7 +47,7 @@ test('static shell works offline under the GitHub Pages subpath', async ({page,c
  await page.goto('./');await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();
  await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
  await context.setOffline(true);await page.reload();await expect(page.getByRole('heading',{name:'Today',exact:true})).toBeVisible();
- await page.getByRole('link',{name:'Library',exact:true}).click();await expect(page.locator('.workout-card')).toHaveCount(5);
+ await page.getByRole('link',{name:'Library',exact:true}).click();await expect(page.locator('.workout-card')).toHaveCount(7);
  await page.getByRole('button',{name:'View workout: Upper Body + ABS'}).click();
  await expect(page.getByRole('region',{name:'ABS block'})).toBeVisible();
  await context.setOffline(false);

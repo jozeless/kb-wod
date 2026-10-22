@@ -35,7 +35,7 @@ export function savedSessionView(id, go) {
       if (amrap) section.append(el('p', {}, `Full rounds completed: ${value(block.fullRounds)}`));
       for (const result of amrap ? block.exercises : block) {
         const exercise = record.workoutSnapshot.exercises.find(ex => ex.id === result.exerciseId);
-        const unit = exercise.target?.unit.includes('per arm') ? ' · repetitions per arm' : exercise.target?.unit.includes('per side') ? ' · count per side' : '';
+        const unit = exercise.target?.unit.includes('per arm') ? ' · repetitions per arm' : exercise.target?.unit.includes('per side') ? ' · count per side' : exercise.target?.unit.includes('per leg') ? ' · count per leg' : '';
         const counts = result.rounds ? result.rounds.map((count, index) => `Round ${index + 1}: ${value(count)}`).join(' · ') + unit : amrap ? `${partialLabel(exercise)}: ${value(result.partialReps)}` : `Intervals completed: ${value(result.intervalsCompleted)}`;
         section.append(el('h3', {}, exercise.name), el('p', {}, `${schema.weightLabel}: ${value(result.weightKg)}`), el('p', {}, counts));
       }

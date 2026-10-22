@@ -65,6 +65,10 @@ export class WorkoutTimer {
     if (this.status !== 'paused') return;
     this.anchor = this.now(); this.status = 'running';
   }
+  restorePaused(rawElapsedMs) {
+    if (!Number.isFinite(rawElapsedMs) || rawElapsedMs < 0 || rawElapsedMs > this.timeline.durationMs + this.countdownMs) throw new Error('Invalid timer checkpoint');
+    this.accumulatedMs = rawElapsedMs; this.status = rawElapsedMs === this.timeline.durationMs + this.countdownMs ? 'complete' : 'paused';
+  }
   end() { this.accumulatedMs = this.elapsed(); this.status = 'ended'; }
   snapshot() {
     const raw = this.elapsed();

@@ -1,4 +1,5 @@
-import { workouts, workoutTypes, findWorkout, typeLabel } from '../data/catalog.js';
+import { draftActions } from './session-history.js';
+import { currentWorkouts, workoutTypes, findWorkout, typeLabel } from '../data/catalog.js';
 import { workoutDetails } from './workout-details.js';
 import { days, filterWorkouts } from '../domain/planning.js';
 import { el, button, heading, workoutCard, emptyState } from './components.js';
@@ -28,7 +29,7 @@ export function libraryView(day, go, assign) {
   const grid = el('div', { className: 'library-grid' });
   const count = el('p', { className: 'muted', 'aria-live': 'polite' });
   function update() {
-    const found = filterWorkouts(workouts, search.value, select.value);
+    const found = filterWorkouts(currentWorkouts, search.value, select.value);
     count.textContent = `${found.length} workout${found.length === 1 ? '' : 's'}`;
     grid.replaceChildren(...found.map(w => workoutCard(w, day ? w => assign(day, w) : w => go(detailUrl(w)), day ? `Assign to ${day}` : 'View workout')));
     if (!found.length) grid.append(emptyState('No matching workouts', 'Try another search or workout type.'));
@@ -42,6 +43,7 @@ export function workoutView(id, version, stage, go, startWorkout) {
   const view = el('div', {}, button('← Library', () => go('#library'), true), heading(`${w.code ? w.code + " · " : ""}${typeLabel(w.type)}${w.demo ? " · DEMO" : ""} · VERSION ${w.version}`, w.name, stage === 'active' ? 'Active Workout' : stage === 'result' ? 'Save Result' : 'Workout Detail'));
   if (w.phases.length && stage === 'active') {
     view.append(emptyState('Ready when you are', 'This link does not start the timer automatically.'), button('Start Workout', () => startWorkout(w)));
+    if (w.execution?.mode === 'two-block-results') view.append(draftActions(w, go));
     return view;
   }
   if (stage === 'result') {
@@ -49,6 +51,7 @@ export function workoutView(id, version, stage, go, startWorkout) {
   }
   if (w.phases.length && stage === 'workout') {
     view.append(workoutDetails(w), button('Start Workout', () => startWorkout(w)));
+    if (w.execution?.mode === 'two-block-results') view.append(button('View saved sessions', () => go(`#history/${w.id}`), true), draftActions(w, go));
     return view;
   }
   const exercises = el('section', { className: stage === 'active' ? 'exercise-list compact' : 'exercise-list' }, el('h2', {}, 'Exercises'));

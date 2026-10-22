@@ -66,11 +66,11 @@ export function createWorkoutAudio(samples = audioSamples) {
         const oscillator = context.createOscillator();
         const gain = context.createGain();
         const time = context.currentTime;
-        oscillator.frequency.value = { tick: 520, start: 880, change: 740, minute: 980, block: 1100, complete: 1320 }[type] ?? 740;
+        oscillator.frequency.value = { tick: 520, rest: 620, start: 880, change: 740, minute: 980, block: 1100, complete: 1320 }[type] ?? 740;
         gain.gain.setValueAtTime(0.08, time);
-        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + (type === 'rest' ? 0.1 : 0.18));
         oscillator.connect(gain); gain.connect(context.destination);
-        track(oscillator, gain); oscillator.start(time); oscillator.stop(time + 0.2);
+        track(oscillator, gain); oscillator.start(time); oscillator.stop(time + (type === 'rest' ? 0.12 : 0.2));
       } catch { silence(); /* Audio never controls workout timing. */ }
     },
     dispose() { enabled = false; generation++; silence(); if (context) context.close().catch(() => {}); context = null; },

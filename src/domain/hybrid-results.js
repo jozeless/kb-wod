@@ -8,8 +8,8 @@ export const hybridSchema = {
     'combo-finisher': { kind: 'amrap', title: 'Finisher Results' },
   },
 };
-export function hybridBlockResults(workout, form, blockId) {
-  const schema = hybridSchema.blocks[blockId];
+export function hybridBlockResults(workout, form, blockId, schemas = hybridSchema) {
+  const schema = schemas.blocks[blockId];
   if (Object.entries(form.invalid || {}).some(([key,value])=>key.startsWith(`${blockId}.`)&&value)) throw new Error('Correct the invalid numeric fields before continuing.');
   const exercises = workout.phases.find(p=>p.id===blockId).exerciseIds.map(exerciseId=>{
     const exercise=workout.exercises.find(ex=>ex.id===exerciseId), fields=form[blockId][exerciseId];

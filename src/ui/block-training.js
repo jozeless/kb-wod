@@ -12,6 +12,8 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
   const id = draftId || crypto.randomUUID();
   const root = el('div', { className: 'active-workout' }, heading(workout.code, 'Preparing session', 'Opening local session storage…'));
   const audio = createWorkoutAudio();
+  const continuous = workout.execution?.mode === 'continuous-results';
+  const timeOffset = () => continuous ? 0 : blockOffset(workout, record.blockIndex);
   let record, engine, cues, ticker = null, disposed = false, busy = false;
   let queue = Promise.resolve(), pending = 0, lastError = false, lastCheckpoint = -1;
   let formView = null, training = null;
@@ -33,7 +35,7 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     if (!engine || !record?.stage?.endsWith('-active')) return;
     const s = engine.snapshot();
     record.checkpointMs = Math.min(engine.elapsed(), engine.timeline.durationMs + engine.countdownMs);
-    record.activeDurationMs = blockOffset(workout, record.blockIndex) + s.elapsedMs;
+    record.activeDurationMs = timeOffset() + s.elapsedMs;
   }
   function stopTicker() { if (ticker !== null) clearInterval(ticker); ticker = null; }
   function stopAudio() { audio.silence(); }
@@ -85,10 +87,14 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     finally { busy = false; if (formView) formView.setBusy(false); }
   }
   function finishBlock(audible) {
+    if (continuous) {
+      record.blockIndex = workout.phases.length - 1;
+      record.completedBlocks = workout.phases.map(p => p.id);
+    }
     const phase = workout.phases[record.blockIndex];
     capture(); stopTicker();
     // Intermediate block ends are active minute boundaries, not workout completion.
-    const offset = blockOffset(workout, record.blockIndex);
+    const offset = timeOffset();
     const s = engine.snapshot();
     const completed = { ...s, elapsedMs: offset + s.elapsedMs };
     if (record.blockIndex < workout.phases.length - 1) Object.assign(completed, { stage: 'exercise', status: 'running', phase, kind: 'REST', remainingMs: 0, segmentIndex: engine.timeline.segments.length });
@@ -102,9 +108,15 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
   }
   function update(audible = true) {
     if (disposed || !engine || !record.stage.endsWith('-active')) return;
-    const s = engine.snapshot(), phase = workout.phases[record.blockIndex];
+    const s = engine.snapshot();
+    if (continuous && s.phase) {
+      record.blockIndex = workout.phases.findIndex(p => p.id === s.phase.id);
+      record.stage = `${s.phase.id}-active`;
+      record.completedBlocks = workout.phases.slice(0, record.blockIndex).map(p => p.id);
+    }
+    const phase = workout.phases[record.blockIndex];
     if (s.stage === 'complete') { finishBlock(audible); return; }
-    const offset = blockOffset(workout, record.blockIndex);
+    const offset = timeOffset();
     const cue = cues.next({ ...s, elapsedMs: offset + s.elapsedMs }, audible && !document.hidden);
     if (cue === 'start') {
       if (!record.hasStarted) { record.hasStarted = true; audio.cue('start'); void persist(); }
@@ -113,7 +125,7 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     const text = (node, value) => { if (node.textContent !== value) node.textContent = value; };
     text(training.phase, `${phase.name} · ${s.stage === 'countdown' ? 'GET READY' : s.kind}${s.status === 'paused' ? ' · PAUSED' : ''}`);
     text(training.clock, s.stage === 'countdown' ? String(s.countdown) : s.go ? 'GO' : formatTime(s.remainingMs));
-    text(training.block, `Block remaining: ${formatTime(s.totalRemainingMs)}`);
+    text(training.block, `Block remaining: ${formatTime(continuous ? blockOffset(workout, record.blockIndex) + phase.durationSeconds * 1000 - s.elapsedMs : s.totalRemainingMs)}`);
     text(training.total, `Total active remaining: ${formatTime(workout.durationSeconds * 1000 - offset - s.elapsedMs)}`);
     const amrap = s.kind === 'AMRAP';
     training.circuit.hidden = !amrap;
@@ -124,7 +136,7 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     text(training.exercise, amrap ? phase.name : s.exercise?.name || 'Starting in');
     text(training.target, amrap ? phase.instructions : s.exercise ? (s.kind === 'REST' ? 'Rest and prepare for the next exercise.' : prescription(s.exercise, phase)) : 'This countdown is outside your activity time.');
     text(training.position, amrap ? 'AMRAP · Repeat at your own pace' : s.exercise ? `Round ${s.round} of ${phase.rounds} · Interval ${s.interval + 1} of ${phase.timer.intervals}` : '');
-    text(training.next, amrap ? `Next: ${resultSchema(workout).blocks[phase.id].title}` : s.exercise ? (s.nextExercise ? `Next: ${s.nextExercise.name}` : `Next: ${resultSchema(workout).blocks[phase.id].title}`) : '');
+    text(training.next, amrap ? `Next: ${continuous && s.nextPhase ? s.nextPhase.name : resultSchema(workout).blocks[phase.id].title}` : s.exercise ? (s.nextExercise ? `Next: ${s.nextExercise.name}` : `Next: ${continuous && s.nextPhase ? s.nextPhase.name : resultSchema(workout).blocks[phase.id].title}`) : '');
     training.weight.root.hidden = !s.exercise; if (s.exercise) training.weight.setExercise(s.exercise);
     training.progress.value = (offset + s.elapsedMs) / (workout.durationSeconds * 1000);
     training.pause.textContent = s.status === 'paused' ? 'Resume' : 'Pause';
@@ -135,9 +147,9 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     if (disposed) return;
     formView = null; lastCheckpoint = -1;
     const phase = workout.phases[record.blockIndex];
-    engine = new WorkoutTimer({ ...workout, durationSeconds: phase.durationSeconds, phases: [phase] });
+    engine = new WorkoutTimer(continuous ? workout : { ...workout, durationSeconds: phase.durationSeconds, phases: [phase] });
     if (restored) engine.restorePaused(record.checkpointMs); else engine.start();
-    cues = createCueTracker(); cues.next({ ...engine.snapshot(), elapsedMs: blockOffset(workout, record.blockIndex) + engine.snapshot().elapsedMs }, false);
+    cues = createCueTracker(); cues.next({ ...engine.snapshot(), elapsedMs: timeOffset() + engine.snapshot().elapsedMs }, false);
     const weight = createWeightField(workout); weight.root.hidden = true;
     const phaseLabel = el('p', { className: 'eyebrow', 'aria-live': 'polite' }), exercise = el('h2', { className: 'active-exercise' }), target = el('p', {});
     const clock = el('div', { className: 'phase-clock', role: 'timer' }), block = el('p', { className: 'block-time' }), total = el('p', {}), position = el('p', {}), next = el('p', {});
@@ -150,7 +162,7 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     const progress = el('progress', { max: '1', value: '0', 'aria-label': 'Workout progress' });
     const panel = el('section', { className: 'active-panel', 'aria-label': 'Active workout' }, phaseLabel, exercise, target, weight.root, clock, block, total, position, circuit, next, progress);
     training = { panel, phase: phaseLabel, exercise, target, clock, block, total, position, next, weight, pause, progress, circuit, circuitPhase: null };
-    root.replaceChildren(heading(`${workout.code} · VERSION ${workout.version}`, workout.name, 'Record actual results between the blocks.'), panel,
+    root.replaceChildren(heading(`${workout.code} · VERSION ${workout.version}`, workout.name, continuous ? 'Record actual results after all 20 active minutes.' : 'Record actual results between the blocks.'), panel,
       el('div', { className: 'active-controls' }, pause, button('End Workout', () => { if (confirm('Leave this workout? A recoverable draft will remain.')) onExit(); }, true), soundButton()), draftMessage);
     if (restored && engine.status === 'complete') finishBlock(false);
     else { update(false); if (engine.status === 'running') tick(); }

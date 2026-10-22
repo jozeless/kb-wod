@@ -1,6 +1,6 @@
 # KB 2.0 — Foundation
 
-A mobile-first static application built with HTML, CSS and native JavaScript ES modules. No runtime framework, CDN, backend or build step. This branch replaces the experimental prototype; it does not migrate its data or Supabase integration.
+A mobile-first static application built with HTML, CSS and native JavaScript ES modules. No runtime framework, CDN or build step. Supabase is optional; local training needs no backend. This branch replaces the experimental prototype; it does not migrate its data or Supabase integration.
 
 ## Develop and test
 
@@ -27,7 +27,7 @@ A mobile-first static application built with HTML, CSS and native JavaScript ES 
 
 Today has seven fixed Monday–Sunday slots. Add/change opens Library in assignment mode; cancel makes no change. The same workout may occupy multiple days. There is no automatic weekly rollover or scheduling. Library supports case-insensitive name search and the Hybrid/Focus type registry. The three sample cards remain explicitly marked **Demo** and originate only in `demo-workouts.js`. The real **KB Focus 001 — Upper Body + ABS** retains immutable version 1 (`focus-001-upper-abs.js`, Upper EMOM + ABS intervals). The current Library option is immutable version 2 (`focus-001-v2.js`), with two independent 10-minute 40/20 blocks and results between them. Version 1 remains available through existing weekly assignments and direct versioned URLs. No assignment is upgraded automatically; warm-up remains separate. Tuesday is a recommendation only and never changes assignments automatically.
 
-Stats and Dashboard retain empty states. Focus v2 supports Upper → Upper Results → explicit Continue to ABS → ABS → ABS Results → explicit Save Workout, with a basic local history. Focus v1, Hybrid v1 and the three Demo cards retain their previous execution/scaffold behavior. Advanced statistics, authentication and Supabase remain out of scope.
+Stats and Dashboard retain empty states. Focus v2 supports Upper → Upper Results → explicit Continue to ABS → ABS → ABS Results → explicit Save Workout, with a basic local history. Focus v1, Hybrid v1 and the three Demo cards retain their previous execution/scaffold behavior. Advanced statistics remain out of scope. Optional authentication/cloud setup is documented below.
 
 ## Data contracts
 
@@ -39,7 +39,7 @@ Weekly assignments are a separate `{ Monday: {workoutId, version} | null, ... }`
 
 Focus v2 and Hybrid v2 sessions use IndexedDB database `kb2.training.sessions`, schema version 1, object store `sessions` keyed by session UUID and indexed by `workoutId`. The formerly reserved localStorage key `kb2.sessions.v1` remains untouched. Sessions contain identity/version, a deep definition snapshot and actual results. Editing a workout or weekly assignment never rewrites completed history.
 
-Prototype keys (`kbwod_history`, `kbwod_weight_*`) and auth storage are never read, changed or deleted. Old code remains recoverable in Git history. No migration or remote request is performed.
+Prototype keys (`kbwod_history`, `kbwod_weight_*`) and auth storage are never read, changed or deleted. Old code remains recoverable in Git history. No prototype-data migration is performed; only explicitly configured cloud Auth and data synchronization make remote requests.
 
 ## GitHub Pages and PWA
 
@@ -67,7 +67,7 @@ Tests use injected clocks and Playwright's simulated clock: no real 20-minute wa
 
 Workout Detail shows an optional Weight (kg) input beside each exercise. Empty means unspecified, zero is a valid value and nonnegative decimal values are accepted; no default or mandatory load is imposed. Inputs save immediately on valid edits. Clearing a field removes that preference. Invalid input never replaces a previously saved valid value; storage failures are shown in the field. Unreadable/corrupt stored values are preserved and the affected input is disabled rather than silently replacing them.
 
-Each value has its own key: `kb2.weight-preference.v1:<encoded workout ID>:<version>:<encoded exercise ID>`. The active screen uses the same field component and storage key for its current exercise, including repeated rounds. Values are training preferences, not historical/session results, and do not modify the catalog or weekly plan. Existing prototype data and reserved result storage remain untouched. Preferences depend on the browser/origin and are not a backup; simultaneous edits to the same exercise in different tabs are last-write-wins. No Supabase is implemented. Focus v2 and Hybrid v2 save session results, separately in IndexedDB.
+Each value has its own key: `kb2.weight-preference.v1:<encoded workout ID>:<version>:<encoded exercise ID>`. The active screen uses the same field component and storage key for its current exercise, including repeated rounds. Values are training preferences, not historical/session results, and do not modify the catalog or weekly plan. Existing prototype data and reserved result storage remain untouched. Preferences depend on the browser/origin and are not a backup; simultaneous edits to the same exercise in different tabs are last-write-wins. Optional Supabase synchronization is documented below; weight preferences remain device-local. Focus v2 and Hybrid v2 save session results, separately in IndexedDB.
 
 ## KB Hybrid 001 — Strength & Sweat
 
@@ -79,7 +79,7 @@ AMRAP compiles to one timeline segment containing all circuit exercises. There a
 
 The user-provided `assets/audio/start.wav` and `assets/audio/minute.wav` are included without altering their bytes. Format, duration and SHA-256 fingerprints are documented in `assets/audio/README.md`. Local preloading, gesture-based Web Audio unlocking, per-context decoding and single-voice playback use the originals. Start plays once at the end of the 3-second countdown, minute at elapsed 01:00–19:00, and only the existing completion signal plays at 20:00. Muting/pausing stops current playback; missed signals are not queued. Missing, corrupt or not-yet-ready samples use the synthesized fallback without changing time or replaying later.
 
-The PWA cache is `kb2-static-v9`. Both WAVs are mandatory precache assets, alongside the application modules, to ensure a successfully installed version has offline audio. The waiting-worker lifecycle and cleanup limited to old `kb2-static-*` caches remain unchanged. Shared block/result modules and both versioned result schemas are included; general navigation and the visual design remain unchanged.
+The PWA cache is `kb2-static-v10`. Both WAVs are mandatory precache assets, alongside the application modules, to ensure a successfully installed version has offline audio. The waiting-worker lifecycle and cleanup limited to old `kb2-static-*` caches remain unchanged. Shared block/result modules and both versioned result schemas are included; general navigation and the visual design remain unchanged.
 
 New browser tests decode the actual PCM files, invoke native buffer-source playback and render the decoded audio through OfflineAudioContext to verify non-silent output. They check one start, 19 minute samples, completion priority, no overlap, pause/mute and offline playback under `/kb-wod/`, plus fallback for corrupt WAV responses. Existing timer, Hybrid, Focus, weights and planning tests remain enabled. Native playback scheduling is automated; speaker audibility and mobile hardware/autoplay/lock behavior still require device validation.
 
@@ -127,6 +127,12 @@ The shared controller runs the complete timeline for continuous mode, checkpoint
 
 The final Workout Results form shows all blocks together and reuses existing numeric inputs, validation, explicit/idempotent Save Workout and snapshot-based history. Focus records actual kg and two round counts per LEGS exercise, 0–2 correctly completed intervals per ABS exercise, optional effort 1–10 and notes (including left/right differences). Hybrid records four Strength counts, Conditioning intervals and Finisher full rounds plus independent partial repetitions bounded by 6 Cleans, 6 Push-Ups and 8 Goblet Squats. Empty numeric fields are null; measured zero stays zero. No results are inferred from time. Optional actual loads are prefilled once from preferences specific to the new workout/version and never write back to those preferences.
 
-`src/domain/continuous-results.js` derives result schemas from the immutable phases; IndexedDB database/store/schema and final-save transaction implementation are reused unchanged. Completed old sessions and draft formats remain untouched. The PWA cache is now `kb2-static-v9`, including both definitions and the continuous result module. Original audio files are unchanged: one start, active minute signals 1–19, completion only at 20, and ten (Focus) or eight (Hybrid) short rest beeps restricted to 40/20 phases. Pause, mute, single-voice playback and stale-event suppression remain shared.
+`src/domain/continuous-results.js` derives result schemas from the immutable phases; IndexedDB database/store/schema and final-save transaction implementation are reused unchanged. Completed old sessions and draft formats remain untouched. The PWA cache is now `kb2-static-v10`, including both definitions and the continuous result module. Original audio files are unchanged: one start, active minute signals 1–19, completion only at 20, and ten (Focus) or eight (Hybrid) short rest beeps restricted to 40/20 phases. Pause, mute, single-voice playback and stale-event suppression remain shared.
 
 Tests cover ordered movements/targets, durations and rounds, continuous phase/audio boundaries, full-circuit AMRAP, all active-phase recovery positions, final-form recovery, validation, null/zero, preference isolation, preservation of existing Focus/Hybrid drafts and completed history, offline save/read, duplicate saving, assignments and responsive widths 320–1280. Real iOS/Android audio, installation, lock/suspend and storage eviction remain manual checks. No Supabase, statistics, dashboard, deployment or merge is introduced.
+
+## Supabase Auth and local-first cloud synchronization
+
+Optional email/password Auth, verification and password recovery use native fetch against the **existing KB WODS** project. Public configuration is intentionally empty until the project owner supplies its real URL/publishable key. Account and sync controls coexist with local workouts; no new runtime library is required. See [setup, SQL migration, data isolation and testing instructions](docs/SUPABASE.md).
+
+Completed sessions commit locally first and retry owner-scoped idempotent upserts; unclaimed history requires an email/count import confirmation. Drafts remain local. Weekly plans preserve the original format, retain account/guest snapshots and require a choice when local/cloud plans differ. Existing workouts, timers, audio and original versions are unchanged. The cache is `kb2-static-v10`, containing all new static modules; Auth/API responses and tokens are never cached by the service worker. This adds cloud persistence and basic saved-session readback, not Stats/Dashboard analytics. No production SQL, configuration, deployment or merge is performed.

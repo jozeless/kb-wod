@@ -1,6 +1,6 @@
 // Public browser configuration for the EXISTING KB WODS project only.
 // Fill from Project Settings > API. Never use a secret or service_role key.
-export const supabaseConfig = { url: '', publishableKey: '' };
+export const supabaseConfig = { url: 'https://vqvgjstmfnybovkxcjql.supabase.co', publishableKey: 'sb_publishable_YIqULeArGGiuQ5_It9bI1w_6nATLPwk' };
 export function validateConfig(config) {
   if (!config.url || !config.publishableKey) return false;
   const url = new URL(config.url);

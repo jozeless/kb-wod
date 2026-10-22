@@ -1,3 +1,5 @@
+import { canReadLocal } from '../cloud/identity.js';
+import { syncStatus } from './account.js';
 import { WorkoutTimer, formatTime } from '../domain/workout-timer.js';
 import { createCueTracker } from '../domain/workout-cues.js';
 import { createDraft, blockResults, finalResults, blockOffset, resultSchema } from '../domain/result-schemas.js';
@@ -49,7 +51,7 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
   function showSaved() {
     stopTicker(); stopAudio(); formView = null;
     root.replaceChildren(heading('SAVED', 'Workout saved', 'Your results were committed to local session storage.'),
-      button('View saved session', () => onHistory(record.id)), button('Return to Today', onExit, true));
+      syncStatus(record), button('View saved session', () => onHistory(record.id)), button('Return to Today', onExit, true));
   }
   function showForm() {
     stopTicker(); training = null;
@@ -172,7 +174,7 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     try {
       if (recover) {
         record = await getSession(id);
-        if (!record || record.schemaVersion !== 1 || record.workoutId !== workout.id || record.workoutVersion !== workout.version || !record.form?.invalid || !workout.phases.some(p => record.stage === `${p.id}-active` || record.stage === `${p.id}-results`) || !Number.isInteger(record.blockIndex) || !workout.phases[record.blockIndex] || record.workoutSnapshot?.id !== workout.id || record.workoutSnapshot.version !== workout.version) throw new Error('Draft unavailable');
+        if (!canReadLocal(record) || record.schemaVersion !== 1 || record.workoutId !== workout.id || record.workoutVersion !== workout.version || !record.form?.invalid || !workout.phases.some(p => record.stage === `${p.id}-active` || record.stage === `${p.id}-results`) || !Number.isInteger(record.blockIndex) || !workout.phases[record.blockIndex] || record.workoutSnapshot?.id !== workout.id || record.workoutSnapshot.version !== workout.version) throw new Error('Draft unavailable');
         workout = record.workoutSnapshot;
       } else {
         let storage; try { storage = window.localStorage; } catch { storage = { getItem() { throw new Error('Storage unavailable'); } }; }

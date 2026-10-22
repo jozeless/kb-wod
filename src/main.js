@@ -1,4 +1,5 @@
-import { createFocusTraining } from './ui/focus-training.js';
+import { createBlockTraining } from './ui/block-training.js';
+import { supportsResults } from './domain/result-schemas.js';
 import { historyView, savedSessionView } from './ui/session-history.js';
 import { findWorkout } from './data/catalog.js';
 import { createActiveWorkout } from './ui/active-workout.js';
@@ -19,15 +20,15 @@ function allowExit() {
 function startWorkout(workout) {
   if (session && !allowExit()) return;
   activeHash = `#active/${workout.id}/${workout.version}`;
-  if (workout.execution?.mode === 'two-block-results') {
-    session = focusSession(workout);
+  if (supportsResults(workout)) {
+    session = resultSession(workout);
     activeHash += `?draft=${session.id}`;
   } else session = createActiveWorkout(workout, () => { if (allowExit()) go('#today'); }, () => { stopSession(); go('#today'); });
   if (location.hash === activeHash) render(); else go(activeHash);
 }
 
-function focusSession(workout, draftId) {
-  return createFocusTraining(workout, { draftId, recover: Boolean(draftId), onExit: () => { stopSession(); go('#today'); }, onHistory: id => { stopSession(); go(`#session/${id}`); } });
+function resultSession(workout, draftId) {
+  return createBlockTraining(workout, { draftId, recover: Boolean(draftId), onExit: () => { stopSession(); go('#today'); }, onHistory: id => { stopSession(); go(`#session/${id}`); } });
 }
 
 function reloadPlan() { state = loadPlan(window.localStorage); status.textContent = state.error ?? ''; }
@@ -54,8 +55,8 @@ function render(focus = true) {
   const day = days.includes(requestedDay) ? requestedDay : null;
   let view;
   if (session && location.hash === activeHash) view = session.root;
-  else if (page === 'active' && new URLSearchParams(query).get('draft') && findWorkout(id, version)?.execution?.mode === 'two-block-results') {
-    session = focusSession(findWorkout(id, version), new URLSearchParams(query).get('draft')); activeHash = location.hash; view = session.root;
+  else if (page === 'active' && new URLSearchParams(query).get('draft') && supportsResults(findWorkout(id, version))) {
+    session = resultSession(findWorkout(id, version), new URLSearchParams(query).get('draft')); activeHash = location.hash; view = session.root;
   }
   else if (page === 'history') view = historyView(id, go);
   else if (page === 'session') view = savedSessionView(id, go);

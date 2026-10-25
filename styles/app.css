@@ -9,3 +9,15 @@
 .result-grid.intervals,.result-grid.amrap{grid-template-columns:repeat(2,minmax(0,1fr))}.result-grid.rounds-4{grid-template-columns:repeat(2,minmax(0,1fr))}.result-grid.rounds-4>label:first-child{grid-column:1/-1}@media(min-width:640px){.result-grid.rounds-4{grid-template-columns:repeat(5,minmax(0,1fr))}.result-grid.rounds-4>label:first-child{grid-column:auto}}
 
 .app-header{flex-wrap:wrap;gap:8px}.account-control{font-size:13px!important;margin-left:auto}.cloud-indicator{font-size:11px}.cloud-session-status{font-size:13px}
+
+/* Controlled HM/KB experiment: only the Monday Paranoid workout card. */
+.workout-card--monday-paranoid{position:relative;isolation:isolate;overflow:hidden;background:linear-gradient(135deg,transparent 68%,#672b2b36 68.3%,transparent 69%),repeating-linear-gradient(115deg,#ffffff03 0 1px,transparent 1px 6px),linear-gradient(145deg,#23262d,#101216 68%);color:#e2e3e7;border:1px solid #70433f;border-left:4px solid #bf5144;border-radius:5px;box-shadow:0 8px 20px #10121626,inset 0 1px #ffffff14;gap:9px;padding:19px 18px}
+.workout-card--monday-paranoid::before{content:"";position:absolute;z-index:-1;top:0;right:0;width:76px;height:76px;background:linear-gradient(135deg,transparent 52%,#a4463840 53% 60%,transparent 61%);pointer-events:none}
+.workout-card--monday-paranoid .badge{align-self:flex-start;width:fit-content;background:#111318;color:#e9b7ac;border:1px solid #754a43;border-radius:2px;font-size:10px;letter-spacing:1.8px;padding:4px 7px}
+.workout-card--monday-paranoid strong{font-family:Impact,"Arial Black","Helvetica Neue",sans-serif;font-size:clamp(25px,5vw,33px);font-weight:900;font-style:italic;line-height:1.05;letter-spacing:-.5px;text-transform:uppercase;color:#f1f2f3;text-shadow:1px 1px 0 #757b87,2px 3px 0 #050609;max-width:100%;overflow-wrap:normal}
+.workout-card--monday-paranoid .metal-micro-mark{position:absolute;top:19px;right:17px;font-family:"Arial Black",sans-serif;font-size:10px;font-weight:900;letter-spacing:1.5px;color:#c6c9d0;border-bottom:2px solid #b94f43;padding-bottom:3px}
+.workout-card--monday-paranoid .metal-subtitle{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#e8b3a8;margin-bottom:3px}
+.workout-card--monday-paranoid .card-footer{color:#f2d5cf;border-top:1px solid #48424a;padding-top:12px;margin-top:3px;font-size:12px;font-weight:700}
+.workout-card--monday-paranoid:hover{border-color:#da7766;box-shadow:0 8px 22px #10121633,inset 0 1px #ffffff1f}
+.workout-card--monday-paranoid:focus-visible{outline:3px solid #f4bb65;outline-offset:4px}
+@media(forced-colors:active){.workout-card--monday-paranoid,.workout-card--monday-paranoid strong,.workout-card--monday-paranoid .badge,.workout-card--monday-paranoid .card-footer,.workout-card--monday-paranoid .metal-micro-mark,.workout-card--monday-paranoid .metal-subtitle{color:ButtonText;background:ButtonFace;border-color:ButtonText;text-shadow:none}.workout-card--monday-paranoid::before{display:none}}

@@ -14,7 +14,7 @@ This PR does not create a project, execute production SQL, configure remote Auth
    - For the automated subpath server: `http://127.0.0.1:8102/kb-wod/` (test emails need not be sent by automated tests).
    - Allow any additional local origin/path you actually use explicitly; avoid broad production wildcards. The client derives the redirect from the current origin and pathname, retaining the Pages subpath. Hash navigation does not need a server fallback.
 5. Check the exposed `public` schema in the Data API and verify the RLS policies and grants before enabling cloud configuration for users. Supabase handles CORS and validates access JWTs. No service key is needed in the app. The migration explicitly grants schema usage/table CRUD to `authenticated`, revokes all table privileges from `PUBLIC` and `anon`, and checks ownership on both old and new rows for UPDATE.
-6. After review and any future separately authorized release, close old PWA tabs so the waiting `kb2-static-v12` worker can activate. If public configuration is changed after a version was already installed, increment the static cache version again (and its test expectation) so installed clients receive the updated configuration. This PR itself does not publish anything.
+6. After review and any future separately authorized release, close old PWA tabs so the waiting `kb2-static-v13` worker can activate. If public configuration is changed after a version was already installed, increment the static cache version again (and its test expectation) so installed clients receive the updated configuration. This PR itself does not publish anything.
 
 ## Data contract and isolation
 

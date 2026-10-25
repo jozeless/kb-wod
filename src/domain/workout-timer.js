@@ -11,12 +11,20 @@ export function compileWorkout(workout) {
   if (!workout.phases.length) throw new Error('Workout has no phases');
   for (const phase of workout.phases) {
     const start = cursor;
+    if (phase.format === 'transition') {
+      if (phase.exerciseIds.length || phase.timer.durationSeconds !== phase.durationSeconds) throw new Error('Invalid transition');
+      add(phase, null, null, 'TRANSITION', phase.durationSeconds); continue;
+    }
     if (!phase.exerciseIds.length) throw new Error('Phase has no exercises');
     const circuit = phase.exerciseIds.map(id => {
       const exercise = workout.exercises.find(ex => ex.id === id);
       if (!exercise) throw new Error('Unknown exercise');
       return exercise;
     });
+    if (phase.format === 'amrap-reps') {
+      if (circuit.length !== 1 || phase.timer.durationSeconds !== phase.durationSeconds) throw new Error('Invalid repetition finisher');
+      add(phase, null, circuit[0], 'AMRAP_REPS', phase.durationSeconds); continue;
+    }
     if (phase.format === 'amrap') {
       if (phase.timer.durationSeconds !== phase.durationSeconds) throw new Error('AMRAP duration mismatch');
       add(phase, null, null, 'AMRAP', phase.timer.durationSeconds);

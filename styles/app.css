@@ -21,3 +21,7 @@
 .workout-card--monday-paranoid:hover{border-color:#da7766;box-shadow:0 8px 22px #10121633,inset 0 1px #ffffff1f}
 .workout-card--monday-paranoid:focus-visible{outline:3px solid #f4bb65;outline-offset:4px}
 @media(forced-colors:active){.workout-card--monday-paranoid,.workout-card--monday-paranoid strong,.workout-card--monday-paranoid .badge,.workout-card--monday-paranoid .card-footer,.workout-card--monday-paranoid .metal-micro-mark,.workout-card--monday-paranoid .metal-subtitle{color:ButtonText;background:ButtonFace;border-color:ButtonText;text-shadow:none}.workout-card--monday-paranoid::before{display:none}}
+
+.simple-results .session-weight-row{display:grid;grid-template-columns:minmax(0,1fr) 92px;align-items:center;gap:12px;margin-top:0;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}.simple-results .session-weight-row input{padding:6px;min-width:0;min-height:40px;font-size:16px}.simple-results h2:not(:first-child){margin-top:22px}
+
+.simple-results>label:not(.session-weight-row){font-size:13px;margin-top:12px}.simple-results>p.muted{font-size:13px;line-height:1.4;margin:6px 0 12px}.simple-results textarea{min-height:76px}

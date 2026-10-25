@@ -1,3 +1,4 @@
+import {mondayParanoidV3} from '../src/data/monday-paranoid-v3.js';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {mondayParanoidV2 as monday} from '../src/data/monday-paranoid-v2.js';
@@ -7,9 +8,9 @@ import {compileWorkout,WorkoutTimer} from '../src/domain/workout-timer.js';
 import {createDraft,finalResults,blockOffset,resultSchema} from '../src/domain/result-schemas.js';
 import {filterWorkouts,assignWorkout} from '../src/domain/planning.js';
 import {writeWeight,weightKey} from '../src/storage/weight-preferences.js';
-test('Monday v2 is current without changing v1, old assignments or its card identity',()=>{
+test('Monday v2 stays addressable without changing v1, old assignments or its card identity',()=>{
  assert.equal(monday.id,'monday-paranoid');assert.equal(monday.version,2);assert.equal(monday.code,'KB Monday Paranoid');assert.equal(monday.name,'Monday Paranoid');assert.equal(monday.type,'hybrid');assert.equal(monday.suggestedDay,'Monday');assert.equal(monday.execution.mode,'continuous-results');assert.deepEqual(monday.presentation,v1.presentation);
- assert.equal(findWorkout(monday.id,1),v1);assert.equal(findWorkout(monday.id,2),monday);assert.equal(currentWorkouts.filter(w=>w.id===monday.id).length,1);assert.deepEqual(filterWorkouts(currentWorkouts,'PARANOID','hybrid'),[monday]);assert.equal(v1.version,1);assert.deepEqual(v1.phases.map(p=>p.durationSeconds),[480,480,240]);assert.equal(v1.execution.mode,'block-results');
+ assert.equal(findWorkout(monday.id,1),v1);assert.equal(findWorkout(monday.id,2),monday);assert.equal(currentWorkouts.filter(w=>w.id===monday.id).length,1);assert.deepEqual(filterWorkouts(currentWorkouts,'PARANOID','hybrid'),[mondayParanoidV3]);assert.equal(v1.version,1);assert.deepEqual(v1.phases.map(p=>p.durationSeconds),[480,480,240]);assert.equal(v1.execution.mode,'block-results');
  const oldPlan={Monday:{workoutId:monday.id,version:1},Tuesday:{workoutId:'focus-001-upper-abs',version:1}};assert.equal(findWorkout(oldPlan.Monday.workoutId,oldPlan.Monday.version),v1);const updated=assignWorkout(oldPlan,'Monday',monday);assert.equal(oldPlan.Monday.version,1);assert.equal(updated.Monday.version,2);assert.deepEqual(updated.Tuesday,oldPlan.Tuesday);
 });
 test('approved programming is exactly Upper 8 / ABS 6 / Legs 6 with timed ABS and two rounds',()=>{

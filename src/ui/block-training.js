@@ -44,13 +44,13 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
   function stopAudio() { audio.silence(); }
   function soundButton() {
     const control = button(record.soundEnabled ? 'Sound: On' : 'Sound: Off', async () => {
-      await audio.toggle(); record.soundEnabled = audio.enabled;
+      await audio.setEnabled(!record.soundEnabled); record.soundEnabled = audio.enabled;
       control.textContent = audio.enabled ? 'Sound: On' : 'Sound: Off'; control.setAttribute('aria-pressed', String(audio.enabled)); void persist();
     }, true);
     control.setAttribute('aria-pressed', String(record.soundEnabled)); return control;
   }
   function showSaved() {
-    stopTicker(); stopAudio(); formView = null;
+    stopTicker(); if(engine?.status!=='complete')stopAudio(); formView = null;
     root.replaceChildren(heading('SAVED', 'Workout saved', 'Your results were committed to local session storage.'),
       syncStatus(record), button('View saved session', () => onHistory(record.id)), button('Return to Today', onExit, true));
   }
@@ -96,12 +96,9 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     }
     const phase = workout.phases[record.blockIndex];
     capture(); stopTicker();
-    // Intermediate block ends are active minute boundaries, not workout completion.
-    const offset = timeOffset();
+    // Result forms are silent; only the final block produces COMPLETE.
     const s = engine.snapshot();
-    const completed = { ...s, elapsedMs: offset + s.elapsedMs };
-    if (record.blockIndex < workout.phases.length - 1) Object.assign(completed, { stage: 'exercise', status: 'running', phase, kind: 'REST', remainingMs: 0, segmentIndex: engine.timeline.segments.length });
-    const cue = cues.next(completed, audible && !document.hidden);
+    const cue = cues.next({ ...s, elapsedMs: timeOffset() + s.elapsedMs }, record.blockIndex === workout.phases.length - 1 && audible && !document.hidden);
     if (cue) audio.cue(cue);
     if (!record.completedBlocks.includes(phase.id)) record.completedBlocks.push(phase.id);
     record.stage = `${phase.id}-results`;
@@ -123,7 +120,7 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     const cue = cues.next({ ...s, elapsedMs: offset + s.elapsedMs }, audible && !document.hidden);
     if (cue === 'start') {
       if (!record.hasStarted) { record.hasStarted = true; audio.cue('start'); void persist(); }
-    } else if (cue) audio.cue(cue === 'change' && s.kind === 'REST' ? 'rest' : cue);
+    } else if (cue) audio.cue(cue);
     training.panel.className = `active-panel ${s.kind?.toLowerCase() || 'countdown'}${s.status === 'paused' ? ' paused' : ''}`;
     const text = (node, value) => { if (node.textContent !== value) node.textContent = value; };
     text(training.phase, `${phase.name} · ${s.stage === 'countdown' ? 'GET READY' : s.kind?.replaceAll('_',' ')}${s.status === 'paused' ? ' · PAUSED' : ''}`);

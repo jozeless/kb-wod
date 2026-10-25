@@ -1,3 +1,4 @@
+import {verifyWorkoutBeeps} from './helpers/timer-beeps.js';
 import {test,expect} from '@playwright/test';
 const detail='./#workout/monday-paranoid/2';
 const cardName='View workout: Monday Paranoid';
@@ -36,31 +37,8 @@ for(const [elapsed,remaining,exercise]of[[60000,'07:00','KB Offset Push-Up'],[52
  await localMode(page);await start(page);await page.clock.fastForward(elapsed+3000);await page.getByRole('button',{name:'Pause',exact:true}).click();await saved(page);page.on('dialog',d=>d.accept());await page.reload();await expect(page.getByRole('button',{name:'Resume',exact:true})).toBeVisible();await expect(page.locator('.block-time')).toHaveText(`Block remaining: ${remaining}`);await expect(page.locator('.active-exercise')).toHaveText(exercise);await page.clock.fastForward(600000);await expect(page.locator('.block-time')).toHaveText(`Block remaining: ${remaining}`);await page.getByRole('button',{name:'Resume',exact:true}).click();await page.clock.fastForward(1200000-elapsed);await expect(page.getByRole('heading',{name:'Workout Results',exact:true})).toBeVisible();
 });
 
-test('Monday v2 has one countdown, automatic 8/14 minute transitions, nineteen minute cues and only six ABS rest beeps',async({page})=>{
- await localMode(page);
- await page.addInitScript(()=>{
-  window.v2Audio={samples:[],tones:[],decoded:0};
-  window.AudioContext=class {
-   state='running';currentTime=0;destination={};resume(){return Promise.resolve();}close(){return Promise.resolve();}
-   decodeAudioData(bytes){window.v2Audio.decoded++;return Promise.resolve({type:bytes.byteLength===488264?'start':'minute'});}
-   createBufferSource(){const source={buffer:null,connect(){},disconnect(){},start(){window.v2Audio.samples.push(source.buffer.type);},stop(){}};return source;}
-   createOscillator(){const source={frequency:{value:0},connect(){},disconnect(){},start(){window.v2Audio.tones.push(source.frequency.value);},stop(){}};return source;}
-   createGain(){return {gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){},disconnect(){}};}
-  };
- });
- await start(page);await expect.poll(()=>page.evaluate(()=>window.v2Audio.decoded)).toBe(2);await page.clock.runFor(3000);
- const upper=['KB Push Press','KB Offset Push-Up','KB Staggered-Stance Row','KB Overhead Triceps Extension'],abs=['KB Dead Bug + Chest Press','KB Standing Wood Chop','KB Kick-Through'],legs=['KB Front Rack Squat','KB Swing','KB Step-Up'];
- for(let minute=1;minute<=20;minute++){
-  const isAbs=minute>=9&&minute<=14,expected=minute<=8?upper[(minute-1)%4]:isAbs?abs[(minute-9)%3]:legs[(minute-15)%3];await expect(page.locator('.active-exercise')).toHaveText(expected);
-  await page.clock.fastForward(isAbs?39900:59900);await page.clock.runFor(100);
-  if(isAbs){expect(await page.evaluate(()=>window.v2Audio.tones.filter(x=>x===620).length)).toBe(minute-8);await page.clock.fastForward(19900);await page.clock.runFor(100);}
-  expect(await page.evaluate(()=>window.v2Audio.samples.filter(x=>x==='minute').length)).toBe(Math.min(minute,19));
-  if(minute===8||minute===14){await expect(page.getByRole('heading',{name:'Workout Results',exact:true})).toHaveCount(0);await expect(page.locator('.phase-clock')).toHaveText(minute===8?'00:40':'01:00');await expect(page.locator('.block-time')).toHaveText('Block remaining: 06:00');await expect(page.getByText(`Total active remaining: ${minute===8?'12:00':'06:00'}`,{exact:true})).toBeVisible();
-   await page.getByRole('button',{name:'Pause',exact:true}).click();const before=await page.evaluate(()=>JSON.stringify(window.v2Audio));await page.clock.fastForward(120000);await expect(page.locator('.block-time')).toHaveText('Block remaining: 06:00');await page.getByRole('button',{name:'Resume',exact:true}).click();expect(await page.evaluate(()=>JSON.stringify(window.v2Audio))).toBe(before);
-  }
- }
- await expect(page.getByRole('heading',{name:'Workout Results',exact:true})).toBeVisible();await saved(page);expect(await page.evaluate(()=>window.v2Audio.samples.filter(x=>x==='start').length)).toBe(1);expect(await page.evaluate(()=>window.v2Audio.tones.filter(x=>x===620).length)).toBe(6);expect(await page.evaluate(()=>window.v2Audio.tones.filter(x=>x===1320).length)).toBe(1);const quiet=await page.evaluate(()=>JSON.stringify(window.v2Audio));await page.clock.fastForward(600000);expect(await page.evaluate(()=>JSON.stringify(window.v2Audio))).toBe(quiet);
- const record=await page.evaluate(async()=>{const {listSessions}=await import('./src/storage/session-store.js');return (await listSessions('monday-paranoid'))[0];});expect(record.activeDurationMs).toBe(1200000);expect(record.completedBlocks).toEqual(['upper','abs','legs']);expect(record.checkpointMs).toBe(1203000);expect(new Date(record.completedAt)-new Date(record.startedAt)).toBe(1443000);
+test('Monday v2 automatic blocks use REST and WORK without simultaneous MINUTE',async({page})=>{
+ await localMode(page);await verifyWorkoutBeeps(page,'monday-paranoid',2);
 });
 test('Monday v2 syncs as version 2 alongside an unchanged cloud v1 snapshot and recurring assignment',async({page})=>{
  const user={id:'11111111-1111-4111-8111-111111111111',email:'version-two@example.test',email_confirmed_at:'2026-01-01'};const remote=new Map();let plan=[],sessionPosts=0;

@@ -1,3 +1,4 @@
+import {verifyWorkoutBeeps} from './helpers/timer-beeps.js';
 import { test, expect } from '@playwright/test';
 const detail='./#workout/focus-001-upper-abs/2';
 async function clock(page){await page.clock.install({time:new Date('2026-01-01T00:00:00Z')});await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));}
@@ -51,34 +52,8 @@ test('active checkpoint reloads paused and resumes without counting time away',a
  await start(page);await page.clock.runFor(43000);await page.getByRole('button',{name:'Pause',exact:true}).click();await expect(page.getByText('Draft saved locally.',{exact:true})).toBeVisible();
  page.on('dialog',d=>d.accept());await page.reload();await expect(page.getByRole('button',{name:'Resume',exact:true})).toBeVisible();await expect(page.locator('.block-time')).toHaveText('Block remaining: 09:20');await page.clock.fastForward(600000);await expect(page.locator('.block-time')).toHaveText('Block remaining: 09:20');await page.getByRole('button',{name:'Resume',exact:true}).click();await page.clock.runFor(20000);await expect(page.locator('.phase-clock')).toHaveText('00:40');
 });
-test('two-block audio has one start, 19 minute cues, 20 rest beeps and no sounds during results',async({page})=>{
- await page.addInitScript(()=>{
-  window.focusAudio={samples:[],tones:[],decoded:0};
-  window.AudioContext=class {
-   state='running';currentTime=0;destination={};resume(){return Promise.resolve();}close(){return Promise.resolve();}
-   decodeAudioData(bytes){window.focusAudio.decoded++;return Promise.resolve({type:bytes.byteLength===488264?'start':'minute'});}
-   createBufferSource(){const source={buffer:null,connect(){},disconnect(){},start(){window.focusAudio.samples.push(source.buffer.type);},stop(){}};return source;}
-   createOscillator(){const source={frequency:{value:0},connect(){},disconnect(){},start(){window.focusAudio.tones.push(source.frequency.value);},stop(){}};return source;}
-   createGain(){return {gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){},disconnect(){}};}
-  };
- });
- await start(page);await expect.poll(()=>page.evaluate(()=>window.focusAudio.decoded)).toBe(2);await page.clock.runFor(3000);
- expect(await page.evaluate(()=>window.focusAudio.samples)).toEqual(['start']);
- async function minute(index){
-  await page.clock.fastForward(39900);await page.clock.runFor(100);
-  expect(await page.evaluate(()=>window.focusAudio.tones.filter(x=>x===620).length)).toBe(index);
-  await page.clock.fastForward(19900);await page.clock.runFor(100);
-  expect(await page.evaluate(()=>window.focusAudio.samples.filter(x=>x==='minute').length)).toBe(Math.min(index,19));
- }
- for(let m=1;m<=10;m++)await minute(m);
- await expect(page.getByRole('heading',{name:'Upper Results',exact:true})).toBeVisible();
- const quiet=await page.evaluate(()=>JSON.stringify(window.focusAudio));await page.clock.fastForward(1800000);expect(await page.evaluate(()=>JSON.stringify(window.focusAudio))).toBe(quiet);
- await page.getByRole('button',{name:'Continue to ABS'}).click();await expect(page.locator('.phase-clock')).toHaveText('3');await page.clock.runFor(1000);await expect(page.locator('.phase-clock')).toHaveText('2');await page.clock.runFor(1000);await expect(page.locator('.phase-clock')).toHaveText('1');await page.clock.runFor(1000);
- expect(await page.evaluate(()=>window.focusAudio.samples.filter(x=>x==='start').length)).toBe(1);
- for(let m=11;m<=20;m++)await minute(m);
- await expect(page.getByRole('heading',{name:'ABS Results',exact:true})).toBeVisible();
- expect(await page.evaluate(()=>window.focusAudio.tones.filter(x=>x===1320).length)).toBe(1);
- const record=(await sessions(page))[0];expect(record.activeDurationMs).toBe(1200000);expect(new Date(record.completedAt)-new Date(record.startedAt)).toBe(3006000);
+test('Focus v2 uses one START, format-specific REST/WORK and silent result forms',async({page})=>{
+ await verifyWorkoutBeeps(page,'focus-001-upper-abs',2);
 });
 test('unavailable IndexedDB blocks starting rather than losing a result session',async({page})=>{
  await page.addInitScript(()=>{Object.defineProperty(window,'indexedDB',{value:{open(){throw new Error('unavailable');}}});});await clock(page);await page.goto(detail);await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.getByRole('heading',{name:'Session could not be opened',exact:true})).toBeVisible();await expect(page.locator('.phase-clock')).toHaveCount(0);

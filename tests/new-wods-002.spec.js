@@ -1,3 +1,4 @@
+import {verifyWorkoutBeeps} from './helpers/timer-beeps.js';
 import {test,expect} from '@playwright/test';
 const workouts=[{id:'focus-002-lower-abs',name:'Lower Body + ABS',day:'Thursday',boundaries:[600000],restStart:10,rests:10,first:'KB Goblet Squat',block:'legs',rounds:2},{id:'hybrid-002-full-body-engine',name:'Full Body Engine',day:'Friday',boundaries:[480000,960000],restStart:8,rests:8,first:'KB Floor Press',block:'strength',rounds:4}];
 async function clock(page){await page.clock.install({time:new Date('2026-01-01T00:00:00Z')});await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));}
@@ -5,35 +6,7 @@ async function start(page,w){await clock(page);await page.goto(`./#workout/${w.i
 async function saved(page){await expect(page.getByText('Draft saved locally.',{exact:true})).toBeVisible();}
 async function records(page,id){return page.evaluate(async id=>{const {listSessions}=await import('./src/storage/session-store.js');return listSessions(id);},id);}
 for(const w of workouts){
- test(`${w.name}: continuous audio, automatic boundaries, pause and circuit`,async({page})=>{
- await page.addInitScript(()=>{
-  window.newAudio={samples:[],tones:[],decoded:0};
-  window.AudioContext=class {
-   state='running';currentTime=0;destination={};resume(){return Promise.resolve();}close(){return Promise.resolve();}
-   decodeAudioData(bytes){window.newAudio.decoded++;return Promise.resolve({type:bytes.byteLength===488264?'start':'minute'});}
-   createBufferSource(){const source={buffer:null,connect(){},disconnect(){},start(){window.newAudio.samples.push(source.buffer.type);},stop(){}};return source;}
-   createOscillator(){const source={frequency:{value:0},connect(){},disconnect(){},start(){window.newAudio.tones.push(source.frequency.value);},stop(){}};return source;}
-   createGain(){return {gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){},disconnect(){}};}
-  };
- });
- await start(page,w);await expect.poll(()=>page.evaluate(()=>window.newAudio.decoded)).toBe(2);await page.clock.runFor(3000);
- for(let m=1;m<=20;m++){
-  const interval=m>w.restStart&&m<=w.restStart+w.rests;
-  await page.clock.fastForward(interval?39900:59900);await page.clock.runFor(100);
-  if(interval){expect(await page.evaluate(()=>window.newAudio.tones.filter(x=>x===620).length)).toBe(m-w.restStart);await page.clock.fastForward(19900);await page.clock.runFor(100);}
-  expect(await page.evaluate(()=>window.newAudio.samples.filter(x=>x==='minute').length)).toBe(Math.min(m,19));
-  if(w.boundaries.includes(m*60000)){
-   await expect(page.getByRole('heading',{name:'Workout Results',exact:true})).toHaveCount(0);await expect(page.locator('.phase-clock')).not.toHaveText('3');
-   await expect(page.locator('.block-time')).toHaveText(`Block remaining: ${m===16?'04:00':w.id.startsWith('focus')?'10:00':'08:00'}`);
-   await page.getByRole('button',{name:'Pause',exact:true}).click();const samples=await page.evaluate(()=>JSON.stringify(window.newAudio));await page.clock.fastForward(60000);await page.getByRole('button',{name:'Resume',exact:true}).click();expect(await page.evaluate(()=>JSON.stringify(window.newAudio))).toBe(samples);
-  }
-  if(m===17&&w.boundaries.length===2)await expect(page.getByRole('list',{name:'AMRAP circuit'}).locator('li')).toHaveCount(3);
- }
- await expect(page.getByRole('heading',{name:'Workout Results',exact:true})).toBeVisible();await saved(page);
- expect(await page.evaluate(()=>window.newAudio.samples.filter(x=>x==='start').length)).toBe(1);expect(await page.evaluate(()=>window.newAudio.tones.filter(x=>x===620).length)).toBe(w.rests);expect(await page.evaluate(()=>window.newAudio.tones.filter(x=>x===1320).length)).toBe(1);
- const quiet=await page.evaluate(()=>JSON.stringify(window.newAudio));await page.clock.fastForward(900000);expect(await page.evaluate(()=>JSON.stringify(window.newAudio))).toBe(quiet);
- const record=(await records(page,w.id))[0];expect(record.activeDurationMs).toBe(1200000);expect(record.completedBlocks).toHaveLength(w.boundaries.length+1);
- });
+ test(`${w.name}: format-specific synthesized cues`,async({page})=>{await verifyWorkoutBeeps(page,w.id,1);});
  test(`${w.name}: offline results, validation, recovery, idempotent save and history`,async({page,context})=>{
  await clock(page);await page.goto(`./#workout/${w.id}/1`);await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
  await page.evaluate(({id,block})=>{localStorage.setItem(`kb2.weight-preference.v1:${id}:1:${block==='legs'?'goblet-squat':'floor-press'}`,'14');},w);await context.setOffline(true);

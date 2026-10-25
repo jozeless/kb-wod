@@ -8,22 +8,14 @@ function cues() {
  let now=0;const engine=new WorkoutTimer(focus001,()=>now);const tracker=createCueTracker();engine.start();tracker.next(engine.snapshot());
  return {engine, at(time,audible=true){now=time;return tracker.next(engine.snapshot(),audible);}};
 }
-test('start once and one minute cue per boundary, including phase change; completion wins at 20:00',()=>{
+test('EMOM changes give MINUTE; intervals give REST/WORK; completion is unique',()=>{
  const c=cues();c.at(2900);assert.equal(c.at(3000),'start');assert.equal(c.at(3100),null);
- for(let minute=1;minute<20;minute++) {
-  c.at(3000+minute*60000-100);assert.equal(c.at(3000+minute*60000),'minute');
-  assert.equal(c.at(3000+minute*60000),null);
- }
+ for(let minute=1;minute<20;minute++){c.at(3000+minute*60000-100);assert.equal(c.at(3000+minute*60000),minute<10?'minute':'work');assert.equal(c.at(3000+minute*60000),null);}
  c.at(1202900);assert.equal(c.at(1203000),'complete');assert.equal(c.at(1203100),null);
 });
-test('ticks, rest changes, pause/resume, hidden and delayed updates never queue or duplicate cues',()=>{
- const c=cues();c.at(3000);c.at(59900);assert.equal(c.at(60000),'tick');
- c.engine.pause();assert.equal(c.at(60000),null);c.engine.resume();assert.equal(c.at(60000),null);
- assert.equal(c.at(60000),null);assert.equal(c.at(61000),'tick');
- c.at(602900);assert.equal(c.at(603000),'minute'); // Upper to ABS: only the minute sound.
- c.at(642900);assert.equal(c.at(643000),'change'); // ABS work to rest.
- assert.equal(c.at(843000),null);assert.equal(c.at(843100),null); // no backlog after delay
- c.at(902900);assert.equal(c.at(903000,false),null);assert.equal(c.at(903100),null); // consumed while hidden
+test('no ticks, resume repeats or replay of late/hidden boundaries',()=>{
+ const c=cues();c.at(3000);c.at(59900);assert.equal(c.at(60000),null);c.engine.pause();assert.equal(c.at(60000),null);c.engine.resume();assert.equal(c.at(60000),null);assert.equal(c.at(61000),null);
+ c.at(602900);assert.equal(c.at(603000),'work');c.at(642900);assert.equal(c.at(643000),'rest');assert.equal(c.at(843000),null);assert.equal(c.at(843100),null);c.at(902900);assert.equal(c.at(903000,false),null);assert.equal(c.at(903100),null);
 });
 test('weights accept empty, zero and decimals, reject invalid/negative values',()=>{
  assert.equal(parseWeight(''),null);assert.equal(parseWeight('0'),0);assert.equal(parseWeight('12.5'),12.5);

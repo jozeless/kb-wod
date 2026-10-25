@@ -1,3 +1,4 @@
+import {verifyWorkoutBeeps} from './helpers/timer-beeps.js';
 import {test,expect} from '@playwright/test';
 const detail='./#workout/hybrid-001-strength-sweat/2';
 async function clock(page){await page.clock.install({time:new Date('2026-01-01T00:00:00Z')});await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));}
@@ -54,36 +55,6 @@ test('Hybrid results save and read offline, blank values stay null, mobile field
  await page.reload();await expect(page.getByRole('heading',{name:'Workout saved',exact:true})).toBeVisible();await page.getByRole('button',{name:'View saved session'}).click();await expect(page.getByText('Active duration: 20:00',{exact:true})).toBeVisible();await expect(page.getByText('Full rounds completed: 0',{exact:true})).toBeVisible();await context.setOffline(false);
 });
 
-test('three-block audio has one start, 19 minutes, eight conditioning rests and quiet results',async({page})=>{
- await page.addInitScript(()=>{
-  window.hybridAudio={samples:[],tones:[],decoded:0};
-  window.AudioContext=class {
-   state='running';currentTime=0;destination={};resume(){return Promise.resolve();}close(){return Promise.resolve();}
-   decodeAudioData(bytes){window.hybridAudio.decoded++;return Promise.resolve({type:bytes.byteLength===488264?'start':'minute'});}
-   createBufferSource(){const source={buffer:null,connect(){},disconnect(){},start(){window.hybridAudio.samples.push(source.buffer.type);},stop(){}};return source;}
-   createOscillator(){const source={frequency:{value:0},connect(){},disconnect(){},start(){window.hybridAudio.tones.push(source.frequency.value);},stop(){}};return source;}
-   createGain(){return {gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){},disconnect(){}};}
-  };
- });
- await start(page);await expect.poll(()=>page.evaluate(()=>window.hybridAudio.decoded)).toBe(2);await page.clock.runFor(3000);
- async function minute(index,conditioning=false){
-  if(conditioning){await page.clock.fastForward(39900);await page.clock.runFor(100);expect(await page.evaluate(()=>window.hybridAudio.tones.filter(x=>x===620).length)).toBe(index-8);await page.clock.fastForward(19900);}
-  else await page.clock.fastForward(59900);
-  await page.clock.runFor(100);expect(await page.evaluate(()=>window.hybridAudio.samples.filter(x=>x==='minute').length)).toBe(Math.min(index,19));
- }
- async function quietResults(title,label){
-  await expect(page.getByRole('heading',{name:title,exact:true})).toBeVisible();await savedDraft(page);
-  const quiet=await page.evaluate(()=>JSON.stringify(window.hybridAudio));await page.clock.fastForward(1800000);expect(await page.evaluate(()=>JSON.stringify(window.hybridAudio))).toBe(quiet);
-  await next(page,label);await page.clock.runFor(3000);expect(await page.evaluate(()=>window.hybridAudio.samples.filter(x=>x==='start').length)).toBe(1);
- }
- for(let m=1;m<=8;m++)await minute(m);
- expect(await page.evaluate(()=>window.hybridAudio.tones.filter(x=>x===620).length)).toBe(0);
- await quietResults('Strength Results','Continue to Conditioning');
- for(let m=9;m<=16;m++)await minute(m,true);
- await quietResults('Conditioning Results','Continue to Finisher');
- for(let m=17;m<=20;m++)await minute(m);
- await expect(page.getByRole('heading',{name:'Finisher Results',exact:true})).toBeVisible();
- expect(await page.evaluate(()=>window.hybridAudio.tones.filter(x=>x===620).length)).toBe(8);
- expect(await page.evaluate(()=>window.hybridAudio.tones.filter(x=>x===1320).length)).toBe(1);
- const record=(await records(page))[0];expect(record.activeDurationMs).toBe(1200000);expect(new Date(record.completedAt)-new Date(record.startedAt)).toBe(4809000);
+test('Hybrid v2 uses one semantic pattern per format boundary',async({page})=>{
+ await verifyWorkoutBeeps(page,'hybrid-001-strength-sweat',2);
 });

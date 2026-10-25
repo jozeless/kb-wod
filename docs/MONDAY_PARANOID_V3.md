@@ -15,7 +15,7 @@ V3 is a new immutable release under `monday-paranoid`, never an edit or migratio
 
 The initial 3–2–1 is additional. `activeDurationMs` is exactly 1,270,000 at completion, including the two planned transitions and existing work/rest intervals, excluding the lead-in and user pauses. There is no extra rest before/after the finisher and no intermediate results form. Both transitions and the finisher use the same monotonic engine and paused checkpoint recovery as the other workouts. Transition segments have no exercise; `amrap-reps` has exactly one. The ten v2 exercises, targets, order and training timers remain unchanged.
 
-The existing cue tracker and audio assets are unchanged. Start plays once. Full elapsed-minute cues occur at 01:00–21:00; completion occurs at 21:10. The six existing 40/20 rest beeps occur at 08:45, 09:45, 10:45, 11:45, 12:45 and 13:45. Five-second transition clocks remain visible and keep the existing synthesized boundary/countdown cues. Pause/mute and stale-cue suppression remain shared. No new 40/20 WAVs or audio redesign is included.
+The [shared synthesized audio policy](TIMER_AUDIO.md) applies without changing this timeline: START after the initial lead-in; MINUTE at EMOM exercise changes; double REST and higher WORK beeps during ABS; one WORK when each five-second transition ends; FINISHER (short/short/long) when the final KB Thruster minute begins; and COMPLETE (two longer beeps) at 21:10. Entering the transitions and the visual countdown seconds is silent. There are no extra elapsed-minute alarms within work/rest or the finisher. Historical WAV files are retained but no longer played.
 
 ## Session weights versus preferences
 
@@ -42,6 +42,6 @@ Empty numeric fields become null; measured zero remains zero. IndexedDB saves lo
 
 ## Verification and limits
 
-Unit/browser coverage verifies the exact sequence/duration, ten-movement parity with v2, automatic transitions, both transition recoveries and finisher recovery, all eleven weights and preference isolation, failed preference writes, zero/blank, compact final validation, offline history, v1/v2 saved records and drafts, confirmed mocked cloud retry and existing workout regressions. Static cache v13 includes all definition versions and new schema/form modules.
+Unit/browser coverage verifies the exact sequence/duration, ten-movement parity with v2, automatic transitions, both transition recoveries and finisher recovery, all eleven weights and preference isolation, failed preference writes, zero/blank, compact final validation, offline history, v1/v2 saved records and drafts, confirmed mocked cloud retry and existing workout regressions. Static cache v14 includes all definition versions and new schema/form modules.
 
 The session stores the **last recorded working weight per exercise**, not a per-round/load-change event history. Preferences remain device-local; completed session weights synchronize with history. Repetitions are entered manually. Browser/OS eviction can still lose uncommitted writes/checkpoints, as documented for existing sessions; wait for Draft saved locally when testing recovery. Real iOS/Android audio/lock behavior and live-project connectivity remain manual checks. Automated cloud tests use mock endpoints and do not access the real v2 session in Supabase.

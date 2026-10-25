@@ -1,10 +1,8 @@
 import { formatTime } from '../domain/workout-timer.js';
-import { audioSamples } from '../platform/audio-samples.js';
 import { prescription, phaseSummary } from './exercise-prescription.js';
 import { createWeightField } from './weight-field.js';
 import { el } from './components.js';
 export function workoutDetails(workout) {
-  audioSamples.preload();
   const details = el('div', {},
     el('p', { className: 'eyebrow' }, `${workout.durationSeconds % 60 ? `${formatTime(workout.durationSeconds*1000)} total` : `${workout.durationSeconds / 60} minutes`} · ${workout.category}`),
     el('p', {}, workout.purpose), el('p', {}, workout.warmup.note),

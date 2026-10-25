@@ -16,10 +16,13 @@ export function heading(eyebrow, title, description) {
   return el('header', { className: 'page-heading' }, el('p', { className: 'eyebrow' }, eyebrow), el('h1', {}, title), el('p', {}, description));
 }
 export function workoutCard(workout, onSelect, action = 'View workout') {
-  return el('button', { type: 'button', className: 'workout-card', onClick: () => onSelect(workout), 'aria-label': `${action}: ${workout.name}` },
+  const metal = workout.id === 'monday-paranoid' && workout.presentation?.cardStyle === 'hm-kb';
+  return el('button', { type: 'button', className: metal ? 'workout-card workout-card--monday-paranoid' : 'workout-card', onClick: () => onSelect(workout), 'aria-label': `${action}: ${workout.name}` },
+    metal ? el('span', { className: 'metal-micro-mark', 'aria-hidden': 'true' }, 'HM / KB') : null,
     workout.image ? el('img', { src: workout.image, alt: '', loading: 'lazy' }) : null,
     el('span', { className: 'badge' }, `${typeLabel(workout.type)}${workout.demo ? " · Demo" : ""}`),
     el('strong', {}, workout.name),
+    metal ? el('span', { className: 'metal-subtitle' }, workout.presentation.subtitle) : null,
     workout.durationSeconds ? el('span', {}, `${workout.durationSeconds / 60} minutes`) : null,
     workout.phases.length ? el('span', {}, workout.phases.map(p => `${p.name} ${p.durationSeconds / 60} min`).join(' / ')) : null,
     el('span', { className: 'card-footer' }, `${action} →`));

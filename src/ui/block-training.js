@@ -1,3 +1,4 @@
+import { usesSessionWeights } from '../domain/weights-finisher-results.js';
 import { canReadLocal } from '../cloud/identity.js';
 import { syncStatus } from './account.js';
 import { WorkoutTimer, formatTime } from '../domain/workout-timer.js';
@@ -125,7 +126,7 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     } else if (cue) audio.cue(cue === 'change' && s.kind === 'REST' ? 'rest' : cue);
     training.panel.className = `active-panel ${s.kind?.toLowerCase() || 'countdown'}${s.status === 'paused' ? ' paused' : ''}`;
     const text = (node, value) => { if (node.textContent !== value) node.textContent = value; };
-    text(training.phase, `${phase.name} · ${s.stage === 'countdown' ? 'GET READY' : s.kind}${s.status === 'paused' ? ' · PAUSED' : ''}`);
+    text(training.phase, `${phase.name} · ${s.stage === 'countdown' ? 'GET READY' : s.kind?.replaceAll('_',' ')}${s.status === 'paused' ? ' · PAUSED' : ''}`);
     text(training.clock, s.stage === 'countdown' ? String(s.countdown) : s.go ? 'GO' : formatTime(s.remainingMs));
     text(training.block, `Block remaining: ${formatTime(continuous ? blockOffset(workout, record.blockIndex) + phase.durationSeconds * 1000 - s.elapsedMs : s.totalRemainingMs)}`);
     text(training.total, `Total active remaining: ${formatTime(workout.durationSeconds * 1000 - offset - s.elapsedMs)}`);
@@ -135,15 +136,23 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
       training.circuitPhase = phase.id;
       training.circuit.replaceChildren(...s.circuit.map(ex => el('li', {}, el('div', { className: 'exercise-weight-row' }, el('strong', {}, ex.name), createWeightField(workout, ex).root), el('p', {}, prescription(ex, phase)))));
     }
-    text(training.exercise, amrap ? phase.name : s.exercise?.name || 'Starting in');
-    text(training.target, amrap ? phase.instructions : s.exercise ? (s.kind === 'REST' ? 'Rest and prepare for the next exercise.' : prescription(s.exercise, phase)) : 'This countdown is outside your activity time.');
-    text(training.position, amrap ? 'AMRAP · Repeat at your own pace' : s.exercise ? `Round ${s.round} of ${phase.rounds} · Interval ${s.interval + 1} of ${phase.timer.intervals}` : '');
-    text(training.next, amrap ? `Next: ${continuous && s.nextPhase ? s.nextPhase.name : resultSchema(workout).blocks[phase.id].title}` : s.exercise ? (s.nextExercise ? `Next: ${s.nextExercise.name}` : `Next: ${continuous && s.nextPhase ? s.nextPhase.name : resultSchema(workout).blocks[phase.id].title}`) : '');
+    text(training.exercise, amrap ? phase.name : s.kind === 'TRANSITION' ? phase.name : s.exercise?.name || 'Starting in');
+    text(training.target, amrap || s.kind === 'TRANSITION' || s.kind === 'AMRAP_REPS' ? phase.instructions : s.exercise ? (s.kind === 'REST' ? 'Rest and prepare for the next exercise.' : prescription(s.exercise, phase)) : 'This countdown is outside your activity time.');
+    text(training.position, s.kind === 'TRANSITION' ? 'Automatic transition · Rest and prepare' : s.kind === 'AMRAP_REPS' ? 'AMRAP repetitions · Count complete reps' : amrap ? 'AMRAP · Repeat at your own pace' : s.exercise ? `Round ${s.round} of ${phase.rounds} · Interval ${s.interval + 1} of ${phase.timer.intervals}` : '');
+    const resultTitle = usesSessionWeights(workout) ? 'Workout Results' : resultSchema(workout).blocks[phase.id].title;
+    text(training.next, amrap ? `Next: ${continuous && s.nextPhase ? s.nextPhase.name : resultTitle}` : s.exercise ? (s.nextExercise ? `Next: ${s.nextExercise.name}` : `Next: ${continuous && s.nextPhase ? s.nextPhase.name : resultTitle}`) : '');
     training.weight.root.hidden = !s.exercise; if (s.exercise) training.weight.setExercise(s.exercise);
     training.progress.value = (offset + s.elapsedMs) / (workout.durationSeconds * 1000);
     training.pause.textContent = s.status === 'paused' ? 'Resume' : 'Pause';
     const checkpoint = Math.floor(engine.elapsed() / 1000);
     if (checkpoint !== lastCheckpoint) { lastCheckpoint = checkpoint; capture(); void persist(); }
+  }
+  function sessionWeightField(initialExercise) {
+    if(!usesSessionWeights(workout))return createWeightField(workout,initialExercise);
+    return createWeightField(workout,initialExercise,{
+      read:exercise=>record.form.weights[exercise.id],
+      changed:(exercise,raw)=>{record.form.weights[exercise.id]=raw;delete record.form.invalid[`weights.${exercise.id}`];void persist();},
+    });
   }
   function beginBlock(restored) {
     if (disposed) return;
@@ -152,7 +161,7 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     engine = new WorkoutTimer(continuous ? workout : { ...workout, durationSeconds: phase.durationSeconds, phases: [phase] });
     if (restored) engine.restorePaused(record.checkpointMs); else engine.start();
     cues = createCueTracker(); cues.next({ ...engine.snapshot(), elapsedMs: timeOffset() + engine.snapshot().elapsedMs }, false);
-    const weight = createWeightField(workout); weight.root.hidden = true;
+    const weight = sessionWeightField(); weight.root.hidden = true;
     const phaseLabel = el('p', { className: 'eyebrow', 'aria-live': 'polite' }), exercise = el('h2', { className: 'active-exercise' }), target = el('p', {});
     const clock = el('div', { className: 'phase-clock', role: 'timer' }), block = el('p', { className: 'block-time' }), total = el('p', {}), position = el('p', {}), next = el('p', {});
     const pause = button(engine.status === 'paused' ? 'Resume' : 'Pause', () => {
@@ -164,7 +173,7 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     const progress = el('progress', { max: '1', value: '0', 'aria-label': 'Workout progress' });
     const panel = el('section', { className: 'active-panel', 'aria-label': 'Active workout' }, phaseLabel, exercise, target, weight.root, clock, block, total, position, circuit, next, progress);
     training = { panel, phase: phaseLabel, exercise, target, clock, block, total, position, next, weight, pause, progress, circuit, circuitPhase: null };
-    root.replaceChildren(heading(`${workout.code} · VERSION ${workout.version}`, workout.name, continuous ? 'Record actual results after all 20 active minutes.' : 'Record actual results between the blocks.'), panel,
+    root.replaceChildren(heading(`${workout.code} · VERSION ${workout.version}`, workout.name, continuous ? usesSessionWeights(workout) ? 'Recorded weights stay with this session. Results follow the finisher.' : 'Record actual results after all 20 active minutes.' : 'Record actual results between the blocks.'), panel,
       el('div', { className: 'active-controls' }, pause, button('End Workout', () => { if (confirm('Leave this workout? A recoverable draft will remain.')) onExit(); }, true), soundButton()), draftMessage);
     if (restored && engine.status === 'complete') finishBlock(false);
     else { update(false); if (engine.status === 'running') tick(); }

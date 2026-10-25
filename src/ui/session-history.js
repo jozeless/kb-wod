@@ -1,3 +1,4 @@
+import { usesSessionWeights } from '../domain/weights-finisher-results.js';
 import { canReadLocal } from '../cloud/identity.js';
 import { syncStatus } from './account.js';
 import { resultSchema, partialLabel } from '../domain/result-schemas.js';
@@ -30,7 +31,11 @@ export function savedSessionView(id, go) {
     const value = n => n === null || n === undefined ? 'Not entered' : String(n);
     root.replaceChildren(heading('SAVED WORKOUT', record.workoutSnapshot.name, `Version ${record.workoutVersion} · ${new Date(record.startedAt).toLocaleString()}`),
       syncStatus(record), el('p', {}, `Active duration: ${formatTime(record.activeDurationMs)}`), el('p', {}, `Finished: ${new Date(record.completedAt).toLocaleString()}`));
-    for (const phase of record.workoutSnapshot.phases) {
+    if(usesSessionWeights(record.workoutSnapshot)) {
+      const weights=el('section',{'aria-label':'Recorded exercise weights'},el('h2',{},'Exercise weights'));
+      for(const exercise of record.workoutSnapshot.exercises)weights.append(el('p',{},`${exercise.name}: ${value(record.results.exerciseWeights[exercise.id])}${record.results.exerciseWeights[exercise.id]===null?'':' kg'}`));
+      root.append(weights,el('p',{},`KB Thruster completed repetitions: ${value(record.results.finisher.reps)}`));
+    } else for (const phase of record.workoutSnapshot.phases) {
       const section = el('section', { className: 'exercise-list', 'aria-label': `${phase.name} saved results` }, el('h2', {}, `${phase.name} Results`));
       const schema = resultSchema(record.workoutSnapshot), block = record.results[phase.id];
       const amrap = schema.blocks[phase.id]?.kind === 'amrap';

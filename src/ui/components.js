@@ -1,3 +1,4 @@
+import { formatTime } from '../domain/workout-timer.js';
 import { typeLabel } from '../data/catalog.js';
 export function el(tag, props = {}, ...children) {
   const node = document.createElement(tag);
@@ -23,8 +24,8 @@ export function workoutCard(workout, onSelect, action = 'View workout') {
     el('span', { className: 'badge' }, `${typeLabel(workout.type)}${workout.demo ? " · Demo" : ""}`),
     el('strong', {}, workout.name),
     metal ? el('span', { className: 'metal-subtitle' }, workout.presentation.subtitle) : null,
-    workout.durationSeconds ? el('span', {}, `${workout.durationSeconds / 60} minutes`) : null,
-    workout.phases.length ? el('span', {}, workout.phases.map(p => `${p.name} ${p.durationSeconds / 60} min`).join(' / ')) : null,
+    workout.durationSeconds ? el('span', {}, workout.durationSeconds % 60 ? `${formatTime(workout.durationSeconds*1000)} total` : `${workout.durationSeconds / 60} minutes`) : null,
+    workout.phases.length ? el('span', {}, workout.phases.filter(p => p.format !== 'transition').map(p => `${p.name} ${p.durationSeconds % 60 ? `${p.durationSeconds} sec` : `${p.durationSeconds / 60} min`}`).join(' / ')) : null,
     el('span', { className: 'card-footer' }, `${action} →`));
 }
 export function emptyState(title, text) {

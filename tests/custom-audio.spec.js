@@ -85,7 +85,7 @@ test('both originals are precached, decoded and played offline; mute and pause d
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => true)); await page.reload();
   await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
   const cached = await page.evaluate(async () => {
-    const cache = await caches.open('kb2-static-v12');
+    const cache = await caches.open('kb2-static-v13');
     return Promise.all(['start', 'minute'].map(async name => {
       const response = await cache.match(new URL(`./assets/audio/${name}.wav`, location.href));
       return response?.ok ? (await response.arrayBuffer()).byteLength : 0;

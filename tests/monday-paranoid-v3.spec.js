@@ -1,3 +1,4 @@
+import {verifyWorkoutBeeps} from './helpers/timer-beeps.js';
 import {test,expect} from '@playwright/test';
 const detail='./#workout/monday-paranoid/3';
 async function localMode(page){await page.addInitScript(()=>{window.KB_SUPABASE_CONFIG={url:'',publishableKey:''};});}
@@ -33,26 +34,8 @@ for(const [elapsed,remaining,title]of[[482000,'00:03','Transition to ABS'],[8470
  await localMode(page);await clock(page);await page.goto(detail);await start(page);await page.clock.fastForward(elapsed+3000);await page.getByRole('button',{name:'Pause',exact:true}).click();await saved(page);page.on('dialog',d=>d.accept());await page.reload();await expect(page.getByRole('button',{name:'Resume',exact:true})).toBeVisible();await expect(page.locator('.phase-clock')).toHaveText(remaining);await expect(page.locator('.active-exercise')).toHaveText(title);await expect(page.locator('.active-panel')).not.toContainText('undefined');await page.clock.fastForward(600000);await expect(page.locator('.phase-clock')).toHaveText(remaining);await page.getByRole('button',{name:'Resume',exact:true}).click();await page.clock.fastForward(1270000-elapsed);await expect(page.getByRole('heading',{name:'Workout Results',exact:true})).toBeVisible();await expect(page.getByRole('spinbutton')).toHaveCount(13);
 });
 
-test('v3 audio keeps existing rest tones, one start, elapsed minutes and completion after the finisher',async({page})=>{
- await localMode(page);
- await page.addInitScript(()=>{
-  window.v3Audio={samples:[],tones:[],decoded:0};
-  window.AudioContext=class {
-   state='running';currentTime=0;destination={};resume(){return Promise.resolve();}close(){return Promise.resolve();}
-   decodeAudioData(bytes){window.v3Audio.decoded++;return Promise.resolve({type:bytes.byteLength===488264?'start':'minute'});}
-   createBufferSource(){const source={buffer:null,connect(){},disconnect(){},start(){window.v3Audio.samples.push(source.buffer.type);},stop(){}};return source;}
-   createOscillator(){const source={frequency:{value:0},connect(){},disconnect(){},start(){window.v3Audio.tones.push(source.frequency.value);},stop(){}};return source;}
-   createGain(){return {gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){},disconnect(){}};}
-  };
- });
- await clock(page);await page.goto(detail);await start(page);await expect.poll(()=>page.evaluate(()=>window.v3Audio.decoded)).toBe(2);await page.clock.runFor(3000);
- const rests=Array.from({length:6},(_,i)=>525000+i*60000),transitions=[480000,481000,482000,483000,484000,485000,845000,846000,847000,848000,849000,850000];const events=[...new Set([...Array.from({length:21},(_,i)=>(i+1)*60000),...rests,...transitions,1210000,1270000])].sort((a,b)=>a-b);let previous=0;
- for(const elapsed of events){await page.clock.fastForward(elapsed-previous-100);await page.clock.runFor(100);previous=elapsed;
-  expect(await page.evaluate(()=>window.v3Audio.samples.filter(x=>x==='minute').length)).toBe(Math.floor(elapsed/60000));expect(await page.evaluate(()=>window.v3Audio.tones.filter(x=>x===620).length)).toBe(rests.filter(time=>time<=elapsed).length);
-  if(elapsed>=480000&&elapsed<485000)await expect(page.locator('.phase-clock')).toHaveText(`00:0${(485000-elapsed)/1000}`);if(elapsed>=845000&&elapsed<850000)await expect(page.locator('.phase-clock')).toHaveText(`00:0${(850000-elapsed)/1000}`);
-  if(elapsed===1210000){await expect(page.locator('.active-exercise')).toHaveText('KB Thruster');await expect(page.locator('.phase-clock')).toHaveText('01:00');await expect(page.getByRole('heading',{name:'Workout Results'})).toHaveCount(0);}
- }
- await expect(page.getByRole('heading',{name:'Workout Results'})).toBeVisible();expect(await page.evaluate(()=>window.v3Audio.samples.filter(x=>x==='start').length)).toBe(1);expect(await page.evaluate(()=>window.v3Audio.tones.filter(x=>x===1320).length)).toBe(1);const audio=await page.evaluate(()=>JSON.stringify(window.v3Audio));await page.clock.fastForward(600000);expect(await page.evaluate(()=>JSON.stringify(window.v3Audio))).toBe(audio);const record=(await v3Record(page))[0];expect(record.activeDurationMs).toBe(1270000);expect(new Date(record.completedAt)-new Date(record.startedAt)).toBe(1273000);
+test('Monday v3 beeps cover silent transitions, next-block WORK, Thruster FINISHER and COMPLETE',async({page})=>{
+ await localMode(page);await verifyWorkoutBeeps(page,'monday-paranoid',3);
 });
 test('v3 offline completed weight map syncs only after server confirmation alongside intact v1/v2 history',async({page,context})=>{
  const user={id:'11111111-1111-4111-8111-111111111111',email:'v3@example.test',email_confirmed_at:'2026-01-01'};const remote=new Map();let plan=[],fail=true,attempts=0;

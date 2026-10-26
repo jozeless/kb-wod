@@ -1,3 +1,4 @@
+import {verifyWorkoutBeeps} from './helpers/timer-beeps.js';
 import { test, expect } from '@playwright/test';
 const detail='./#workout/focus-001-upper-abs/1';
 async function start(page, pausedClock = false) {
@@ -65,31 +66,6 @@ test('timer starts and completes offline under project subpath',async({page,cont
  await context.setOffline(true);await page.reload();await page.getByRole('button',{name:'Start Workout',exact:true}).click();await page.clock.fastForward(1203000);
  await expect(page.getByRole('heading',{name:'Workout Complete',exact:true})).toBeVisible();await context.setOffline(false);
 });
-test('optional audio cues cover start, last seconds, changes, block and finish',async({page})=>{
- await page.addInitScript(()=>{
-  window.testTones=[];
-  window.AudioContext=class {
-   state='running';currentTime=0;destination={};
-   resume(){return Promise.resolve();}close(){return Promise.resolve();}
-   createOscillator(){const tone={frequency:{value:0},connect(){},disconnect(){},start(){window.testTones.push(tone.frequency.value);},stop(){}};return tone;}
-   createGain(){return {gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){},disconnect(){}};}
-  };
- });
- await start(page, true);await expect(page.getByRole('button',{name:'Sound: On'})).toHaveAttribute('aria-pressed','true');
- await page.clock.runFor(3000);expect(await page.evaluate(()=>window.testTones)).toEqual([880]);
- await page.clock.fastForward(56900);await page.clock.runFor(3100);
- expect((await page.evaluate(()=>window.testTones)).filter(t=>t===520)).toHaveLength(3);
- expect(await page.evaluate(()=>window.testTones)).toContain(980);
- expect(await page.evaluate(()=>window.testTones)).not.toContain(740); // minute overrides exercise-change
- const beforePause=await page.evaluate(()=>window.testTones.length);
- await page.getByRole('button',{name:'Pause',exact:true}).click();await page.clock.fastForward(120000);
- await page.getByRole('button',{name:'Resume',exact:true}).click();expect(await page.evaluate(()=>window.testTones.length)).toBe(beforePause);
- await page.getByRole('button',{name:'Sound: On'}).click();await expect(page.getByRole('button',{name:'Sound: Off'})).toHaveAttribute('aria-pressed','false');
- await page.clock.fastForward(60000);expect(await page.evaluate(()=>window.testTones.length)).toBe(beforePause);
- await page.getByRole('button',{name:'Sound: Off'}).click();await page.clock.runFor(100);expect(await page.evaluate(()=>window.testTones.length)).toBe(beforePause);
- await page.clock.fastForward(479800);await page.clock.runFor(100);
- expect((await page.evaluate(()=>window.testTones)).filter(t=>t===980)).toHaveLength(2); // includes 10:00, not a block duplicate
- expect(await page.evaluate(()=>window.testTones)).not.toContain(1100);
- await page.clock.fastForward(39900);await page.clock.runFor(100);expect(await page.evaluate(()=>window.testTones)).toContain(740);
- await page.clock.fastForward(559900);await page.clock.runFor(100);expect(await page.evaluate(()=>window.testTones)).toContain(1320);
+test('legacy Focus timer emits the same semantic patterns without countdown ticks',async({page})=>{
+ await verifyWorkoutBeeps(page,'focus-001-upper-abs',1);
 });

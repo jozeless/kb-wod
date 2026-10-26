@@ -1,3 +1,4 @@
+import {verifyWorkoutBeeps} from './helpers/timer-beeps.js';
 import {test,expect} from '@playwright/test';
 const detail='./#workout/monday-paranoid/1';
 const cardName='View workout: Monday Paranoid';
@@ -37,23 +38,8 @@ test('Monday block results recover offline, save once and retain weights, UUID, 
  await page.getByRole('button',{name:'View saved session'}).click();await expect(page.getByText('Full rounds completed: 2',{exact:true})).toBeVisible();await page.reload();await expect(page.getByText('Workout notes: Monday measured results',{exact:true})).toBeVisible();await context.setOffline(false);
 });
 
-test('Monday retains one start, nineteen minute samples, conditioning rest beeps and quiet result screens',async({page})=>{
- await localMode(page);
- await page.addInitScript(()=>{
-  window.mondayAudio={samples:[],tones:[],decoded:0};
-  window.AudioContext=class {
-   state='running';currentTime=0;destination={};resume(){return Promise.resolve();}close(){return Promise.resolve();}
-   decodeAudioData(bytes){window.mondayAudio.decoded++;return Promise.resolve({type:bytes.byteLength===488264?'start':'minute'});}
-   createBufferSource(){const source={buffer:null,connect(){},disconnect(){},start(){window.mondayAudio.samples.push(source.buffer.type);},stop(){}};return source;}
-   createOscillator(){const source={frequency:{value:0},connect(){},disconnect(){},start(){window.mondayAudio.tones.push(source.frequency.value);},stop(){}};return source;}
-   createGain(){return {gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){},disconnect(){}};}
-  };
- });
- await clock(page);await page.goto(detail);await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');await expect.poll(()=>page.evaluate(()=>window.mondayAudio.decoded)).toBe(2);await page.clock.runFor(3000);
- async function minute(index,rest=false){await page.clock.fastForward(rest?39900:59900);await page.clock.runFor(100);if(rest){expect(await page.evaluate(()=>window.mondayAudio.tones.filter(x=>x===620).length)).toBe(index-8);await page.clock.fastForward(19900);await page.clock.runFor(100);}expect(await page.evaluate(()=>window.mondayAudio.samples.filter(x=>x==='minute').length)).toBe(Math.min(index,19));}
- async function stopped(title,label){await expect(page.getByRole('heading',{name:title,exact:true})).toBeVisible();const before=await page.evaluate(()=>JSON.stringify(window.mondayAudio));await page.clock.fastForward(600000);expect(await page.evaluate(()=>JSON.stringify(window.mondayAudio))).toBe(before);await next(page,label);await page.clock.runFor(3000);expect(await page.evaluate(()=>window.mondayAudio.samples.filter(x=>x==='start').length)).toBe(1);}
- for(let m=1;m<=8;m++)await minute(m);expect(await page.evaluate(()=>window.mondayAudio.tones.filter(x=>x===620).length)).toBe(0);await stopped('Strength Results','Continue to Conditioning');for(let m=9;m<=16;m++)await minute(m,true);await stopped('Conditioning Results','Continue to Finisher');for(let m=17;m<=20;m++)await minute(m);
- await expect(page.getByRole('heading',{name:'Finisher Results',exact:true})).toBeVisible();expect(await page.evaluate(()=>window.mondayAudio.tones.filter(x=>x===620).length)).toBe(8);expect(await page.evaluate(()=>window.mondayAudio.tones.filter(x=>x===1320).length)).toBe(1);
+test('Monday v1 uses semantic beeps and silent intermediate results',async({page})=>{
+ await localMode(page);await verifyWorkoutBeeps(page,'monday-paranoid',1);
 });
 test('Monday current assignment and historical v1 results retain their respective versions in cloud sync',async({page})=>{
  const user={id:'11111111-1111-4111-8111-111111111111',email:'monday@example.test',email_confirmed_at:'2026-01-01'};const remote=new Map();let plan=[];

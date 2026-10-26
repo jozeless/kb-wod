@@ -1,3 +1,4 @@
+import {verifyWorkoutBeeps} from './helpers/timer-beeps.js';
 import {test,expect} from '@playwright/test';
 const detail='./#workout/hybrid-001-strength-sweat/1';
 async function clock(page){await page.clock.install({time:new Date('2026-01-01T00:00:00Z')});await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));}
@@ -41,3 +42,5 @@ test('Hybrid AMRAP works offline and remains responsive',async({page,context})=>
  for(const width of [320,390,768,1280]){await page.setViewportSize({width,height:740});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}
  await page.clock.fastForward(240000);await expect(page.getByRole('heading',{name:'Workout Complete',exact:true})).toBeVisible();await context.setOffline(false);
 });
+
+test('legacy Hybrid uses the shared format-specific beep patterns across its full timeline',async({page})=>{await verifyWorkoutBeeps(page,'hybrid-001-strength-sweat',1);});

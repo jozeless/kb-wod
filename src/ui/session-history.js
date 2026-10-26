@@ -1,3 +1,4 @@
+import { isTuesdayResults, weightedExercises } from '../domain/tuesday-results.js';
 import { usesSessionWeights } from '../domain/weights-finisher-results.js';
 import { canReadLocal } from '../cloud/identity.js';
 import { syncStatus } from './account.js';
@@ -33,8 +34,8 @@ export function savedSessionView(id, go) {
       syncStatus(record), el('p', {}, `Active duration: ${formatTime(record.activeDurationMs)}`), el('p', {}, `Finished: ${new Date(record.completedAt).toLocaleString()}`));
     if(usesSessionWeights(record.workoutSnapshot)) {
       const weights=el('section',{'aria-label':'Recorded exercise weights'},el('h2',{},'Exercise weights'));
-      for(const exercise of record.workoutSnapshot.exercises)weights.append(el('p',{},`${exercise.name}: ${value(record.results.exerciseWeights[exercise.id])}${record.results.exerciseWeights[exercise.id]===null?'':' kg'}`));
-      root.append(weights,el('p',{},`KB Thruster completed repetitions: ${value(record.results.finisher.reps)}`));
+      for(const exercise of weightedExercises(record.workoutSnapshot))weights.append(el('p',{},`${exercise.name}: ${value(record.results.exerciseWeights[exercise.id])}${record.results.exerciseWeights[exercise.id]===null?'':' kg'}`));
+      root.append(weights,el('p',{},isTuesdayResults(record.workoutSnapshot) ? `Complete finisher rounds: ${value(record.results.finisher.fullRounds)}` : `KB Thruster completed repetitions: ${value(record.results.finisher.reps)}`));
     } else for (const phase of record.workoutSnapshot.phases) {
       const section = el('section', { className: 'exercise-list', 'aria-label': `${phase.name} saved results` }, el('h2', {}, `${phase.name} Results`));
       const schema = resultSchema(record.workoutSnapshot), block = record.results[phase.id];
@@ -48,7 +49,8 @@ export function savedSessionView(id, go) {
       }
       root.append(section);
     }
-    root.append(el('p', {}, `Perceived effort: ${value(record.results.perceivedEffort)}`), el('p', { className: 'saved-notes' }, `Workout notes: ${record.results.notes || 'Not entered'}`), button('← Saved workouts', () => go(`#history/${record.workoutId}`), true));
+    if(!isTuesdayResults(record.workoutSnapshot))root.append(el('p', {}, `Perceived effort: ${value(record.results.perceivedEffort)}`), el('p', { className: 'saved-notes' }, `Workout notes: ${record.results.notes || 'Not entered'}`), button('← Saved workouts', () => go(`#history/${record.workoutId}`), true));
+    if(isTuesdayResults(record.workoutSnapshot))root.append(button('← Saved workouts', () => go(`#history/${record.workoutId}`), true));
   }).catch(() => root.replaceChildren(emptyState('Session unavailable', 'This saved session could not be read.'), button('← Library', () => go('#library'), true)));
   return root;
 }

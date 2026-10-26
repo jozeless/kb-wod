@@ -41,7 +41,7 @@ export function libraryView(day, go, assign) {
 export function workoutView(id, version, stage, go, startWorkout) {
   const w = findWorkout(id, version);
   if (!w) return emptyState('Workout unavailable', 'This workout version is not in the library. Use Today or Library to continue.');
-  const view = el('div', {}, button('← Library', () => go('#library'), true), heading(`${w.code ? w.code + " · " : ""}${typeLabel(w.type)}${w.demo ? " · DEMO" : ""} · VERSION ${w.version}`, w.name, stage === 'active' ? 'Active Workout' : stage === 'result' ? 'Save Result' : 'Workout Detail'));
+  const view = el('div', {}, button('← Library', () => go('#library'), true), w.phases.length && stage === 'workout' ? null : heading(`${w.code ? w.code + " · " : ""}${typeLabel(w.type)}${w.demo ? " · DEMO" : ""} · VERSION ${w.version}`, w.name, stage === 'active' ? 'Active Workout' : stage === 'result' ? 'Save Result' : 'Workout Detail'));
   if (w.phases.length && stage === 'active') {
     view.append(emptyState('Ready when you are', 'This link does not start the timer automatically.'), button('Start Workout', () => startWorkout(w)));
     if (supportsResults(w)) view.append(draftActions(w, go));

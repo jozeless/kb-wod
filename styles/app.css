@@ -10,18 +10,48 @@
 
 .app-header{flex-wrap:wrap;gap:8px}.account-control{font-size:13px!important;margin-left:auto}.cloud-indicator{font-size:11px}.cloud-session-status{font-size:13px}
 
-/* Controlled HM/KB experiment: only the Monday Paranoid workout card. */
-.workout-card--monday-paranoid{position:relative;isolation:isolate;overflow:hidden;background:linear-gradient(135deg,transparent 68%,#672b2b36 68.3%,transparent 69%),repeating-linear-gradient(115deg,#ffffff03 0 1px,transparent 1px 6px),linear-gradient(145deg,#23262d,#101216 68%);color:#e2e3e7;border:1px solid #70433f;border-left:4px solid #bf5144;border-radius:5px;box-shadow:0 8px 20px #10121626,inset 0 1px #ffffff14;gap:9px;padding:19px 18px}
-.workout-card--monday-paranoid::before{content:"";position:absolute;z-index:-1;top:0;right:0;width:76px;height:76px;background:linear-gradient(135deg,transparent 52%,#a4463840 53% 60%,transparent 61%);pointer-events:none}
-.workout-card--monday-paranoid .badge{align-self:flex-start;width:fit-content;background:#111318;color:#e9b7ac;border:1px solid #754a43;border-radius:2px;font-size:10px;letter-spacing:1.8px;padding:4px 7px}
-.workout-card--monday-paranoid strong{font-family:Impact,"Arial Black","Helvetica Neue",sans-serif;font-size:clamp(25px,5vw,33px);font-weight:900;font-style:italic;line-height:1.05;letter-spacing:-.5px;text-transform:uppercase;color:#f1f2f3;text-shadow:1px 1px 0 #757b87,2px 3px 0 #050609;max-width:100%;overflow-wrap:normal}
-.workout-card--monday-paranoid .metal-micro-mark{position:absolute;top:19px;right:17px;font-family:"Arial Black",sans-serif;font-size:10px;font-weight:900;letter-spacing:1.5px;color:#c6c9d0;border-bottom:2px solid #b94f43;padding-bottom:3px}
-.workout-card--monday-paranoid .metal-subtitle{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#e8b3a8;margin-bottom:3px}
-.workout-card--monday-paranoid .card-footer{color:#f2d5cf;border-top:1px solid #48424a;padding-top:12px;margin-top:3px;font-size:12px;font-weight:700}
-.workout-card--monday-paranoid:hover{border-color:#da7766;box-shadow:0 8px 22px #10121633,inset 0 1px #ffffff1f}
-.workout-card--monday-paranoid:focus-visible{outline:3px solid #f4bb65;outline-offset:4px}
-@media(forced-colors:active){.workout-card--monday-paranoid,.workout-card--monday-paranoid strong,.workout-card--monday-paranoid .badge,.workout-card--monday-paranoid .card-footer,.workout-card--monday-paranoid .metal-micro-mark,.workout-card--monday-paranoid .metal-subtitle{color:ButtonText;background:ButtonFace;border-color:ButtonText;text-shadow:none}.workout-card--monday-paranoid::before{display:none}}
+/* Shared HM/KB presentation; active training and account screens retain their styles. */
+.workout-card--hm-kb,.hm-workout-overview{background:#212227;color:#EDECEE;border:1px solid #4D4A6A;border-radius:16px;padding:22px;--line:#4D4A6A;--accent:#EEEF58}
+.workout-card--hm-kb{gap:12px;transition:border-color .15s}
+.workout-card--hm-kb:hover{border-color:#B37ACB}
+.workout-card--hm-kb:focus-visible,.hm-workout-overview :focus-visible{outline:3px solid #EEEF58;outline-offset:4px}
+.workout-card--hm-kb strong,.overview-title{font-size:clamp(23px,4vw,32px);font-weight:850;line-height:1.12;letter-spacing:-.6px;text-transform:uppercase;overflow-wrap:anywhere}
+.metal-micro-mark,.hm-workout-overview>.eyebrow{font-size:10px;font-weight:750;letter-spacing:.13em;color:#EDECEE}
+.workout-card--hm-kb .badge,.hm-workout-overview>.badge{color:#EEEF58;font-size:10px}
+.metal-subtitle,.card-structure{font-size:12px;line-height:1.5}
+.workout-card--hm-kb .card-footer{color:#EDECEE;border-top:1px solid #4D4A6A;padding-top:12px;width:100%}
+.phase-bar{display:flex;width:100%;height:8px;border-radius:4px;overflow:hidden;margin:8px 0;flex-shrink:0;background:#312F4E}
+.phase-bar-segment{height:100%;flex-shrink:0}.phase-color-0{background:#4D4A6A}.phase-color-1{background:#B37ACB}.phase-color-2{background:#EEEF58}.phase-transition{background:#EDECEE}
+.hm-workout-overview{margin-bottom:22px;min-width:0;font-size:14px}
+.hm-workout-overview>.eyebrow{margin-top:12px;color:#EDECEE}.overview-title{margin:12px 0 18px;font-size:clamp(28px,6vw,42px)}
+.hm-workout-overview .exercise-list{background:transparent;border:0;border-top:1px solid #4D4A6A;border-radius:0;padding:22px 0;margin:20px 0 0}
+.hm-workout-overview .exercise-list h2{font-size:16px;letter-spacing:.05em;color:#EDECEE}
+.hm-workout-overview .exercise-list p,.hm-workout-overview .muted{color:#EDECEE}
+.hm-workout-overview .exercise-list .badge{color:#EEEF58}
+.hm-workout-overview .prescriptions{list-style:none;padding:0;margin-bottom:0}
+.hm-workout-overview .prescriptions li{display:grid;grid-template-columns:minmax(0,1fr) minmax(75px,32%);gap:6px 12px;border-bottom:1px solid #4D4A6A;padding:14px 0}
+.hm-workout-overview .exercise-weight-row{grid-column:1;display:flex;flex-direction:column;gap:8px}
+.hm-workout-overview .exercise-target{text-align:right;grid-column:2;grid-row:1;font-size:12px;line-height:1.45}
+.hm-workout-overview .prescriptions li>p:not(.exercise-target){grid-column:1/-1;font-size:12px}
+.hm-workout-overview .weight-preference{max-width:100px;width:100%}.hm-workout-overview input{background:#312F4E;color:#EDECEE;border-color:#B37ACB}
+.hm-workout-overview .weight-error{color:#EEEF58}.hm-workout-overview .recording-panel{background:#312F4E;border:1px solid #4D4A6A;border-radius:10px;padding:16px;margin-top:24px}
+.recording-panel h2{font-size:12px;letter-spacing:.1em}.recording-panel p{font-size:13px;margin-bottom:0}
+@media(max-width:359px){.hm-workout-overview{padding:16px}.hm-workout-overview .prescriptions li{gap:6px 8px;grid-template-columns:minmax(0,1fr) 85px}}
+@media(forced-colors:active){.workout-card--hm-kb,.hm-workout-overview{color:CanvasText;background:Canvas;border-color:CanvasText}.phase-bar-segment{border:1px solid CanvasText}.workout-card--hm-kb .badge,.workout-card--hm-kb .card-footer,.hm-workout-overview .exercise-list p,.hm-workout-overview .exercise-list h2,.hm-workout-overview .exercise-list .badge{color:CanvasText}}
 
 .simple-results .session-weight-row{display:grid;grid-template-columns:minmax(0,1fr) 92px;align-items:center;gap:12px;margin-top:0;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}.simple-results .session-weight-row input{padding:6px;min-width:0;min-height:40px;font-size:16px}.simple-results h2:not(:first-child){margin-top:22px}
 
 .simple-results>label:not(.session-weight-row){font-size:13px;margin-top:12px}.simple-results>p.muted{font-size:13px;line-height:1.4;margin:6px 0 12px}.simple-results textarea{min-height:76px}
+
+.hm-workout-overview .exercise-weight-row{display:contents}
+.hm-workout-overview .exercise-weight-row>strong{grid-column:1;grid-row:1;font-size:13px;align-self:center;overflow-wrap:normal}
+.hm-workout-overview .exercise-weight-row>.weight-preference{grid-column:2;grid-row:2;justify-self:end;max-width:85px}
+.hm-workout-overview .weight-label{font-size:10px}.hm-workout-overview .weight-label input{min-height:40px;padding:4px 7px}
+.hm-workout-overview .phase-heading{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.hm-workout-overview .phase-heading h2{margin:0;font-size:14px}.hm-workout-overview .phase-format{font-size:11px;text-align:right;margin:0;flex-shrink:0}
+.phase-guidance{font-size:12px;margin-top:12px}.phase-guidance summary{cursor:pointer;min-height:44px;padding:12px 0;color:#EDECEE}
+.hm-workout-overview .overview-subtitle{font-size:13px;margin:0 0 12px}
+.hm-workout-overview .recording-overview{border-top:1px solid #4D4A6A;padding-top:22px;margin-top:22px}
+.recording-overview>h2{font-size:14px}.recording-overview>p{font-size:13px}
+.hm-workout-overview .recording-panel{margin-top:10px}.recording-panel h3{font-size:13px;margin:0}.recording-panel>div+div{border-top:1px solid #4D4A6A;margin-top:16px;padding-top:16px}
+.overview-guidance{font-size:12px;margin-top:20px}.overview-guidance p{margin:8px 0}

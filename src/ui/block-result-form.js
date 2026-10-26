@@ -1,9 +1,12 @@
+import { isTuesdayResults } from '../domain/tuesday-results.js';
+import { tuesdayResultsForm } from './tuesday-results-form.js';
 import { usesSessionWeights } from '../domain/weights-finisher-results.js';
 import { weightsFinisherForm } from './weights-finisher-form.js';
 import { el, button, heading } from './components.js';
 import { prescription } from './exercise-prescription.js';
 import { resultSchema, partialLabel } from '../domain/result-schemas.js';
 export function resultForm(record, blockId, { changed, continueBlock, continueToAbs, save }) {
+  if(isTuesdayResults(record.workoutSnapshot))return tuesdayResultsForm(record,{changed,save});
   if(usesSessionWeights(record.workoutSnapshot))return weightsFinisherForm(record,{changed,save});
   const workout=record.workoutSnapshot, schema=resultSchema(workout), phase=workout.phases.find(p=>p.id===blockId);
   const continuous=workout.execution?.mode==='continuous-results';

@@ -1,7 +1,7 @@
 import { createDraft as baseDraft, optionalNumber } from './focus-results.js';
 import { readWeightPreference } from '../storage/weight-preferences.js';
 export const weightsFinisherSchema = { kind: 'weights-finisher', weightLabel: 'Actual Weight (kg)', blocks: {} };
-export const usesSessionWeights = workout => workout?.execution?.schema === 'weights-finisher-v1';
+export const usesSessionWeights = workout => ['weights-finisher-v1', 'tuesday-weights-rounds-v1'].includes(workout?.execution?.schema);
 export function createWeightDraft(workout,storage,id,now) {
   const record=baseDraft({...workout,phases:[]},storage,id,now);
   const weights={};

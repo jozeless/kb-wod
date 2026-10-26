@@ -1,7 +1,7 @@
 /** One semantic event per update; hidden/late/paused updates consume, never queue. */
 export function createCueTracker() {
   let previous = null;
-  const blockStart = current => current.kind === 'AMRAP_REPS' ? 'finisher' : 'work';
+  const blockStart = current => (current.kind === 'AMRAP_REPS' || current.phase?.audioCue === 'finisher') ? 'finisher' : 'work';
   return {
     next(current, audible = true) {
       const last = previous;

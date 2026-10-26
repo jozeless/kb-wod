@@ -131,14 +131,14 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     training.circuit.hidden = !amrap;
     if (amrap && training.circuitPhase !== phase.id) {
       training.circuitPhase = phase.id;
-      training.circuit.replaceChildren(...s.circuit.map(ex => el('li', {}, el('div', { className: 'exercise-weight-row' }, el('strong', {}, ex.name), createWeightField(workout, ex).root), el('p', {}, prescription(ex, phase)))));
+      training.circuit.replaceChildren(...s.circuit.map(ex => el('li', {}, el('div', { className: 'exercise-weight-row' }, el('strong', {}, ex.name), ex.equipment === 'bodyweight' ? null : sessionWeightField(ex).root), el('p', {}, prescription(ex, phase)))));
     }
     text(training.exercise, amrap ? phase.name : s.kind === 'TRANSITION' ? phase.name : s.exercise?.name || 'Starting in');
     text(training.target, amrap || s.kind === 'TRANSITION' || s.kind === 'AMRAP_REPS' ? phase.instructions : s.exercise ? (s.kind === 'REST' ? 'Rest and prepare for the next exercise.' : prescription(s.exercise, phase)) : 'This countdown is outside your activity time.');
     text(training.position, s.kind === 'TRANSITION' ? 'Automatic transition · Rest and prepare' : s.kind === 'AMRAP_REPS' ? 'AMRAP repetitions · Count complete reps' : amrap ? 'AMRAP · Repeat at your own pace' : s.exercise ? `Round ${s.round} of ${phase.rounds} · Interval ${s.interval + 1} of ${phase.timer.intervals}` : '');
     const resultTitle = usesSessionWeights(workout) ? 'Workout Results' : resultSchema(workout).blocks[phase.id].title;
     text(training.next, amrap ? `Next: ${continuous && s.nextPhase ? s.nextPhase.name : resultTitle}` : s.exercise ? (s.nextExercise ? `Next: ${s.nextExercise.name}` : `Next: ${continuous && s.nextPhase ? s.nextPhase.name : resultTitle}`) : '');
-    training.weight.root.hidden = !s.exercise; if (s.exercise) training.weight.setExercise(s.exercise);
+    training.weight.root.hidden = !s.exercise || s.exercise.equipment === 'bodyweight'; if (s.exercise && s.exercise.equipment !== 'bodyweight') training.weight.setExercise(s.exercise);
     training.progress.value = (offset + s.elapsedMs) / (workout.durationSeconds * 1000);
     training.pause.textContent = s.status === 'paused' ? 'Resume' : 'Pause';
     const checkpoint = Math.floor(engine.elapsed() / 1000);

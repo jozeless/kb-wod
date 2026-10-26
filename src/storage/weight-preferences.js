@@ -14,14 +14,14 @@ export function readWeight(storage, workout, exercise) {
   if (raw === null) return '';
   const value = JSON.parse(raw);
   // New session-weight schema reserves null as an explicit cleared preference.
-  if (value === null && workout.execution?.schema === 'weights-finisher-v1') return '';
+  if (value === null && ['weights-finisher-v1', 'tuesday-weights-rounds-v1'].includes(workout.execution?.schema)) return '';
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) throw new Error('Stored weight is invalid. It has been preserved.');
   return String(value);
 }
 export function writeWeight(storage, workout, exercise, raw) {
   const value = parseWeight(raw);
   const key = weightKey(workout, exercise);
-  if (value === null && workout.execution?.schema !== 'weights-finisher-v1') storage.removeItem(key);
+  if (value === null && !['weights-finisher-v1', 'tuesday-weights-rounds-v1'].includes(workout.execution?.schema)) storage.removeItem(key);
   else storage.setItem(key, JSON.stringify(value));
 }
 

@@ -58,3 +58,21 @@
 /* Long phase names/format labels must wrap within narrow shared cards. */
 .hm-workout-overview .phase-heading{flex-wrap:wrap}
 .hm-workout-overview .phase-format{max-width:100%;overflow-wrap:anywhere}
+
+/* UI v2 / PR 02: canvas and day surfaces only. Legacy control roles stay intact. */
+:root{background:var(--hm-bg);color:var(--hm-text-primary)}
+body{background:var(--hm-bg)}
+.app-header{border-color:var(--hm-border)}
+.app-header a span{color:var(--hm-accent)}
+.label,.eyebrow,.page-heading>p:last-child,.muted,#status{color:var(--hm-text-primary)}
+.day-slot{background:var(--hm-surface-primary);border-color:var(--hm-border);color:var(--hm-text-primary)}
+.secondary{color:var(--hm-text-primary);border-color:var(--hm-border)}
+.result-message,.weight-error{color:var(--hm-highlight)}
+/* Keep the existing light navigation, timer, empty states and history panels readable. */
+nav,.active-panel,.empty-state,.exercise-list{color:#182b26}
+.active-panel .eyebrow,.active-panel .muted,.empty-state .muted,.exercise-list .muted{color:#52665c}
+.active-panel .secondary,.empty-state .secondary,.exercise-list .secondary{color:#244e40;border-color:#d7dfd6}
+.active-panel .weight-error,.empty-state .weight-error,.exercise-list .weight-error{color:#864820}
+/* Detail sections are transparent on their already-approved dark overview. */
+.hm-workout-overview .exercise-list,.hm-workout-overview .muted{color:var(--hm-text-primary)}
+.hm-workout-overview .weight-error{color:var(--hm-highlight)}

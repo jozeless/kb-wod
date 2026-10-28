@@ -13,8 +13,12 @@ import { focus001 } from './focus-001-upper-abs.js';
 import { hybrid001 } from './hybrid-001-strength-sweat.js';
 // A version is immutable once used. Future edits append a new version.
 export const workoutTypes = [{ id: 'hybrid', label: 'Hybrid' }, { id: 'focus', label: 'Focus' }];
+// Internal registry: keep every historical/demo version for exact reference lookup.
 export const workouts = [...demoWorkouts, fridayToBlack, thursdayBells, tuesdayOfSpades, focus001, focus002, hybrid001, hybrid002, focus002LowerAbs, hybrid002FullBodyEngine, mondayParanoid, mondayParanoidV2, mondayParanoidV3];
+// Compatibility view of latest versions; not the public Library selection.
 export const currentWorkouts = workouts.filter(w => !workouts.some(other => other.id === w.id && !other.archived && other.version > w.version));
+// Public selection is explicitly pinned and ordered; the full registry above stays intact.
+export const libraryWorkouts = [mondayParanoidV3, tuesdayOfSpades, thursdayBells, fridayToBlack];
 export function findWorkout(id, version) {
   return workouts.find(w => w.id === id && w.version === Number(version));
 }

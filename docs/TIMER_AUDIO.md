@@ -26,7 +26,7 @@ Each beep has a 12 ms attack, a held level, and 35 ms release to zero. Peak gain
 
 Start Workout, Sound and Resume keep gesture-based AudioContext unlocking. A recovered Sound On can be turned Off before Resume without unlocking or replaying the initial signal. Missing/blocked/suspended Web Audio never blocks the timer or save flow. A resume promise that never settles is bounded to 250 ms of initialization; the countdown then starts with Sound Off. This guard never changes workout/countdown durations. Disposed audio objects cannot be re-enabled by a late callback. Existing Sound preferences remain unchanged.
 
-The static worker is `kb2-static-v17`. Historical local WAV assets remain in the repository and static precache, but all current workout signals work without fetching/decoding those files at runtime and without an external audio library. Close old app tabs to allow the waiting worker to activate after a separately authorized release. No deploy or merge is performed by this change.
+The static worker is `kb2-static-v18`. Historical local WAV assets remain in the repository and static precache, but all current workout signals work without fetching/decoding those files at runtime and without an external audio library. Close old app tabs to allow the waiting worker to activate after a separately authorized release. No deploy or merge is performed by this change.
 
 ## Tests and practical limits
 

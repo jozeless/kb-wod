@@ -1,8 +1,8 @@
 import { supportsResults } from '../domain/result-schemas.js';
 import { draftActions } from './session-history.js';
-import { currentWorkouts, workoutTypes, findWorkout, typeLabel } from '../data/catalog.js';
+import { libraryWorkouts, findWorkout, typeLabel } from '../data/catalog.js';
 import { workoutDetails } from './workout-details.js';
-import { days, filterWorkouts } from '../domain/planning.js';
+import { days } from '../domain/planning.js';
 import { el, button, heading, workoutCard, emptyState } from './components.js';
 const detailUrl = w => `#workout/${encodeURIComponent(w.id)}/${w.version}`;
 export function todayView(plan, go, remove, locked) {
@@ -22,21 +22,11 @@ export function todayView(plan, go, remove, locked) {
   return el('div', {}, heading('YOUR WEEK', 'Today', 'Plan Monday through Sunday. Nothing changes unless you change it.'), list);
 }
 export function libraryView(day, go, assign) {
-  const container = el('div', {}, heading(day ? `PLAN ${day.toUpperCase()}` : 'YOUR COLLECTION', day ? `Choose for ${day}` : 'Library', 'Choose a workout or explore the clearly labeled demonstration cards.'));
+  const container = el('div', {}, heading(day ? `PLAN ${day.toUpperCase()}` : 'HEAVY METAL KB', day ? `Choose for ${day}` : 'Library', 'Four approved HM/KB workouts. Assignments remain your choice.'));
   if (day) container.append(button('Cancel assignment', () => go('#today'), true));
-  const search = el('input', { type: 'search', id: 'search', placeholder: 'Search workouts' });
-  const select = el('select', { id: 'workout-type' }, el('option', { value: '' }, 'All types'), ...workoutTypes.map(t => el('option', { value: t.id }, t.label)));
-  const controls = el('div', { className: 'filters' }, el('label', {}, 'Search workouts', search), el('label', {}, 'Workout Type', select));
-  const grid = el('div', { className: 'library-grid' });
-  const count = el('p', { className: 'muted', 'aria-live': 'polite' });
-  function update() {
-    const found = filterWorkouts(currentWorkouts, search.value, select.value);
-    count.textContent = `${found.length} workout${found.length === 1 ? '' : 's'}`;
-    grid.replaceChildren(...found.map(w => workoutCard(w, day ? w => assign(day, w) : w => go(detailUrl(w)), day ? `Assign to ${day}` : 'View workout')));
-    if (!found.length) grid.append(emptyState('No matching workouts', 'Try another search or workout type.'));
-  }
-  search.addEventListener('input', update); select.addEventListener('change', update); update();
-  container.append(controls, count, grid); return container;
+  const count = el('p', {className: 'muted', 'aria-live': 'polite'}, `${libraryWorkouts.length} workouts`);
+  const grid = el('div', {className: 'library-grid'}, ...libraryWorkouts.map(w => workoutCard(w, day ? w => assign(day, w) : w => go(detailUrl(w)), day ? `Assign to ${day}` : 'View workout')));
+  container.append(count, grid); return container;
 }
 export function workoutView(id, version, stage, go, startWorkout) {
   const w = findWorkout(id, version);

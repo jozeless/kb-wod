@@ -7,10 +7,10 @@ async function start(page){await clock(page);await page.goto(detail);await page.
 async function upper(page){await page.clock.fastForward(603000);await expect(page.getByRole('heading',{name:'Upper Results',exact:true})).toBeVisible();await expect(page.getByText('Draft saved locally.',{exact:true})).toBeVisible();}
 async function abs(page){await page.getByRole('button',{name:'Continue to ABS',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');await page.clock.fastForward(603000);await expect(page.getByRole('heading',{name:'ABS Results',exact:true})).toBeVisible();await expect(page.getByText('Draft saved locally.',{exact:true})).toBeVisible();}
 const floor=page=>page.getByRole('region',{name:'KB Floor Press results',exact:true});
-test('Library chooses v2 without migrating a previous weekly assignment',async({page})=>{
+test('Hidden Focus v1/v2 links remain usable without migrating a previous weekly assignment',async({page})=>{
  await page.goto('./');await page.evaluate(()=>localStorage.setItem('kb2.weekly-plan.v1',JSON.stringify({Tuesday:{workoutId:'focus-001-upper-abs',version:1}})));await page.reload();
  await page.getByRole('region',{name:'Tuesday',exact:true}).getByRole('button',{name:'View workout: Upper Body + ABS'}).click();await expect(page).toHaveURL(/upper-abs\/1$/);
- await page.getByRole('link',{name:'Library',exact:true}).click();await page.getByRole('button',{name:'View workout: Upper Body + ABS'}).click();await expect(page).toHaveURL(/upper-abs\/2$/);
+ await page.getByRole('link',{name:'Library',exact:true}).click();await expect(page.getByRole('button',{name:'View workout: Upper Body + ABS'})).toHaveCount(0);await page.goto(detail);await expect(page).toHaveURL(/upper-abs\/2$/);
  await expect(page.getByRole('region',{name:'Upper block'})).toContainText('40s work / 20s rest');
  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('kb2.weekly-plan.v1')).Tuesday.version)).toBe(1);
 });

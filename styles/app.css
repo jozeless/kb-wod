@@ -55,3 +55,6 @@
 .recording-overview>h2{font-size:14px}.recording-overview>p{font-size:13px}
 .hm-workout-overview .recording-panel{margin-top:10px}.recording-panel h3{font-size:13px;margin:0}.recording-panel>div+div{border-top:1px solid #4D4A6A;margin-top:16px;padding-top:16px}
 .overview-guidance{font-size:12px;margin-top:20px}.overview-guidance p{margin:8px 0}
+/* Long phase names/format labels must wrap within narrow shared cards. */
+.hm-workout-overview .phase-heading{flex-wrap:wrap}
+.hm-workout-overview .phase-format{max-width:100%;overflow-wrap:anywhere}

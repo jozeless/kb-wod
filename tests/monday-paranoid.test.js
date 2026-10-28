@@ -16,7 +16,7 @@ test('Monday Paranoid is a separate identity with the approved Hybrid movements,
  assert.deepEqual(monday.exercises.map(ex=>ex.id),['goblet-squat','push-up-renegade-row','swings','alternating-clean','reverse-lunges','atw-front-raise','thrusters','wood-choppers','lateral-lunge-curl']);
 });
 test('Library and manual weekly assignment preserve every existing identity and reference',()=>{
- assert.equal(findWorkout('monday-paranoid',1),monday);assert.equal(currentWorkouts.length,9);assert.deepEqual(filterWorkouts(currentWorkouts,'PARANOID','hybrid'),[mondayParanoidV3]);assert.deepEqual(filterWorkouts(currentWorkouts,'paranoid','focus'),[]);
+ assert.equal(findWorkout('monday-paranoid',1),monday);assert.equal(currentWorkouts.length,10);assert.deepEqual(filterWorkouts(currentWorkouts,'PARANOID','hybrid'),[mondayParanoidV3]);assert.deepEqual(filterWorkouts(currentWorkouts,'paranoid','focus'),[]);
  for(const id of ['focus-001-upper-abs','hybrid-001-strength-sweat'])for(const version of [1,2])assert.equal(findWorkout(id,version).version,version);
  for(const id of ['hybrid-001-strength-sweat','hybrid-002-full-body-engine'])assert.ok(currentWorkouts.some(w=>w.id===id));
  const plan={Monday:{workoutId:hybrid002.id,version:2},Tuesday:{workoutId:'focus-001-upper-abs',version:1}};const updated=assignWorkout(plan,'Sunday',monday);assert.deepEqual(updated.Monday,plan.Monday);assert.deepEqual(updated.Tuesday,plan.Tuesday);assert.deepEqual(updated.Sunday,{workoutId:'monday-paranoid',version:1});assert.equal(plan.Sunday,undefined);

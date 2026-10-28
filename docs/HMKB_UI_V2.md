@@ -100,3 +100,7 @@ The foundations-only description above records PR 01. [PR 02 dark canvas and sur
 ## PR 03 status
 
 [PR 03 header and branding](HMKB_UI_V2_HEADER_BRANDING.md) replaces only the provisional header with the exact user-supplied `hmkblogo001.png`, the HEAVY METAL KB name and the existing live account/sync controls. Its separate stylesheet is scoped to `.app-header`; global styles, typography, navigation, cards, timers, results and cloud logic remain unchanged. The source document above continues to record PR 01 rather than describing the later header's active token use. PWA v21 adds only the approved branding PNG and scoped header stylesheet; the installation identity/icons remain unchanged. No later UI v2 stage begins here.
+
+## PR 04 status
+
+[PR 04 Today WOD cards](HMKB_UI_V2_TODAY_CARDS.md) applies the user-approved Today concept through a separate stylesheet scoped to the existing weekly grid. It highlights the original View workout action, preserves all real card content and leaves every runtime JavaScript module unchanged. Header/navigation and all other screens remain protected. PWA v22 adds only the Today stylesheet. No later stage begins in this change.

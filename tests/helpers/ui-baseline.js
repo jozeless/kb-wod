@@ -1,12 +1,16 @@
 import {expect} from '@playwright/test';
 import fs from 'node:fs/promises';
 export const legacyCSS=await fs.readFile(new URL('../fixtures/ui-v2-01-app.css',import.meta.url),'utf8');
-const root='/workspace/artifacts/ui-v2-03/regressions';
+const root='/workspace/artifacts/ui-v2-04/regressions';
 const previousHeader=await fs.readFile(new URL('../fixtures/ui-v2-02-header.html',import.meta.url),'utf8');
-export async function capture(browser,baseURL,viewport,name,state,tokens,{audit=false,headerBaseline=false,headerEvidence=false,artifactRoot=root}={}){
+export async function capture(browser,baseURL,viewport,name,state,tokens,{audit=false,headerBaseline=false,headerEvidence=false,artifactRoot=root,todayBaseline=false,todayEvidence=false}={}){
  const context=await browser.newContext({baseURL,viewport,serviceWorkers:'block'});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  await page.addInitScript(()=>{window.KB_SUPABASE_CONFIG={url:'https://ui-fixture.supabase.co',publishableKey:'sb_publishable_fixture'};window.AudioContext=class{constructor(){throw Error('Fixture: audio unavailable');}};window.webkitAudioContext=undefined;localStorage.setItem('kb2.weekly-plan.v1',JSON.stringify({Monday:{workoutId:'monday-paranoid',version:3},Tuesday:{workoutId:'tuesday-of-spades',version:1},Thursday:{workoutId:'thursday-bells',version:1},Friday:{workoutId:'friday-to-black',version:1}}));});
+ if(todayBaseline)await page.route('**/*',async route=>{
+  if(route.request().isNavigationRequest()){const response=await route.fetch();return route.fulfill({response,body:(await response.text()).replace(/\s*<link rel="stylesheet" href="\.\/styles\/hm-today\.css">/,'')});}
+  return route.continue();
+ });
  if(headerBaseline)await page.route('**/*',async route=>{
   const path=new URL(route.request().url()).pathname;
   if(path.endsWith('/src/main.js')){const response=await route.fetch();return route.fulfill({response,body:(await response.text()).replace("document.querySelector('.app-header .header-account')","document.querySelector('.app-header')")});}
@@ -31,7 +35,7 @@ export async function capture(browser,baseURL,viewport,name,state,tokens,{audit=
  await page.evaluate(()=>scrollTo(0,document.body.scrollHeight));const reachable=await page.evaluate(()=>{const nodes=[...document.querySelectorAll('#app button,#app input,#app textarea,#app select,#app a')].filter(n=>n.checkVisibility());return !nodes.length||nodes.at(-1).getBoundingClientRect().bottom<=document.querySelector('nav').getBoundingClientRect().top;});expect(reachable).toBe(true);await page.evaluate(()=>scrollTo(0,0));
  }
  const metrics=await page.evaluate(()=>{const nodes=[...document.querySelectorAll('.workout-card,.phase-bar,nav,nav a,input,textarea,select,.active-panel,.phase-clock')];return {geometry:nodes.map(n=>{const r=n.getBoundingClientRect();return [n.tagName,r.x,r.y,r.width,r.height];}),styles:nodes.filter(n=>!n.matches('.phase-bar')).map(n=>{const s=getComputedStyle(n);return [s.backgroundColor,s.color,s.fontSize,s.borderRadius,s.padding];})};});
- const dir=`${artifactRoot}/${process.env.HM_CAPTURE_PRECHANGE?'pre-change':headerBaseline?'before':tokens?'after':'before'}`;await fs.mkdir(dir,{recursive:true});const png=await page.screenshot({path:`${dir}/${name}-${state}.png`,fullPage:true,animations:'disabled',style:'nav{visibility:hidden}'});if(audit){await page.evaluate(()=>scrollTo(0,document.body.scrollHeight));await page.screenshot({path:`${dir}/${name}-${state}-viewport.png`,animations:'disabled'});}let protectedMetrics,contentPNG,viewportPNG;
+ const dir=`${artifactRoot}/${process.env.HM_CAPTURE_PRECHANGE?'pre-change':headerBaseline||todayBaseline?'before':tokens?'after':'before'}`;await fs.mkdir(dir,{recursive:true});const png=await page.screenshot({path:`${dir}/${name}-${state}.png`,fullPage:true,animations:'disabled',style:'nav{visibility:hidden}'});if(audit){await page.evaluate(()=>scrollTo(0,document.body.scrollHeight));await page.screenshot({path:`${dir}/${name}-${state}-viewport.png`,animations:'disabled'});}let protectedMetrics,contentPNG,viewportPNG;
  if(headerEvidence){
   await page.evaluate(()=>scrollTo(0,0));
   protectedMetrics=await page.evaluate(()=>{
@@ -59,5 +63,13 @@ export async function capture(browser,baseURL,viewport,name,state,tokens,{audit=
    expect(bounds.account.height).toBeGreaterThanOrEqual(44);expect(bounds.header.height).toBeLessThanOrEqual(110);
   }
  }
- expect(errors).toEqual([]);await context.close();return {png,metrics,protectedMetrics,contentPNG,viewportPNG};
+ let todayDOM,headerPNG,navPNG;
+ if(todayEvidence){
+  todayDOM=await page.locator('.week-grid').count()?await page.locator('.week-grid').evaluate(n=>n.outerHTML):null;
+  await page.evaluate(()=>scrollTo(0,0));
+  headerPNG=await page.locator('.app-header').screenshot({animations:'disabled'});
+  await page.evaluate(()=>scrollTo(0,0));
+  navPNG=await page.screenshot({clip:await page.getByRole('navigation').boundingBox(),animations:'disabled'});
+ }
+ expect(errors).toEqual([]);await context.close();return {png,metrics,protectedMetrics,contentPNG,viewportPNG,todayDOM,headerPNG,navPNG};
 }

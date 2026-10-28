@@ -1,0 +1,110 @@
+/* UI v2 / PR 04: Today cards only. Keep the shared Library component intact.
+   Palette fallbacks also support the retained pre-token visual fixtures. */
+.week-grid .day-slot {
+  padding: 16px;
+  border: 1px solid var(--hm-border, #4D4A6A);
+  border-radius: 20px;
+  background: var(--hm-surface-primary, #312F4E);
+  color: var(--hm-text-primary, #EDECEE);
+}
+.week-grid .day-slot > h2 {
+  margin-bottom: 12px;
+  padding-left: 8px;
+  border-left: 3px solid var(--hm-accent, #B37ACB);
+  color: var(--hm-text-primary, #EDECEE);
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.4;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.week-grid .workout-card {
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--hm-border, #4D4A6A);
+  border-radius: 14px;
+  background: var(--hm-bg, #212227);
+  color: var(--hm-text-primary, #EDECEE);
+  transition: none;
+}
+.week-grid .workout-card .metal-micro-mark {
+  color: var(--hm-accent, #B37ACB);
+  font-size: 10px;
+  letter-spacing: .08em;
+}
+.week-grid .workout-card .badge {
+  color: var(--hm-highlight, #EEEF58);
+  font-size: 10px;
+}
+.week-grid .workout-card strong {
+  color: var(--hm-text-primary, #EDECEE);
+  font-size: clamp(24px, 2.5vw, 30px);
+  font-weight: 850;
+  line-height: 1.15;
+  letter-spacing: -.025em;
+}
+.week-grid .workout-card .metal-subtitle {
+  color: var(--hm-text-primary, #EDECEE);
+  font-size: 13px;
+  font-weight: 400;
+}
+.week-grid .workout-card > span:not([class]),
+.week-grid .workout-card .card-structure {
+  color: var(--hm-text-primary, #EDECEE);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.week-grid .workout-card .card-footer {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--hm-highlight, #EEEF58);
+  color: var(--hm-bg, #212227);
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.week-grid .day-slot > .secondary {
+  min-height: 44px;
+  margin: 12px 6px 0 0;
+  padding: 8px 10px;
+  border-color: var(--hm-border, #4D4A6A);
+  color: var(--hm-text-primary, #EDECEE);
+  font-size: 13px;
+}
+.week-grid .workout-card:focus-visible,
+.week-grid .day-slot > .secondary:focus-visible {
+  outline: 3px solid var(--hm-highlight, #EEEF58);
+  outline-offset: 4px;
+}
+.week-grid .workout-card:active,
+.week-grid .day-slot > .secondary:active {
+  border-color: var(--hm-highlight, #EEEF58);
+}
+@media (hover: hover) {
+  .week-grid .workout-card:hover { border-color: var(--hm-accent, #B37ACB); }
+  .week-grid .day-slot > .secondary:hover:not(:disabled) {
+    background: var(--hm-surface-secondary, #4D4A6A);
+  }
+}
+@media (forced-colors: active) {
+  .week-grid .day-slot,
+  .week-grid .workout-card { background: Canvas; color: CanvasText; border-color: CanvasText; }
+  .week-grid .day-slot > h2,
+  .week-grid .workout-card .metal-micro-mark,
+  .week-grid .workout-card .badge,
+  .week-grid .workout-card strong,
+  .week-grid .workout-card .metal-subtitle,
+  .week-grid .workout-card > span:not([class]),
+  .week-grid .workout-card .card-structure { color: CanvasText; border-color: CanvasText; }
+  .week-grid .workout-card .card-footer { background: ButtonFace; color: ButtonText; border: 1px solid ButtonText; }
+  .week-grid .day-slot > .secondary { color: ButtonText; border-color: ButtonText; }
+  .week-grid .workout-card:focus-visible,
+  .week-grid .day-slot > .secondary:focus-visible { outline-color: Highlight; }
+}

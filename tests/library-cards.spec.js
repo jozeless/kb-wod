@@ -28,7 +28,7 @@ test('Library and assignment redesign preserve Today, history grids, timer and e
  for(const width of info.project.name==='mobile'?[320,390]:[768,1280]){
   for(const state of ['library','assignment','today','details','timer','results','history','history-list','account']){
    const args=[browser,baseURL,{width,height:844},`${width}`,state,true];
-   const options={headerEvidence:true,todayEvidence:true,artifactRoot:'/workspace/artifacts/ui-v2-06/regressions/library'};
+   const options={headerEvidence:true,todayEvidence:true,artifactRoot:'/workspace/artifacts/ui-v2-07/regressions/library'};
    const before=await capture(...args,{...options,libraryBaseline:true}),after=await capture(...args,{...options,audit:true});
    expect(after.headerPNG.equals(before.headerPNG),`${width}/${state}: header unchanged`).toBe(true);
    expect(after.navPNG.equals(before.navPNG),`${width}/${state}: navigation unchanged`).toBe(true);
@@ -102,7 +102,7 @@ test('Library remains readable at four widths, enlarged text and forced colors w
 
 test('offline Library and assignment keep current and historical resources and the existing app identity',async({page,context})=>{
  await localMode(page);await page.goto('./#library');await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
- expect(await page.evaluate(async()=>Boolean(await (await caches.open('kb2-static-v24')).match(new URL('./styles/hm-library.css',location.href))))).toBe(true);
+ expect(await page.evaluate(async()=>Boolean(await (await caches.open('kb2-static-v25')).match(new URL('./styles/hm-library.css',location.href))))).toBe(true);
  await context.setOffline(true);await page.reload();await publicCards(page);
  const original=await stored(page);await page.locator('.hm-library-view .card-footer').first().click();await expect(page).toHaveURL(/#workout\/monday-paranoid\/3$/);await expect(page.getByRole('button',{name:'Start Workout',exact:true})).toBeVisible();
  await page.getByRole('link',{name:'Today',exact:true}).click();await page.getByRole('region',{name:'Wednesday',exact:true}).getByRole('button',{name:'Add workout',exact:true}).click();await publicCards(page,'Assign to Wednesday');

@@ -64,7 +64,8 @@ test('historical Focus prescription and assignment remain usable before explicit
  await expect(upper.locator('ol li').last()).toContainText('4–6 controlled cycles');
  await expect(upper).toContainText('1–3 repetitions in reserve');await expect(upper).toContainText('shoulder discomfort');
  await expect(abs).toContainText('40 seconds, then rest for 20 seconds');await expect(abs).toContainText('1 to 10');
- await expect(page.getByText('Warm-up is separate from the 20-minute workout.')).toBeVisible();
+ await expect(page.getByText('Warm-up is separate from the 20-minute workout.')).toHaveCount(0);
+ expect(await page.evaluate(async()=>{const {findWorkout}=await import('./src/data/catalog.js');return findWorkout('focus-001-upper-abs',1).warmup.note;})).toBe('Warm-up is separate from the 20-minute workout.');
  expect(await page.evaluate(()=>localStorage.getItem('kb2.weekly-plan.v1'))).toBe(before);
  await expect(page.getByRole('button',{name:'Start Workout'})).toBeVisible();
  await page.getByRole('link',{name:'Today',exact:true}).click();

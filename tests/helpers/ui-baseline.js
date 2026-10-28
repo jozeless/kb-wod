@@ -1,7 +1,7 @@
 import {expect} from '@playwright/test';
 import fs from 'node:fs/promises';
 export const legacyCSS=await fs.readFile(new URL('../fixtures/ui-v2-01-app.css',import.meta.url),'utf8');
-const root='/workspace/artifacts/ui-v2-06/regressions';
+const root='/workspace/artifacts/ui-v2-07/regressions';
 const previousHeader=await fs.readFile(new URL('../fixtures/ui-v2-02-header.html',import.meta.url),'utf8');
 export async function capture(browser,baseURL,viewport,name,state,tokens,{audit=false,headerBaseline=false,headerEvidence=false,artifactRoot=root,todayBaseline=false,todayEvidence=false,libraryBaseline=false,detailsBaseline=false,workoutId='monday-paranoid',workoutVersion=3}={}){
  const context=await browser.newContext({baseURL,viewport,serviceWorkers:'block'});

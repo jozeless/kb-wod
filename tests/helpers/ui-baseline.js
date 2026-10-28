@@ -1,11 +1,18 @@
 import {expect} from '@playwright/test';
 import fs from 'node:fs/promises';
 export const legacyCSS=await fs.readFile(new URL('../fixtures/ui-v2-01-app.css',import.meta.url),'utf8');
-const root='/workspace/artifacts/ui-v2-02';
-export async function capture(browser,baseURL,viewport,name,state,tokens,{audit=false}={}){
+const root='/workspace/artifacts/ui-v2-03/regressions';
+const previousHeader=await fs.readFile(new URL('../fixtures/ui-v2-02-header.html',import.meta.url),'utf8');
+export async function capture(browser,baseURL,viewport,name,state,tokens,{audit=false,headerBaseline=false,headerEvidence=false,artifactRoot=root}={}){
  const context=await browser.newContext({baseURL,viewport,serviceWorkers:'block'});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  await page.addInitScript(()=>{window.KB_SUPABASE_CONFIG={url:'https://ui-fixture.supabase.co',publishableKey:'sb_publishable_fixture'};window.AudioContext=class{constructor(){throw Error('Fixture: audio unavailable');}};window.webkitAudioContext=undefined;localStorage.setItem('kb2.weekly-plan.v1',JSON.stringify({Monday:{workoutId:'monday-paranoid',version:3},Tuesday:{workoutId:'tuesday-of-spades',version:1},Thursday:{workoutId:'thursday-bells',version:1},Friday:{workoutId:'friday-to-black',version:1}}));});
+ if(headerBaseline)await page.route('**/*',async route=>{
+  const path=new URL(route.request().url()).pathname;
+  if(path.endsWith('/src/main.js')){const response=await route.fetch();return route.fulfill({response,body:(await response.text()).replace("document.querySelector('.app-header .header-account')","document.querySelector('.app-header')")});}
+  if(route.request().isNavigationRequest()){const response=await route.fetch();return route.fulfill({response,body:(await response.text()).replace(/<header class="app-header">[\s\S]*?<\/header>/,previousHeader.trim()).replace(/\s*<link rel="stylesheet" href="\.\/styles\/hm-header\.css">/,'')});}
+  return route.continue();
+ });
  if(!tokens)await page.route('**/*',async route=>{if(new URL(route.request().url()).pathname.endsWith('/styles/app.css'))return route.fulfill({contentType:'text/css',body:legacyCSS});if(route.request().isNavigationRequest()){const response=await route.fetch();return route.fulfill({response,body:(await response.text()).replace(/\s*<link rel="stylesheet" href="\.\/styles\/hm-tokens\.css">/,'')});}return route.continue();});
  await page.clock.install({time:new Date('2026-10-28T12:00:00Z')});await page.clock.pauseAt(new Date('2026-10-28T12:00:01Z'));
  await page.goto(state==='account'?'./#account':state==='today'?'./#today':state==='library'?'./#library':'./#workout/monday-paranoid/3');
@@ -24,5 +31,33 @@ export async function capture(browser,baseURL,viewport,name,state,tokens,{audit=
  await page.evaluate(()=>scrollTo(0,document.body.scrollHeight));const reachable=await page.evaluate(()=>{const nodes=[...document.querySelectorAll('#app button,#app input,#app textarea,#app select,#app a')].filter(n=>n.checkVisibility());return !nodes.length||nodes.at(-1).getBoundingClientRect().bottom<=document.querySelector('nav').getBoundingClientRect().top;});expect(reachable).toBe(true);await page.evaluate(()=>scrollTo(0,0));
  }
  const metrics=await page.evaluate(()=>{const nodes=[...document.querySelectorAll('.workout-card,.phase-bar,nav,nav a,input,textarea,select,.active-panel,.phase-clock')];return {geometry:nodes.map(n=>{const r=n.getBoundingClientRect();return [n.tagName,r.x,r.y,r.width,r.height];}),styles:nodes.filter(n=>!n.matches('.phase-bar')).map(n=>{const s=getComputedStyle(n);return [s.backgroundColor,s.color,s.fontSize,s.borderRadius,s.padding];})};});
- const dir=`${root}/${process.env.HM_CAPTURE_PRECHANGE?'pre-change':tokens?'after':'before'}`;await fs.mkdir(dir,{recursive:true});const png=await page.screenshot({path:`${dir}/${name}-${state}.png`,fullPage:true,animations:'disabled',style:'nav{visibility:hidden}'});if(audit){await page.evaluate(()=>scrollTo(0,document.body.scrollHeight));await page.screenshot({path:`${dir}/${name}-${state}-viewport.png`,animations:'disabled'});}expect(errors).toEqual([]);await context.close();return {png,metrics};
+ const dir=`${artifactRoot}/${process.env.HM_CAPTURE_PRECHANGE?'pre-change':headerBaseline?'before':tokens?'after':'before'}`;await fs.mkdir(dir,{recursive:true});const png=await page.screenshot({path:`${dir}/${name}-${state}.png`,fullPage:true,animations:'disabled',style:'nav{visibility:hidden}'});if(audit){await page.evaluate(()=>scrollTo(0,document.body.scrollHeight));await page.screenshot({path:`${dir}/${name}-${state}-viewport.png`,animations:'disabled'});}let protectedMetrics,contentPNG,viewportPNG;
+ if(headerEvidence){
+  await page.evaluate(()=>scrollTo(0,0));
+  protectedMetrics=await page.evaluate(()=>{
+   const origin=document.querySelector('#app').getBoundingClientRect().top;
+   const selectors='#app,#app *,#status,nav,nav *';
+   return [...document.querySelectorAll(selectors)].filter(n=>n.checkVisibility()).map(n=>{
+    const r=n.getBoundingClientRect(),s=getComputedStyle(n),inContent=n.closest('#app')||n.id==='status';
+    return {tag:n.tagName,text:n.childElementCount?null:n.textContent,box:[r.x,inContent?r.y-origin:r.y,r.width,r.height],style:[s.color,s.backgroundColor,s.border,s.borderRadius,s.padding,s.font,s.lineHeight,s.boxShadow]};
+   });
+  });
+  // Normalize the header's intentional vertical displacement only for the content pixel check.
+  contentPNG=await page.locator('#app').screenshot({path:`${dir}/${name}-${state}-content.png`,animations:'disabled',style:'nav{visibility:hidden}.app-header{display:none!important}'});
+  await page.evaluate(()=>scrollTo(0,0));
+  viewportPNG=await page.screenshot({path:`${dir}/${name}-${state}-viewport.png`,animations:'disabled'});
+  if(!headerBaseline){
+   await expect(page.getByRole('link',{name:'Heavy Metal KB home',exact:true})).toBeVisible();
+   await expect(page.locator('.brand-logo')).toBeVisible();
+   expect(await page.locator('.brand-logo').evaluate(n=>n.complete&&n.naturalWidth===1254&&n.naturalHeight===1254)).toBe(true);
+   const bounds=await page.evaluate(()=>{
+    const header=document.querySelector('.app-header').getBoundingClientRect(),rect=sel=>{const r=document.querySelector(sel).getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height};};
+    return {header:{x:header.x,y:header.y,right:header.right,bottom:header.bottom,height:header.height},brand:rect('.brand-lockup'),logo:rect('.brand-logo'),name:rect('.brand-name'),account:rect('.account-control'),sync:rect('.cloud-indicator')};
+   });
+   expect(bounds.brand.right).toBeLessThanOrEqual(bounds.account.x);expect(bounds.logo.right).toBeLessThanOrEqual(bounds.name.x);expect(bounds.account.bottom).toBeLessThanOrEqual(bounds.sync.y);
+   for(const key of ['brand','logo','name','account','sync']){const r=bounds[key];expect(r.x).toBeGreaterThanOrEqual(bounds.header.x);expect(r.right).toBeLessThanOrEqual(bounds.header.right);expect(r.y).toBeGreaterThanOrEqual(bounds.header.y);expect(r.bottom).toBeLessThanOrEqual(bounds.header.bottom);}
+   expect(bounds.account.height).toBeGreaterThanOrEqual(44);expect(bounds.header.height).toBeLessThanOrEqual(110);
+  }
+ }
+ expect(errors).toEqual([]);await context.close();return {png,metrics,protectedMetrics,contentPNG,viewportPNG};
 }

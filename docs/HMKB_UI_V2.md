@@ -96,3 +96,7 @@ Added files: `styles/hm-tokens.css`, this document, `tests/ui-foundations.test.j
 ## PR 02 status
 
 The foundations-only description above records PR 01. [PR 02 dark canvas and surfaces](HMKB_UI_V2_DARK_CANVAS.md) now opts the page canvas/day containers into these roles with scoped light-component compatibility. The five-screen baseline suite is retained and compares against a frozen PR 01 CSS fixture: intentional colors may differ while protected component geometry/styles must remain identical. This replaces PR 01's whole-page pixel-equality expectation for the deliberate color migration, not its functional or accessibility checks.
+
+## PR 03 status
+
+[PR 03 header and branding](HMKB_UI_V2_HEADER_BRANDING.md) replaces only the provisional header with the exact user-supplied `hmkblogo001.png`, the HEAVY METAL KB name and the existing live account/sync controls. Its separate stylesheet is scoped to `.app-header`; global styles, typography, navigation, cards, timers, results and cloud logic remain unchanged. The source document above continues to record PR 01 rather than describing the later header's active token use. PWA v21 adds only the approved branding PNG and scoped header stylesheet; the installation identity/icons remain unchanged. No later UI v2 stage begins here.

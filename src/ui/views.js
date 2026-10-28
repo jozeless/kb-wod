@@ -41,6 +41,7 @@ export function workoutView(id, version, stage, go, startWorkout) {
     view.append(emptyState('Result saving is not configured', 'Result fields will be defined in a later phase. No session or result has been saved.'), button('Return to Today', () => go('#today'))); return view;
   }
   if (w.phases.length && stage === 'workout') {
+    view.classList.add('hm-detail-view');
     view.append(workoutDetails(w), button('Start Workout', () => startWorkout(w)));
     if (supportsResults(w)) view.append(button('View saved sessions', () => go(`#history/${w.id}`), true), draftActions(w, go));
     return view;

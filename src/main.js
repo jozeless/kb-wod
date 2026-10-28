@@ -113,7 +113,7 @@ window.addEventListener('beforeunload', event => {
 window.addEventListener('storage', e => { if (e.key === planKey || e.key === null) { try { reloadPlan(); render(false); } catch { /* Keep current state if storage becomes unavailable. */ } } });
 const accountControl=el('a',{href:'#account',className:'account-control'},'Account');
 const cloudIndicator=el('span',{className:'cloud-indicator','aria-live':'polite'},'Saved locally');
-document.querySelector('.app-header').append(accountControl,cloudIndicator);
+document.querySelector('.app-header .header-account').append(accountControl,cloudIndicator);
 let previousAccount=null;
 function cloudUpdate(){
   accountControl.textContent=auth.user?'Account':'Log in';

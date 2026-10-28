@@ -1,0 +1,82 @@
+/* UI v2 / PR 03: application header only. The approved PNG is displayed whole. */
+.app-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 12px max(16px, env(safe-area-inset-right)) 12px max(16px, env(safe-area-inset-left));
+  padding-top: max(12px, env(safe-area-inset-top));
+  background: var(--hm-bg);
+  border-color: var(--hm-border);
+}
+.app-header .brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 56px;
+  letter-spacing: 0;
+}
+.app-header .brand-logo {
+  display: block;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+.app-header .brand-name {
+  color: var(--hm-highlight);
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -.025em;
+}
+.app-header .brand-initials { color: var(--hm-accent); }
+.app-header .header-secondary {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
+  max-width: 104px;
+}
+.app-header .label { display: none; }
+.app-header .header-account {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  min-width: 0;
+}
+.app-header .account-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--hm-border);
+  border-radius: var(--hm-radius-md);
+  background: var(--hm-surface-primary);
+  color: var(--hm-text-primary);
+  letter-spacing: 0;
+  font-weight: 650;
+}
+.app-header .cloud-indicator {
+  max-width: 100%;
+  color: var(--hm-text-primary);
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.app-header a:focus-visible {
+  outline: var(--hm-focus-width) solid var(--hm-focus-color);
+  outline-offset: var(--hm-focus-offset);
+}
+@media (min-width: 640px) {
+  .app-header .brand-name { font-size: 24px; }
+  .app-header .header-secondary { max-width: 240px; }
+}
+@media (min-width: 960px) {
+  .app-header .header-secondary { max-width: 420px; }
+  .app-header .label { display: block; color: var(--hm-text-primary); }
+}

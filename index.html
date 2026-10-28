@@ -10,10 +10,20 @@
   <link rel="icon" href="./icon-192.png">
   <link rel="stylesheet" href="./styles/hm-tokens.css">
   <link rel="stylesheet" href="./styles/app.css">
+  <link rel="stylesheet" href="./styles/hm-header.css">
   <script type="module" src="./src/main.js"></script>
 </head>
 <body>
-  <header class="app-header"><a href="#today" aria-label="KB 2.0 home">KB <span>2.0</span></a><span class="label">YOUR WORK. YOUR WEEK.</span></header>
+  <header class="app-header">
+    <a class="brand-lockup" href="#today" aria-label="Heavy Metal KB home">
+      <img class="brand-logo" src="./assets/branding/hmkblogo001.png" width="1254" height="1254" alt="">
+      <span class="brand-name">HEAVY METAL <span class="brand-initials">KB</span></span>
+    </a>
+    <div class="header-secondary">
+      <span class="label">YOUR WORK. YOUR WEEK.</span>
+      <div class="header-account"></div>
+    </div>
+  </header>
   <main id="app" tabindex="-1"></main>
   <p id="status" role="status" aria-live="polite"></p>
   <nav aria-label="Main navigation">

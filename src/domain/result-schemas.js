@@ -1,3 +1,4 @@
+import { isFridayResults, fridaySchema, createFridayDraft, fridayFinalResults } from './friday-results.js';
 import { isThursdayResults, thursdaySchema, createThursdayDraft, thursdayFinalResults } from './thursday-results.js';
 import { isTuesdayResults, tuesdaySchema, createTuesdayDraft, tuesdayFinalResults } from './tuesday-results.js';
 import { usesSessionWeights, weightsFinisherSchema, createWeightDraft, weightFinalResults } from './weights-finisher-results.js';
@@ -6,10 +7,11 @@ import { createDraft as focusDraft, blockResults as focusBlockResults, finalResu
 import { hybridSchema, hybridBlockResults, hybridFinalResults } from './hybrid-results.js';
 const focusSchema={weightLabel:'Weight (kg)',blocks:{upper:{kind:'rounds',rounds:2,title:'Upper Results',continueLabel:'Continue to ABS'},abs:{kind:'intervals',max:2,title:'ABS Results'}}};
 export function supportsResults(workout){return workout?.execution?.mode==='continuous-results'||workout?.execution?.mode==='two-block-results'||workout?.execution?.schema==='hybrid-001-v2';}
-export function resultSchema(workout){return isThursdayResults(workout)?thursdaySchema:isTuesdayResults(workout)?tuesdaySchema:usesSessionWeights(workout)?weightsFinisherSchema:workout.execution?.mode==='continuous-results'?continuousSchema(workout):workout.execution?.schema==='hybrid-001-v2'?hybridSchema:focusSchema;}
+export function resultSchema(workout){return isFridayResults(workout)?fridaySchema:isThursdayResults(workout)?thursdaySchema:isTuesdayResults(workout)?tuesdaySchema:usesSessionWeights(workout)?weightsFinisherSchema:workout.execution?.mode==='continuous-results'?continuousSchema(workout):workout.execution?.schema==='hybrid-001-v2'?hybridSchema:focusSchema;}
 export function blockOffset(workout,index){return workout.phases.slice(0,index).reduce((sum,phase)=>sum+phase.durationSeconds*1000,0);}
 export function partialLabel(exercise){return exercise.target?.unit.includes('combinations')?'Additional partial combinations':'Additional partial reps';}
 export function createDraft(workout,storage,id,now){
+  if(isFridayResults(workout))return createFridayDraft(workout,storage,id,now);
   if(isThursdayResults(workout))return createThursdayDraft(workout,storage,id,now);
   if(isTuesdayResults(workout))return createTuesdayDraft(workout,storage,id,now);
   if(usesSessionWeights(workout))return createWeightDraft(workout,storage,id,now);
@@ -32,4 +34,4 @@ export function createDraft(workout,storage,id,now){
   return {...envelope,workoutSnapshot:structuredClone(workout),stage:`${workout.phases[0].id}-active`,form};
 }
 export const blockResults=(workout,form,id)=>workout.execution?.mode==='continuous-results'?hybridBlockResults(workout,form,id,continuousSchema(workout)):workout.execution?.schema==='hybrid-001-v2'?hybridBlockResults(workout,form,id):focusBlockResults(workout,form,id);
-export const finalResults=record=>isThursdayResults(record.workoutSnapshot)?thursdayFinalResults(record):isTuesdayResults(record.workoutSnapshot)?tuesdayFinalResults(record):usesSessionWeights(record.workoutSnapshot)?weightFinalResults(record):record.workoutSnapshot.execution?.mode==='continuous-results'?continuousFinalResults(record):record.workoutSnapshot.execution?.schema==='hybrid-001-v2'?hybridFinalResults(record):focusFinalResults(record);
+export const finalResults=record=>isFridayResults(record.workoutSnapshot)?fridayFinalResults(record):isThursdayResults(record.workoutSnapshot)?thursdayFinalResults(record):isTuesdayResults(record.workoutSnapshot)?tuesdayFinalResults(record):usesSessionWeights(record.workoutSnapshot)?weightFinalResults(record):record.workoutSnapshot.execution?.mode==='continuous-results'?continuousFinalResults(record):record.workoutSnapshot.execution?.schema==='hybrid-001-v2'?hybridFinalResults(record):focusFinalResults(record);

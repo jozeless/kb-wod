@@ -9,7 +9,7 @@ async function start(page){await page.getByRole('button',{name:'Start Workout',e
 async function weight(page,name,value){await page.getByLabel(`${name} weight (kg)`,{exact:true}).fill(value);await saved(page);}
 async function sessions(page){return page.evaluate(async()=>{const {listSessions}=await import('./src/storage/session-store.js');return listSessions('tuesday-of-spades');});}
 test('Tuesday Library, proportional metadata bars, manual planning and shared HM/KB mobile design',async({page},info)=>{
- await localMode(page);await page.goto('./#library');await expect(page.locator('.workout-card')).toHaveCount(10);await expect(page.locator('.workout-card--hm-kb')).toHaveCount(10);
+ await localMode(page);await page.goto('./#library');await expect(page.locator('.workout-card')).toHaveCount(11);await expect(page.locator('.workout-card--hm-kb')).toHaveCount(11);
  for(const card of await page.locator('.workout-card').all())if((await card.textContent()).includes('Demo'))await expect(card).not.toContainText('APROBADO');
  await page.getByLabel('Search workouts').fill('tuesday');await page.getByLabel('Workout Type').selectOption('hybrid');const card=page.getByRole('button',{name:'View workout: Tuesday of Spades',exact:true});await expect(card).toHaveCount(1);await expect(card).toContainText('20 minutes');await card.click();await expect(page.getByRole('heading',{name:'Tuesday of Spades',exact:true})).toBeVisible();await expect(page.getByRole('spinbutton')).toHaveCount(7);
  for(const [block,count]of[['Strength',2],['Conditioning',4],['Cardio & Sweat',3]])await expect(page.getByRole('region',{name:`${block} block`,exact:true}).locator('ol li')).toHaveCount(count);

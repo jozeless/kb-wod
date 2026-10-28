@@ -21,6 +21,20 @@ export function compileWorkout(workout) {
       if (!exercise) throw new Error('Unknown exercise');
       return exercise;
     });
+    // Opt-in format: two holding sides share one phase, exercise and monotonic clock.
+    if (phase.format === 'timed-sides') {
+      const holds = phase.timer.holds;
+      if (circuit.length !== 1 || phase.timer.durationSeconds !== phase.durationSeconds ||
+          !Array.isArray(holds) || holds.length !== 2 ||
+          holds.some(h => !h || !['right', 'left'].includes(h.side) || !Number.isFinite(h.durationSeconds) || h.durationSeconds <= 0) ||
+          new Set(holds.map(h => h.side)).size !== 2 ||
+          holds.reduce((sum, h) => sum + h.durationSeconds, 0) !== phase.durationSeconds) throw new Error('Invalid timed holding sides');
+      for (const hold of holds) {
+        add(phase, null, circuit[0], 'SIDE_HOLD', hold.durationSeconds);
+        segments.at(-1).holdingSide = hold.side;
+      }
+      continue;
+    }
     if (phase.format === 'amrap-reps') {
       if (circuit.length !== 1 || phase.timer.durationSeconds !== phase.durationSeconds) throw new Error('Invalid repetition finisher');
       add(phase, null, circuit[0], 'AMRAP_REPS', phase.durationSeconds); continue;

@@ -11,7 +11,7 @@ export function workoutDetails(workout) {
     el('p', {className: 'overview-subtitle'}, `${workout.category} · ${formatTime(workout.durationSeconds * 1000)}`), phaseBar(workout));
   for (const [index, phase] of workout.phases.entries()) {
     const duration = phase.durationSeconds < 60 ? `${phase.durationSeconds} seconds` : `${phase.durationSeconds / 60} min`;
-    const format = phase.format === 'emom' ? `EMOM × ${phase.rounds}` : phase.format === 'intervals' ? `${phase.timer.workSeconds}/${phase.timer.restSeconds} × ${phase.rounds}` : phase.format === 'transition' ? 'Automatic rest transition' : phase.format === 'amrap-reps' ? 'AMRAP repetitions' : 'AMRAP';
+    const format = phase.format === 'emom' ? `EMOM × ${phase.rounds}` : phase.format === 'intervals' ? `${phase.timer.workSeconds}/${phase.timer.restSeconds} × ${phase.rounds}` : phase.format === 'transition' ? 'Automatic rest transition' : phase.format === 'amrap-reps' ? 'AMRAP repetitions' : phase.format === 'timed-sides' ? `Timed sides · ${phase.timer.holds.map(h => h.durationSeconds).join('/')}` : 'AMRAP';
     const section = el('section', {className: 'exercise-list', 'aria-label': `${phase.name} block`},
       el('div', {className: 'phase-heading'}, el('h2', {}, `${String(index + 1).padStart(2, '0')} · ${phase.name.toUpperCase()}`), el('p', {className: 'phase-format'}, `${duration} · ${format}`)));
     const list = el('ol', {className: 'prescriptions'});

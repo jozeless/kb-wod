@@ -1,0 +1,47 @@
+// Released v1 programming. Append a new version for future changes.
+const transition = (id, name) => ({
+  id, name, durationSeconds: 5, format: 'transition', timer: { durationSeconds: 5 }, exerciseIds: [],
+  instructions: 'Rest and prepare. The next block begins automatically after five seconds.', objectives: [],
+});
+export const thursdayBells = {
+  id: 'thursday-bells', version: 1, code: 'HM/KB Thursday', name: 'Thursday Bells', suggestedDay: 'Thursday',
+  type: 'hybrid', category: 'Full Body · Lower Priority', demo: false, archived: false, image: null, durationSeconds: 1270,
+  execution: { mode: 'continuous-results', schema: 'thursday-weights-steps-v1' },
+  purpose: 'Lower-body-priority full-body training, preserving Upper and ABS. Record working weights and total controlled finisher steps only.',
+  warmup: { included: false, note: 'Warm-up, cooldown and the initial 3-2-1 countdown are separate from the 21:10 workout.' },
+  equipment: { name: 'Kettlebell', availableMinKg: 4, availableMaxKg: 24, requiredWeightKg: null },
+  exercises: [
+    { id: 'crush-press', name: 'KB Crush Press', equipment: 'kettlebell', target: { min: 6, max: 8, unit: 'repetitions' } },
+    { id: 'staggered-stance-row', name: 'KB Staggered-Stance Row', equipment: 'kettlebell', target: { min: 6, max: 8, unit: 'repetitions per side' } },
+    { id: 'halo', name: 'KB Halo', equipment: 'kettlebell', target: { min: 4, max: 6, unit: 'repetitions per direction' } },
+    { id: 'tall-kneeling-press-out', name: 'KB Tall-Kneeling Press-Out', equipment: 'kettlebell' },
+    { id: 'half-kneeling-diagonal-chop', name: 'KB Half-Kneeling Diagonal Chop', equipment: 'kettlebell' },
+    { id: 'sit-up-press-out', name: 'KB Sit-Up + Press-Out', equipment: 'kettlebell' },
+    { id: 'goblet-squat', name: 'KB Goblet Squat', equipment: 'kettlebell', target: { min: 8, max: 10, unit: 'repetitions' } },
+    { id: 'swing', name: 'KB Swing', equipment: 'kettlebell', target: { min: 12, max: 15, unit: 'repetitions' } },
+    { id: 'lateral-lunge', name: 'KB Lateral Lunge', equipment: 'kettlebell', target: { min: 5, max: 5, unit: 'repetitions per side' } },
+    { id: 'standing-calf-raise', name: 'KB Standing Calf Raise', equipment: 'kettlebell', target: { min: 12, max: 15, unit: 'repetitions' } },
+    { id: 'suitcase-high-knee-march', name: 'KB Suitcase High-Knee March', equipment: 'kettlebell', note: 'March with deliberate, controlled high knees. One controlled knee lift counts as one step. Count total steps across both holding sides. Choose your own load; no weight is prescribed.' },
+  ],
+  phases: [
+    { id: 'upper', name: 'Upper', format: 'emom', durationSeconds: 360, rounds: 2,
+      timer: { intervalSeconds: 60, intervals: 6 }, exerciseIds: ['crush-press', 'staggered-stance-row', 'halo'],
+      instructions: 'Start each exercise at the beginning of its minute. Recover during the remaining seconds. Repeat the three exercises twice.', objectives: ['Six one-minute intervals, two per exercise.'] },
+    transition('transition-to-abs', 'Transition to ABS'),
+    { id: 'abs', name: 'ABS', format: 'intervals', durationSeconds: 360, rounds: 2,
+      timer: { workSeconds: 40, restSeconds: 20, intervals: 6 }, exerciseIds: ['tall-kneeling-press-out', 'half-kneeling-diagonal-chop', 'sit-up-press-out'],
+      instructions: 'Repeat the three exercises twice: 40 seconds work and 20 seconds rest after every movement, including the final interval. No prescribed repetition counts.', objectives: ['Six complete 40/20 intervals, including all six rests.'] },
+    transition('transition-to-legs', 'Transition to Legs'),
+    { id: 'legs', name: 'Legs', format: 'emom', durationSeconds: 480, rounds: 2,
+      timer: { intervalSeconds: 60, intervals: 8 }, exerciseIds: ['goblet-squat', 'swing', 'lateral-lunge', 'standing-calf-raise'],
+      instructions: 'Start each exercise on its minute. Recover during the remaining seconds. Repeat the four exercises twice, then begin the finisher immediately without extra rest.', objectives: ['Eight one-minute intervals, two per exercise.'] },
+    { id: 'finisher', name: "Hell's Finisher", format: 'timed-sides', durationSeconds: 60, audioCue: 'finisher',
+      timer: { durationSeconds: 60, holds: [{ side: 'right', durationSeconds: 30 }, { side: 'left', durationSeconds: 30 }] }, exerciseIds: ['suitcase-high-knee-march'],
+      instructions: 'Hold the kettlebell in your RIGHT hand for the first 30 seconds, then LEFT hand for the last 30 seconds. Switch automatically when the instruction and change beep occur. March with controlled high knees; one knee lift = one step. Count the total across both halves. No rounds or automatic rests.',
+      objectives: ['Record the working weight and one total of controlled steps across the whole 60 seconds.'] },
+  ],
+  resultFields: [
+    { id: 'exerciseWeights', type: 'exercise-weight-map', label: 'Pesos utilizados', description: '11 pesos de kettlebell (kg), registrados durante esta sesión.', exerciseIds: ['crush-press', 'staggered-stance-row', 'halo', 'tall-kneeling-press-out', 'half-kneeling-diagonal-chop', 'sit-up-press-out', 'goblet-squat', 'swing', 'lateral-lunge', 'standing-calf-raise', 'suitcase-high-knee-march'], unit: 'kg', required: false },
+    { id: 'totalSteps', type: 'integer', label: "Hell's Finisher · Pasos totales", description: 'Una elevación controlada de rodilla = un paso. Sumar ambas mitades en un único total.', min: 0, required: false },
+  ],
+};

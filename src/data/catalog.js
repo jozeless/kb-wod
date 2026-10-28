@@ -1,3 +1,4 @@
+import { thursdayBells } from './thursday-bells.js';
 import { tuesdayOfSpades } from './tuesday-of-spades.js';
 import { mondayParanoidV3 } from './monday-paranoid-v3.js';
 import { mondayParanoidV2 } from './monday-paranoid-v2.js';
@@ -11,7 +12,7 @@ import { focus001 } from './focus-001-upper-abs.js';
 import { hybrid001 } from './hybrid-001-strength-sweat.js';
 // A version is immutable once used. Future edits append a new version.
 export const workoutTypes = [{ id: 'hybrid', label: 'Hybrid' }, { id: 'focus', label: 'Focus' }];
-export const workouts = [...demoWorkouts, tuesdayOfSpades, focus001, focus002, hybrid001, hybrid002, focus002LowerAbs, hybrid002FullBodyEngine, mondayParanoid, mondayParanoidV2, mondayParanoidV3];
+export const workouts = [...demoWorkouts, thursdayBells, tuesdayOfSpades, focus001, focus002, hybrid001, hybrid002, focus002LowerAbs, hybrid002FullBodyEngine, mondayParanoid, mondayParanoidV2, mondayParanoidV3];
 export const currentWorkouts = workouts.filter(w => !workouts.some(other => other.id === w.id && !other.archived && other.version > w.version));
 export function findWorkout(id, version) {
   return workouts.find(w => w.id === id && w.version === Number(version));

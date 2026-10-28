@@ -29,7 +29,7 @@ export async function verifyWorkoutBeeps(page,id,version){
   else if(interrupted&&segment.phase.id!==next.phase.id){
    await expect(page.getByRole('heading',{name:data.blocks[segment.phase.id].title,exact:true})).toBeVisible();await check();await page.clock.fastForward(600000);await check();
    await page.getByRole('button',{name:data.blocks[segment.phase.id].continueLabel,exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');await page.clock.runFor(3000);add(next.kind==='AMRAP_REPS'?'finisher':'work');await check();
-  }else {if(next.kind==='REST')add('rest');else if(next.kind==='AMRAP_REPS'||next.phase.audioCue==='finisher')add('finisher');else if(next.kind==='WORK'||segment.phase.id!==next.phase.id&&next.kind!=='TRANSITION')add('work');else if(next.kind==='EMOM')add('minute');await check();}
+  }else {if(next.kind==='REST')add('rest');else if(next.kind==='AMRAP_REPS'||next.phase.audioCue==='finisher'&&segment.phase.id!==next.phase.id)add('finisher');else if(next.kind==='SIDE_HOLD'||next.kind==='WORK'||segment.phase.id!==next.phase.id&&next.kind!=='TRANSITION')add('work');else if(next.kind==='EMOM')add('minute');await check();}
  }
  await page.clock.fastForward(600000);await check();
  if(data.mode) {const record=await page.evaluate(async({id,version})=>{const {listSessions}=await import('./src/storage/session-store.js');return (await listSessions(id)).find(r=>r.workoutVersion===version);},{id,version});expect(record.activeDurationMs).toBe(data.duration*1000);}

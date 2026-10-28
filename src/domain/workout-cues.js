@@ -18,6 +18,7 @@ export function createCueTracker() {
       if (current.kind === 'REST') return 'rest';
       if (current.kind === 'WORK') return 'work';
       if (current.phase.id !== last.phase.id) return blockStart(current);
+      if (current.kind === 'SIDE_HOLD') return 'work';
       if (current.kind === 'EMOM') return 'minute';
       return null;
     },

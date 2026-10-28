@@ -5,6 +5,7 @@ export function recordingSummary(workout) {
   if (workout.demo) return 'Demo · No real workout results.';
   if (!supportsResults(workout)) return 'Session result saving is not configured for this historical version.';
   const schema = workout.execution?.schema;
+  if (schema === 'thursday-weights-steps-v1') return 'Once pesos de kettlebell (kg) y pasos totales de Hell’s Finisher. Un único total para ambas mitades.';
   if (schema === 'tuesday-weights-rounds-v1') return 'Solo siete pesos de kettlebell (kg) y rondas completas del finisher.';
   if (schema === 'weights-finisher-v1') return 'Exercise weights (kg), complete Thruster repetitions, optional effort and notes.';
   const fields = workout.resultFields || [];

@@ -22,7 +22,7 @@ export function todayView(plan, go, remove, locked) {
   return el('div', {}, heading('YOUR WEEK', 'Today', 'Plan Monday through Sunday. Nothing changes unless you change it.'), list);
 }
 export function libraryView(day, go, assign) {
-  const container = el('div', {}, heading(day ? `PLAN ${day.toUpperCase()}` : 'HEAVY METAL KB', day ? `Choose for ${day}` : 'Library', 'Four approved HM/KB workouts. Assignments remain your choice.'));
+  const container = el('div', {className: 'hm-library-view'}, heading(day ? `PLAN ${day.toUpperCase()}` : 'HEAVY METAL KB', day ? `Choose for ${day}` : 'Library', 'Four approved HM/KB workouts. Assignments remain your choice.'));
   if (day) container.append(button('Cancel assignment', () => go('#today'), true));
   const count = el('p', {className: 'muted', 'aria-live': 'polite'}, `${libraryWorkouts.length} workouts`);
   const grid = el('div', {className: 'library-grid'}, ...libraryWorkouts.map(w => workoutCard(w, day ? w => assign(day, w) : w => go(detailUrl(w)), day ? `Assign to ${day}` : 'View workout')));

@@ -104,3 +104,7 @@ The foundations-only description above records PR 01. [PR 02 dark canvas and sur
 ## PR 04 status
 
 [PR 04 Today WOD cards](HMKB_UI_V2_TODAY_CARDS.md) applies the user-approved Today concept through a separate stylesheet scoped to the existing weekly grid. It highlights the original View workout action, preserves all real card content and leaves every runtime JavaScript module unchanged. Header/navigation and all other screens remain protected. PWA v22 adds only the Today stylesheet. No later stage begins in this change.
+
+## PR 05 status
+
+[PR 05 Library cards](HMKB_UI_V2_LIBRARY_CARDS.md) gives only the four regular/assignment Library cards purple surfaces, a top duration row and the existing action in a yellow footer. A Library-specific wrapper scopes all new CSS, protecting Today and the history's shared `.library-grid`. The shared component, routing and assignment behavior remain unchanged; PWA v23 adds only the Library stylesheet. No later stage begins here.

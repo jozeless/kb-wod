@@ -11,12 +11,14 @@ const region=(page,name)=>page.getByRole('region',{name:`${name} results`,exact:
 test('Monday card shares HM/KB styling and remains discoverable and manually assignable',async({page})=>{
  await localMode(page);await page.goto('./');await page.evaluate(()=>localStorage.setItem('kb2.weekly-plan.v1',JSON.stringify({Tuesday:{workoutId:'focus-001-upper-abs',version:1}})));await page.getByRole('link',{name:'Library',exact:true}).click();await expect(page.locator('.workout-card')).toHaveCount(4);
  const card=page.getByRole('button',{name:cardName,exact:true});await expect(card).toHaveClass(/workout-card--hm-kb/);await expect(card).toContainText('Strength · Sweat · Chaos');await expect(card).toContainText('21:10 total');await expect(page.locator('.workout-card--hm-kb')).toHaveCount(4);
- expect(await page.getByRole('button',{name:'View workout: Tuesday of Spades',exact:true}).evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgb(33, 34, 39)');
+ expect(await page.getByRole('button',{name:'View workout: Tuesday of Spades',exact:true}).evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgb(49, 47, 78)');
  await expect(page.locator('.workout-card')).toHaveCount(4);await expect(page.getByRole('searchbox')).toHaveCount(0);await expect(page.getByRole('combobox')).toHaveCount(0);await card.click();
  await expect(page.getByRole('heading',{name:'Monday Paranoid',exact:true})).toBeVisible();for(const [block,count]of[['Upper',4],['ABS',3],['Legs',3]])await expect(page.getByRole('region',{name:`${block} block`,exact:true}).locator('ol li')).toHaveCount(count);await expect(page.getByText('Designed for Monday. Assign it manually from Today; your plan will not change automatically.')).toBeVisible();
  await page.getByRole('link',{name:'Today',exact:true}).click();await expect(page.getByRole('region',{name:'Monday',exact:true}).getByText('No workout assigned.')).toBeVisible();
  for(const day of ['Monday','Sunday']){const slot=page.getByRole('region',{name:day,exact:true});await slot.getByRole('button',{name:'Add workout'}).click();await page.getByRole('button',{name:`Assign to ${day}: Monday Paranoid`,exact:true}).click();await expect(slot.getByRole('button',{name:cardName,exact:true})).toHaveClass(/workout-card--hm-kb/);}
- await page.reload();await expect(page.getByRole('region',{name:'Tuesday',exact:true}).getByText('Upper Body + ABS',{exact:true})).toBeVisible();await page.getByRole('region',{name:'Sunday',exact:true}).getByRole('button',{name:cardName,exact:true}).click();await expect(page).toHaveURL(/workout\/monday-paranoid\/3$/);
+ await page.reload();await expect(page.getByRole('region',{name:'Tuesday',exact:true}).getByText('Upper Body + ABS',{exact:true})).toBeVisible();
+ expect(await page.getByRole('region',{name:'Tuesday',exact:true}).locator('.workout-card').evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgb(33, 34, 39)');
+ await page.getByRole('region',{name:'Sunday',exact:true}).getByRole('button',{name:cardName,exact:true}).click();await expect(page).toHaveURL(/workout\/monday-paranoid\/3$/);
 });
 test('Shared Monday card stays readable and keyboard accessible on mobile and desktop',async({page})=>{
  await localMode(page);await page.goto('./#library');const card=page.getByRole('button',{name:cardName,exact:true});

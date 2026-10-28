@@ -1,0 +1,239 @@
+/* UI v2 / PR 06: pre-workout details only. All content/controls keep their handlers. */
+.hm-detail-view .hm-workout-overview {
+  margin: 16px 0;
+  padding: 0;
+  border: 0;
+  background: var(--hm-bg, #212227);
+  color: var(--hm-text-primary, #EDECEE);
+}
+.hm-detail-view .hm-workout-overview > .eyebrow {
+  margin: 0 0 8px;
+  color: var(--hm-accent, #B37ACB);
+  font-size: .6875rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.hm-detail-view .hm-workout-overview > .badge {
+  display: inline-block;
+  max-width: 100%;
+  color: var(--hm-text-primary, #EDECEE);
+  font-size: .6875rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.hm-detail-view .overview-title {
+  margin: 12px 0;
+  color: var(--hm-text-primary, #EDECEE);
+  font-size: clamp(1.875rem, 5vw, 2.625rem);
+  font-weight: 850;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.hm-detail-view .hm-workout-overview > .overview-subtitle {
+  margin: 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--hm-highlight, #EEEF58);
+  border-radius: var(--hm-radius-md, .625rem);
+  background: var(--hm-surface-primary, #312F4E);
+  color: var(--hm-text-primary, #EDECEE);
+  font-size: 1rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.hm-detail-view .hm-workout-overview > .phase-bar { height: 10px; margin: 16px 0; }
+.hm-detail-view .hm-workout-overview .exercise-list {
+  margin: 16px 0;
+  padding: 16px;
+  min-width: 0;
+  border: 1px solid var(--hm-border, #4D4A6A);
+  border-radius: var(--hm-radius-lg, 1rem);
+  background: var(--hm-surface-primary, #312F4E);
+  color: var(--hm-text-primary, #EDECEE);
+}
+.hm-detail-view .hm-workout-overview .phase-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 12px;
+}
+.hm-detail-view .hm-workout-overview .phase-heading h2 {
+  flex: 1 1 12rem;
+  min-width: 0;
+  margin: 0;
+  color: var(--hm-text-primary, #EDECEE);
+  font-size: 1rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.hm-detail-view .hm-workout-overview .phase-format {
+  flex: 0 1 auto;
+  max-width: 100%;
+  margin: 0;
+  color: var(--hm-highlight, #EEEF58);
+  font-size: .75rem;
+  line-height: 1.5;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.hm-detail-view .hm-workout-overview .prescriptions { margin: 0; padding: 0; }
+.hm-detail-view .hm-workout-overview .prescriptions li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--hm-border, #4D4A6A);
+}
+.hm-detail-view .hm-workout-overview .prescriptions li:last-child { border-bottom: 0; }
+.hm-detail-view .hm-workout-overview .exercise-weight-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  grid-column: 1;
+  width: 100%;
+  gap: 8px 12px;
+}
+.hm-detail-view .hm-workout-overview .exercise-weight-row > strong {
+  flex: 1 1 7rem;
+  min-width: 0;
+  align-self: auto;
+  color: var(--hm-text-primary, #EDECEE);
+  font-size: .9375rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.hm-detail-view .hm-workout-overview .exercise-weight-row > .weight-preference {
+  flex: 0 1 7rem;
+  width: 7rem;
+  min-width: 0;
+  max-width: 100%;
+}
+.hm-detail-view .hm-workout-overview .exercise-target {
+  grid-column: 1;
+  grid-row: auto;
+  margin: 0;
+  color: var(--hm-text-primary, #EDECEE);
+  font-size: .8125rem;
+  line-height: 1.5;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.hm-detail-view .hm-workout-overview .prescriptions li > p:not(.exercise-target) {
+  margin: 0;
+  color: var(--hm-text-primary, #EDECEE);
+  font-size: .75rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.hm-detail-view .hm-workout-overview .weight-label { gap: 4px; font-size: .75rem; line-height: 1.4; }
+.hm-detail-view .hm-workout-overview .weight-label input {
+  min-height: 44px;
+  padding: 8px 10px;
+  border-color: var(--hm-accent, #B37ACB);
+  background: var(--hm-bg, #212227);
+  color: var(--hm-text-primary, #EDECEE);
+  font-size: 1rem;
+}
+.hm-detail-view .hm-workout-overview .weight-error {
+  color: var(--hm-highlight, #EEEF58);
+  font-size: .75rem;
+  line-height: 1.5;
+}
+.hm-detail-view .phase-guidance {
+  margin-top: 12px;
+  border: 1px solid var(--hm-border, #4D4A6A);
+  border-radius: var(--hm-radius-md, .625rem);
+  font-size: .8125rem;
+  line-height: 1.5;
+}
+.hm-detail-view .phase-guidance summary {
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: var(--hm-radius-md, .625rem);
+  background: var(--hm-bg, #212227);
+  color: var(--hm-accent, #B37ACB);
+  list-style-position: inside;
+}
+.hm-detail-view .phase-guidance > p,
+.hm-detail-view .phase-guidance > ul { margin: 12px; color: var(--hm-text-primary, #EDECEE); }
+.hm-detail-view .phase-guidance > ul { padding-left: 20px; }
+.hm-detail-view .hm-workout-overview .recording-overview {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hm-border, #4D4A6A);
+}
+.hm-detail-view .recording-overview > h2 { margin-bottom: 12px; font-size: 1rem; line-height: 1.4; }
+.hm-detail-view .recording-overview > p { font-size: .875rem; line-height: 1.5; }
+.hm-detail-view .hm-workout-overview .recording-panel {
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px solid var(--hm-border, #4D4A6A);
+  border-radius: var(--hm-radius-lg, 1rem);
+  background: var(--hm-surface-primary, #312F4E);
+}
+.hm-detail-view .recording-panel h3 { margin: 0 0 6px; font-size: .9375rem; line-height: 1.4; }
+.hm-detail-view .recording-panel p { font-size: .8125rem; line-height: 1.5; }
+.hm-detail-view .recording-panel > div + div {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-color: var(--hm-border, #4D4A6A);
+}
+.hm-detail-view .overview-guidance {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hm-border, #4D4A6A);
+  color: var(--hm-text-primary, #EDECEE);
+  font-size: .8125rem;
+  line-height: 1.5;
+}
+.hm-detail-view > button,
+.hm-detail-view .draft-actions > button {
+  min-height: 44px;
+  max-width: 100%;
+  margin: 8px 8px 0 0;
+  font-size: .875rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.hm-detail-view > .secondary,
+.hm-detail-view .draft-actions > .secondary {
+  border-color: var(--hm-border, #4D4A6A);
+  background: var(--hm-surface-primary, #312F4E);
+  color: var(--hm-text-primary, #EDECEE);
+}
+.hm-detail-view > button:not(.secondary) {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 20px;
+  border-color: var(--hm-highlight, #EEEF58);
+  background: var(--hm-highlight, #EEEF58);
+  color: var(--hm-bg, #212227);
+  font-size: 1rem;
+  font-weight: 750;
+}
+.hm-detail-view :focus-visible { outline: 3px solid var(--hm-highlight, #EEEF58); outline-offset: 4px; }
+@media (forced-colors: active) {
+  .hm-detail-view .hm-workout-overview,
+  .hm-detail-view .hm-workout-overview .exercise-list,
+  .hm-detail-view .hm-workout-overview .overview-subtitle,
+  .hm-detail-view .hm-workout-overview .recording-panel { background: Canvas; color: CanvasText; border-color: CanvasText; }
+  .hm-detail-view .hm-workout-overview .eyebrow,
+  .hm-detail-view .hm-workout-overview .badge,
+  .hm-detail-view .overview-title,
+  .hm-detail-view .hm-workout-overview .phase-heading h2,
+  .hm-detail-view .hm-workout-overview .phase-format,
+  .hm-detail-view .hm-workout-overview .exercise-weight-row > strong,
+  .hm-detail-view .hm-workout-overview .prescriptions li > p,
+  .hm-detail-view .hm-workout-overview .weight-error,
+  .hm-detail-view .phase-guidance > p,
+  .hm-detail-view .phase-guidance > ul { color: CanvasText; }
+  .hm-detail-view .hm-workout-overview .weight-label input { background: Canvas; color: CanvasText; border-color: CanvasText; }
+  .hm-detail-view > button,
+  .hm-detail-view .draft-actions > button,
+  .hm-detail-view .phase-guidance summary { background: ButtonFace; color: ButtonText; border: 1px solid ButtonText; }
+  .hm-detail-view :focus-visible { outline-color: Highlight; }
+}

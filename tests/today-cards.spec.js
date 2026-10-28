@@ -14,7 +14,7 @@ test('Today-only redesign keeps exact content and protects all other screens at 
  for(const width of info.project.name==='mobile'?[320,390]:[768,1280]){
   for(const state of ['today','library','details','timer','results','history','account']){
    const args=[browser,baseURL,{width,height:844},`${width}`,state,true];
-   const options={headerEvidence:true,todayEvidence:true,artifactRoot:'/workspace/artifacts/ui-v2-05/regressions/today'};
+   const options={headerEvidence:true,todayEvidence:true,artifactRoot:'/workspace/artifacts/ui-v2-06/regressions/today'};
    const before=await capture(...args,{...options,todayBaseline:true});
    const after=await capture(...args,{...options,audit:true});
    expect(after.headerPNG.equals(before.headerPNG),`${width}/${state}: header unchanged`).toBe(true);
@@ -84,7 +84,7 @@ test('Today styling and real detail CTA work offline, with preserved legacy and 
  });
  await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
  const original=await page.evaluate(()=>localStorage.getItem('kb2.weekly-plan.v1'));
- expect(await page.evaluate(async()=>Boolean(await (await caches.open('kb2-static-v23')).match(new URL('./styles/hm-today.css',location.href))))).toBe(true);
+ expect(await page.evaluate(async()=>Boolean(await (await caches.open('kb2-static-v24')).match(new URL('./styles/hm-today.css',location.href))))).toBe(true);
  await context.setOffline(true);await page.reload();
  await expect(page.locator('.day-slot')).toHaveCount(7);await expect(page.locator('.week-grid .workout-card')).toHaveCount(5);
  const legacy=page.getByRole('region',{name:'Saturday',exact:true});

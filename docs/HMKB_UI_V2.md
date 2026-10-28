@@ -108,3 +108,7 @@ The foundations-only description above records PR 01. [PR 02 dark canvas and sur
 ## PR 05 status
 
 [PR 05 Library cards](HMKB_UI_V2_LIBRARY_CARDS.md) gives only the four regular/assignment Library cards purple surfaces, a top duration row and the existing action in a yellow footer. A Library-specific wrapper scopes all new CSS, protecting Today and the history's shared `.library-grid`. The shared component, routing and assignment behavior remain unchanged; PWA v23 adds only the Library stylesheet. No later stage begins here.
+
+## PR 06 status
+
+[PR 06 pre-workout details](HMKB_UI_V2_WORKOUT_DETAILS.md) styles only real pre-workout pages through one scoped class and a dedicated stylesheet: clearer metadata, purple numbered phase sections, adaptable weight rows, native instructions, recording guidance and yellow Start Workout. Original content/data generation, field events/storage, timer/results/audio/cloud and all other screens remain unchanged. PWA v24 adds only the new stylesheet. No later stage begins here.

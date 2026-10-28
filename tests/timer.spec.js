@@ -51,7 +51,7 @@ test('cancel or confirm exit for links, browser Back, hash navigation and End Wo
  accept=true;await page.getByRole('button',{name:'End Workout'}).click();await expect(page.getByRole('heading',{name:'Today',exact:true})).toBeVisible();
  expect(await page.evaluate(()=>{const event=new Event('beforeunload',{cancelable:true});window.dispatchEvent(event);return event.defaultPrevented;})).toBe(false);
  await page.clock.fastForward(1200000);await expect(page.getByRole('heading',{name:'Workout Complete',exact:true})).toHaveCount(0);
- await page.getByRole('link',{name:'Library',exact:true}).click();await page.getByRole('button',{name:'View workout: Upper Body + ABS'}).click();
+ await page.getByRole('link',{name:'Library',exact:true}).click();await expect(page.getByRole('button',{name:'View workout: Upper Body + ABS'})).toHaveCount(0);await page.goto(detail);
  await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');
  await page.getByRole('link',{name:'Library',exact:true}).click();await expect(page.getByRole('heading',{name:'Library',exact:true})).toBeVisible();
 });

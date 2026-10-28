@@ -2,9 +2,8 @@ import {verifyWorkoutBeeps} from './helpers/timer-beeps.js';
 import {test,expect} from '@playwright/test';
 const detail='./#workout/hybrid-001-strength-sweat/1';
 async function clock(page){await page.clock.install({time:new Date('2026-01-01T00:00:00Z')});await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));}
-test('Hybrid detail, independent weights and manual Monday/Friday reuse',async({page})=>{
- await page.goto('./#library');await page.getByLabel('Workout Type').selectOption('hybrid');
- await page.getByRole('button',{name:'View workout: Strength & Sweat'}).click();
+test('Historical Hybrid detail, independent weights and existing Monday/Friday reuse',async({page})=>{
+ await page.goto('./#library');await expect(page.getByRole('button',{name:'View workout: Strength & Sweat'})).toHaveCount(0);await page.goto('./#workout/hybrid-001-strength-sweat/2');
  await expect(page.getByRole('heading',{name:'Strength & Sweat',exact:true})).toBeVisible();
  await expect(page.getByRole('region',{name:'Strength block'}).locator('ol li')).toHaveCount(2);
  await expect(page.getByRole('region',{name:'Conditioning block'}).locator('ol li')).toHaveCount(4);
@@ -15,7 +14,7 @@ test('Hybrid detail, independent weights and manual Monday/Friday reuse',async({
  await page.getByRole('spinbutton',{name:'KB Thrusters weight (kg)',exact:true}).fill('8');await page.reload();
  await expect(page.getByRole('spinbutton',{name:'KB Goblet Squat weight (kg)',exact:true})).toHaveValue('16.5');
  await page.getByRole('link',{name:'Today',exact:true}).click();
- for(const day of ['Monday','Friday']){await page.getByRole('region',{name:day,exact:true}).getByRole('button',{name:'Add workout'}).click();await page.getByRole('button',{name:`Assign to ${day}: Strength & Sweat`}).click();}
+ await page.evaluate(()=>localStorage.setItem('kb2.weekly-plan.v1',JSON.stringify({Monday:{workoutId:'hybrid-001-strength-sweat',version:2},Friday:{workoutId:'hybrid-001-strength-sweat',version:2}})));
  await page.reload();for(const day of ['Monday','Friday'])await expect(page.getByRole('region',{name:day,exact:true}).getByText('Strength & Sweat')).toBeVisible();
  await page.goto('./#workout/focus-001-upper-abs/1');await expect(page.getByRole('spinbutton',{name:'KB Floor Press weight (kg)',exact:true})).toHaveValue('');
 });

@@ -8,9 +8,9 @@ async function start(page){await clock(page);await page.goto(detail);await page.
 async function finish(page,ms,title){await page.clock.fastForward(ms);await expect(page.getByRole('heading',{name:title,exact:true})).toBeVisible();await savedDraft(page);}
 async function next(page,label){await page.getByRole('button',{name:label,exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');}
 const region=(page,name)=>page.getByRole('region',{name:`${name} results`,exact:true});
-test('Library selects Hybrid v2 while a Hybrid v1 assignment stays untouched',async({page})=>{
+test('Hidden Hybrid v1/v2 links resolve while an existing v1 assignment stays untouched',async({page})=>{
  await page.goto('./');await page.evaluate(()=>localStorage.setItem('kb2.weekly-plan.v1',JSON.stringify({Monday:{workoutId:'hybrid-001-strength-sweat',version:1}})));await page.reload();await page.getByRole('region',{name:'Monday',exact:true}).getByRole('button',{name:'View workout: Strength & Sweat'}).click();await expect(page).toHaveURL(/strength-sweat\/1$/);
- await page.getByRole('link',{name:'Library',exact:true}).click();await page.getByRole('button',{name:'View workout: Strength & Sweat'}).click();await expect(page).toHaveURL(/strength-sweat\/2$/);expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('kb2.weekly-plan.v1')).Monday.version)).toBe(1);
+ await page.getByRole('link',{name:'Library',exact:true}).click();await expect(page.getByRole('button',{name:'View workout: Strength & Sweat'})).toHaveCount(0);await page.goto(detail);await expect(page).toHaveURL(/strength-sweat\/2$/);expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('kb2.weekly-plan.v1')).Monday.version)).toBe(1);
 });
 test('all Hybrid forms recover, validate and save actual results once without altering Focus data',async({page})=>{
  await clock(page);await page.goto(detail);

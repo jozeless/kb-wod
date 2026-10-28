@@ -92,3 +92,7 @@ PWA cache advances from `kb2-static-v18` to `kb2-static-v19`, adding only `style
 - Screenshot index: `/workspace/artifacts/ui-v2-01/baseline-index.md`; comparison data: `/workspace/artifacts/ui-v2-01/comparison.json`.
 
 Added files: `styles/hm-tokens.css`, this document, `tests/ui-foundations.test.js`, `tests/ui-foundations.spec.js`. Modified files: `index.html` (stylesheet ordering), `service-worker.js` (v19 + one precache entry), `tests/custom-audio.spec.js` and `tests/library-cleanup.spec.js` (cache-version expectation only).
+
+## PR 02 status
+
+The foundations-only description above records PR 01. [PR 02 dark canvas and surfaces](HMKB_UI_V2_DARK_CANVAS.md) now opts the page canvas/day containers into these roles with scoped light-component compatibility. The five-screen baseline suite is retained and compares against a frozen PR 01 CSS fixture: intentional colors may differ while protected component geometry/styles must remain identical. This replaces PR 01's whole-page pixel-equality expectation for the deliberate color migration, not its functional or accessibility checks.

@@ -15,7 +15,7 @@ test('all four pre-workout details intentionally change with exact content prese
  test.setTimeout(150000);
  for(const width of info.project.name==='mobile'?[320,390]:[768,1280])for(const [id,version]of approved){
   const args=[browser,baseURL,{width,height:844},`${width}-${id}`,'details',true];
-  const options={headerEvidence:true,todayEvidence:true,artifactRoot:'/workspace/artifacts/ui-v2-08/regressions/details',workoutId:id,workoutVersion:version};
+  const options={headerEvidence:true,todayEvidence:true,artifactRoot:'/workspace/artifacts/ui-v2-09/regressions/details',workoutId:id,workoutVersion:version};
   const before=await capture(...args,{...options,detailsBaseline:true}),after=await capture(...args,{...options,audit:true});
   expect(after.detailsDOM).toEqual(before.detailsDOM);expect(after.viewportPNG.equals(before.viewportPNG)).toBe(false);expect(after.contentPNG.equals(before.contentPNG)).toBe(false);
   expect(after.headerPNG.equals(before.headerPNG)).toBe(true);expect(after.navPNG.equals(before.navPNG)).toBe(true);
@@ -25,7 +25,7 @@ test('all four pre-workout details intentionally change with exact content prese
 test('Today, Library, running timer, results, saved history and account remain pixel-identical',async({browser,baseURL},info)=>{
  test.setTimeout(150000);
  for(const width of info.project.name==='mobile'?[320,390]:[768,1280])for(const state of ['today','library','timer','results','history','history-list','account']){
-  const args=[browser,baseURL,{width,height:844},`${width}`,state,true],options={headerEvidence:true,todayEvidence:true,artifactRoot:'/workspace/artifacts/ui-v2-08/regressions/details'};
+  const args=[browser,baseURL,{width,height:844},`${width}`,state,true],options={headerEvidence:true,todayEvidence:true,artifactRoot:'/workspace/artifacts/ui-v2-09/regressions/details'};
   const before=await capture(...args,{...options,detailsBaseline:true}),after=await capture(...args,{...options,audit:true});
   expect(after.viewportPNG.equals(before.viewportPNG),`${width}/${state}: protected viewport`).toBe(true);expect(after.contentPNG.equals(before.contentPNG)).toBe(true);expect(after.protectedMetrics).toEqual(before.protectedMetrics);
   expect(after.todayDOM).toEqual(before.todayDOM);expect(after.libraryDOM).toEqual(before.libraryDOM);expect(after.detailsDOM).toBeNull();
@@ -125,7 +125,7 @@ test('detail fields, targets, instructions and actions fit four widths and 200% 
 
 test('offline approved/historical detail links work and demo/fallback stages never receive detail styles',async({page,context})=>{
  await localMode(page);await page.goto(url('monday-paranoid',3));await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
- expect(await page.evaluate(async()=>Boolean(await (await caches.open('kb2-static-v26')).match(new URL('./styles/hm-details.css',location.href))))).toBe(true);
+ expect(await page.evaluate(async()=>Boolean(await (await caches.open('kb2-static-v27')).match(new URL('./styles/hm-details.css',location.href))))).toBe(true);
  await context.setOffline(true);
  for(const [id,version,name]of [...approved,['focus-001-upper-abs',1,'Upper Body + ABS']]){await page.goto(url(id,version));await expect(page.getByRole('heading',{name,exact:true})).toBeVisible();await expect(page.locator('.hm-detail-view')).toHaveCount(1);await expect(page.getByRole('button',{name:'Start Workout',exact:true})).toBeVisible();}
  await page.goto('./#active/monday-paranoid/3');await expect(page.getByRole('heading',{name:'Ready when you are',exact:true})).toBeVisible();await expect(page.locator('.hm-detail-view')).toHaveCount(0);

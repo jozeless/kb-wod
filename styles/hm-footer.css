@@ -1,0 +1,54 @@
+/* Main footer only. Keep the app header, pages and workout controls intact. */
+.hm-bottom-nav {
+  position: fixed;
+  inset: auto 0 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 170px));
+  justify-content: center;
+  gap: 4px;
+  padding: 8px max(8px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  border-top: 1px solid var(--hm-surface-secondary, #4D4A6A);
+  background: var(--hm-bg, #212227);
+  color: var(--hm-text-primary, #EDECEE);
+  z-index: 10;
+}
+.hm-bottom-nav a {
+  display: grid;
+  grid-template-rows: 22px 1fr 3px;
+  justify-items: center;
+  align-items: start;
+  gap: 5px;
+  min-width: 44px;
+  min-height: 44px;
+  max-width: none;
+  padding: 6px 4px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--hm-text-primary, #EDECEE);
+  font-size: .75rem;
+  font-weight: 650;
+  line-height: 1.5;
+  text-align: center;
+  text-decoration: none;
+}
+.hm-bottom-nav svg { width: 22px; height: 22px; color: var(--hm-accent, #B37ACB); }
+.hm-bottom-nav a span { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+.hm-bottom-nav a::after { content: ''; width: 24px; height: 3px; border-radius: 999px; background: transparent; }
+.hm-bottom-nav a:hover { background: var(--hm-surface-primary, #312F4E); }
+.hm-bottom-nav a[aria-current="page"] { background: var(--hm-surface-primary, #312F4E); color: var(--hm-highlight, #EEEF58); font-weight: 750; }
+.hm-bottom-nav a[aria-current="page"] svg { color: var(--hm-highlight, #EEEF58); }
+.hm-bottom-nav a[aria-current="page"]::after { background: var(--hm-highlight, #EEEF58); }
+.hm-bottom-nav a:focus-visible { outline: 3px solid var(--hm-highlight, #EEEF58); outline-offset: 2px; }
+/* Preserve the normal 110px reserve; scaled text may make the fixed footer taller.
+   This selector affects only the existing content reserve beside this footer. */
+#status.hm-footer-reserve { padding-bottom: calc(110px + max(0px, 5rem - 80px) + env(safe-area-inset-bottom)); }
+@media (forced-colors: active) {
+  .hm-bottom-nav { background: Canvas; color: CanvasText; border-color: CanvasText; }
+  .hm-bottom-nav a { color: LinkText; }
+  .hm-bottom-nav svg { color: LinkText; }
+  .hm-bottom-nav a[aria-current="page"] { background: Canvas; color: Highlight; border-color: Highlight; }
+  .hm-bottom-nav a[aria-current="page"] svg { color: Highlight; }
+  .hm-bottom-nav a[aria-current="page"]::after { background: Highlight; forced-color-adjust: none; }
+  .hm-bottom-nav a:focus-visible { outline-color: Highlight; }
+}

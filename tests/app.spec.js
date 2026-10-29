@@ -5,7 +5,9 @@ test('navigation and simplified approved Library', async ({page}) => {
  await expect(page.locator('.day-slot')).toHaveCount(7);
  await page.getByRole('link',{name:'Library',exact:true}).click();
  await expect(page.locator('.workout-card')).toHaveCount(4);await expect(page.getByRole('searchbox')).toHaveCount(0);await expect(page.getByRole('combobox')).toHaveCount(0);await expect(page.getByText('4 workouts',{exact:true})).toBeVisible();
- for (const name of ['Stats','Dashboard']) { await page.getByRole('link',{name,exact:true}).click(); await expect(page.getByRole('heading',{name,exact:true})).toBeVisible(); await expect(page.getByText('No statistics yet')).toBeVisible(); }
+ await page.getByRole('link',{name:'Progress',exact:true}).click();await expect(page.getByRole('heading',{name:'Progress',exact:true})).toBeVisible();await expect(page.getByText('Workout statistics and achievements are coming later.',{exact:true})).toBeVisible();
+ await page.getByRole('link',{name:'History',exact:true}).click();await expect(page.getByRole('heading',{name:'Saved workouts',exact:true})).toBeVisible();await expect(page.getByText('No saved sessions',{exact:true})).toBeVisible();
+ for (const name of ['Stats','Dashboard']) { await page.goto(`./#${name.toLowerCase()}`); await expect(page.getByRole('heading',{name,exact:true})).toBeVisible(); await expect(page.getByText('No statistics yet')).toBeVisible(); }
  expect(errors).toEqual([]);
 });
 test('assign, reuse, change, remove and persist without touching prototype data', async ({page}) => {
@@ -29,7 +31,7 @@ test('historical demo direct links retain their explicit scaffolding', async ({p
 test('responsive layout has no horizontal overflow and navigation stays visible', async ({page}) => {
  for (const width of [320,390,768,1280]) {
   await page.setViewportSize({width,height:740});
-  for (const route of ['workout/focus-001-upper-abs/1','today','library','stats','dashboard','workout/demo-hybrid-foundation/1','active/demo-hybrid-foundation/1','result/demo-hybrid-foundation/1']) {
+  for (const route of ['workout/focus-001-upper-abs/1','today','library','progress','history','stats','dashboard','workout/demo-hybrid-foundation/1','active/demo-hybrid-foundation/1','result/demo-hybrid-foundation/1']) {
    await page.goto(`./#${route}`);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
    await expect(page.getByRole('navigation')).toBeInViewport();
   }

@@ -8,7 +8,7 @@ test('active styles stay scoped, use no downloaded assets and keep the existing 
   assert.ok(selectors.length > 40); assert.ok(selectors.every(s => s.trim().startsWith('.hm-active-view')));
   assert.ok(!/@import|@font-face|url\(|box-shadow/i.test(css));
   const worker = fs.readFileSync(new URL('../service-worker.js', import.meta.url), 'utf8');
-  assert.match(worker, /kb2-static-v28/); assert.ok(!/skipWaiting|clients\.claim/.test(worker));
+  assert.match(worker, /kb2-static-v29/); assert.ok(!/skipWaiting|clients\.claim/.test(worker));
   for (const asset of ['styles/hm-active.css', 'src/ui/active-presentation.js', 'assets/audio/start.wav', 'assets/audio/minute.wav']) assert.ok(worker.includes(`'./${asset}'`));
   const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   assert.ok(html.indexOf('./styles/hm-details.css') < html.indexOf('./styles/hm-active.css'));

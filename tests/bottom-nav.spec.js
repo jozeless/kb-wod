@@ -49,8 +49,9 @@ test('four consistent inline SVG tabs route correctly, including legacy and nest
   for (const [name, route] of tabs) { const link = nav(page).getByRole('link', { name, exact: true }); await expect(link).toHaveAttribute('href', route); await link.click(); await expect(page).toHaveURL(new RegExp(`${route}$`)); await active(page, name); }
   await nav(page).getByRole('link', { name: 'Progress', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Progress', exact: true })).toBeVisible();
-  await expect(page.getByText('Workout statistics and achievements are coming later.', { exact: true })).toBeVisible();
-  await expect(page.locator('#app input,#app canvas,#app svg,#app button')).toHaveCount(0);
+  await expect(page.getByText('No completed workouts this month', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '← Previous month', exact: true })).toBeVisible();
+  await expect(page.getByText('No recorded weights', { exact: true })).toBeVisible();
   for (const [route, selected] of [['library?day=Tuesday', 'Library'], ['workout/monday-paranoid/3', 'Library'], ['active/monday-paranoid/3', 'Library'], ['result/demo-hybrid-foundation/1', 'Library'], ['history', 'History'], ['history/monday-paranoid', 'History'], ['session/missing', 'History'], ['stats', 'Progress'], ['dashboard', 'Progress'], ['account', null], ['unknown', null]]) {
     await page.goto(`./#${route}`); await active(page, selected);
   }
@@ -160,7 +161,7 @@ test('keyboard, active underline, AA footer contrast and forced-colors states re
 test('footer and all four destinations work offline under the Pages subpath with retained history and details', async ({ page, context }) => {
   await setup(page); await page.goto('./#today'); await seed(page); const before = await records(page);
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => true)); await page.reload(); await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
-  expect(await page.evaluate(async () => Boolean(await (await caches.open('kb2-static-v28')).match(new URL('./styles/hm-footer.css', document.baseURI))))).toBe(true);
+  expect(await page.evaluate(async () => Boolean(await (await caches.open('kb2-static-v29')).match(new URL('./styles/hm-footer.css', document.baseURI))))).toBe(true);
   await context.setOffline(true); await page.reload();
   for (const [name] of tabs) { await nav(page).getByRole('link', { name, exact: true }).click(); await active(page, name); }
   await expect(page.locator('.library-grid > button')).toHaveCount(2); await page.locator('.library-grid > button').filter({ hasText: 'Monday Paranoid' }).click(); await active(page, 'History'); await expect(page.getByText('Active duration: 21:10', { exact: true })).toBeVisible();

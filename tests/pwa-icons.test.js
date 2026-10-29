@@ -46,6 +46,6 @@ test('favicon/Apple links use new URLs while original artwork, legacy icon bytes
     'icon-512.png': 'c1613cba7d0cb784cfa0bc938512a5ae1be0a3804e54c9b294d1ba16d3096175',
   };
   for (const [file, hash] of Object.entries(hashes)) assert.equal(createHash('sha256').update(read(file)).digest('hex'), hash, file);
-  assert.match(worker, /kb2-static-v28/); assert.ok(!/skipWaiting|clients\.claim/.test(worker));
+  assert.match(worker, /kb2-static-v29/); assert.ok(!/skipWaiting|clients\.claim/.test(worker));
   for (const file of [...icons.map(([name]) => `assets/icons/${name}`), 'icon-192.png', 'icon-512.png', 'assets/branding/hmkblogo001.png']) assert.ok(worker.includes(`'./${file}'`), file);
 });

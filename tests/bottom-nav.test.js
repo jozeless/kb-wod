@@ -9,5 +9,5 @@ test('footer CSS stays scoped with a dedicated content reserve, no assets/depend
   assert.ok(!/@import|@font-face|url\(|box-shadow|animation|transition/i.test(css));
   assert.match(css, /env\(safe-area-inset-bottom\)/);
   const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8'); assert.ok(html.indexOf('./styles/hm-active.css') < html.indexOf('./styles/hm-footer.css'));
-  const worker = fs.readFileSync(new URL('../service-worker.js', import.meta.url), 'utf8'); assert.match(worker, /kb2-static-v28/); assert.ok(worker.includes("'./styles/hm-footer.css'")); assert.ok(!/skipWaiting|clients\.claim/.test(worker));
+  const worker = fs.readFileSync(new URL('../service-worker.js', import.meta.url), 'utf8'); assert.match(worker, /kb2-static-v29/); assert.ok(worker.includes("'./styles/hm-footer.css'")); assert.ok(!/skipWaiting|clients\.claim/.test(worker));
 });

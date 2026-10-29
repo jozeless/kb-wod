@@ -6,7 +6,7 @@ test('approved header on seven routes at four widths preserves every protected c
  for(const width of info.project.name==='mobile'?[320,390]:[768,1280]){
   for(const state of ['today','library','details','timer','results','history','account']){
    const args=[browser,baseURL,{width,height:844},`${width}`,state,true];
-   const options={headerEvidence:true,artifactRoot:'/workspace/artifacts/ui-v2-08/regressions/header'};
+   const options={headerEvidence:true,artifactRoot:'/workspace/artifacts/ui-v2-09/regressions/header'};
    const before=await capture(...args,{...options,headerBaseline:true});
    const after=await capture(...args,options);
    expect(after.viewportPNG.equals(before.viewportPNG),`${width}/${state}: header changes`).toBe(false);
@@ -30,7 +30,7 @@ test('approved logo, home and account links load offline with the existing PWA i
  await page.keyboard.press('Enter');await expect(page).toHaveURL(/#account$/);await expect(page.getByText(/Cloud is not configured/)).toBeVisible();
  await brand.click();await expect(page).toHaveURL(/#today$/);
  await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
- for(const file of ['./assets/branding/hmkblogo001.png','./styles/hm-header.css'])expect(await page.evaluate(async file=>Boolean(await (await caches.open('kb2-static-v26')).match(new URL(file,location.href))),file)).toBe(true);
+ for(const file of ['./assets/branding/hmkblogo001.png','./styles/hm-header.css'])expect(await page.evaluate(async file=>Boolean(await (await caches.open('kb2-static-v27')).match(new URL(file,location.href))),file)).toBe(true);
  await context.setOffline(true);await page.reload();
  await expect(brand).toBeVisible();await expect(page.locator('.cloud-indicator')).toHaveText('Local mode');
  expect(await page.locator('.brand-logo').evaluate(n=>n.complete&&n.naturalWidth===1254)).toBe(true);

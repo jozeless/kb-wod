@@ -4,7 +4,7 @@ import { installBeepSpy } from './helpers/timer-beeps.js';
 import fs from 'node:fs/promises';
 
 const approved = [['monday-paranoid', 3], ['tuesday-of-spades', 1], ['thursday-bells', 1], ['friday-to-black', 1]];
-const artifactRoot = '/workspace/artifacts/ui-v2-08';
+const artifactRoot = '/workspace/artifacts/ui-v2-09/regressions/active';
 async function setup(page) {
   await page.addInitScript(() => { window.KB_SUPABASE_CONFIG = { url: '', publishableKey: '' }; });
   await page.clock.install({ time: new Date('2026-10-29T12:00:00Z') });
@@ -139,10 +139,10 @@ test('Today, Library, details, results, history and account stay pixel-identical
   }
 });
 
-test('v26 precaches the full presentation, starts all approved and historical timers offline, and restores muted draft audio on Resume', async ({ page, context }) => {
+test('v27 precaches the full presentation, starts all approved and historical timers offline, and restores muted draft audio on Resume', async ({ page, context }) => {
   await setup(page); await installBeepSpy(page); await page.goto('./#library');
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => true)); await page.reload(); await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
-  const cached = await page.evaluate(async () => { const cache = await caches.open('kb2-static-v26'); return Promise.all(['styles/hm-active.css', 'src/ui/active-presentation.js', 'assets/audio/start.wav', 'assets/audio/minute.wav'].map(async path => Boolean(await cache.match(new URL(path, document.baseURI))))); });
+  const cached = await page.evaluate(async () => { const cache = await caches.open('kb2-static-v27'); return Promise.all(['styles/hm-active.css', 'src/ui/active-presentation.js', 'assets/audio/start.wav', 'assets/audio/minute.wav'].map(async path => Boolean(await cache.match(new URL(path, document.baseURI))))); });
   expect(cached).toEqual([true, true, true, true]); await context.setOffline(true);
   for (const [id, version] of [...approved, ['focus-001-upper-abs', 1]]) {
     await start(page, id, version); await page.clock.runFor(13000); await expect(page.locator('.session-state')).toHaveText('WORK');

@@ -10,7 +10,7 @@ test('header uses the byte-identical user-approved original and precaches it sep
  const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
  assert.match(html,/aria-label="Heavy Metal KB home"/);assert.match(html,/src="\.\/assets\/branding\/hmkblogo001.png"/);assert.match(html,/class="header-account"/);
  const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');
- assert.match(worker,/kb2-static-v26/);
+ assert.match(worker,/kb2-static-v27/);
  for(const asset of ['./assets/branding/hmkblogo001.png','./styles/hm-header.css','./icon-192.png','./icon-512.png','./assets/audio/start.wav','./assets/audio/minute.wav'])assert.ok(worker.includes(`'${asset}'`));
  assert.ok(!/skipWaiting|clients\.claim/.test(worker));
 });

@@ -71,6 +71,7 @@ function render(focus = true) {
   else if (page === 'today') view = todayView(state.plan, go, d => assign(d, null), Boolean(state.error));
   else if (page === 'library') view = libraryView(day, go, assign);
   else if (['workout', 'active', 'result'].includes(page)) view = workoutView(id, version, page, go, startWorkout);
+  else if (page === 'progress') view = el('div', {}, heading('COMING LATER', 'Progress', 'Workout statistics and achievements are coming later.'));
   else if (page === 'stats' || page === 'dashboard') view = el('div', {}, heading('COMING LATER', page === 'stats' ? 'Stats' : 'Dashboard', page === 'stats' ? 'Performance over time, by workout.' : 'A place for your training totals.'), emptyState('No statistics yet', 'Advanced statistics are not available yet. Saved sessions can be viewed from the workout detail.'));
   else view = emptyState('Page not found', 'Use the navigation below to continue.');
   // Keep the live auth form attached during status updates: moving/recreating
@@ -85,8 +86,9 @@ function render(focus = true) {
     }
   }
   if(app.firstElementChild!==view)app.replaceChildren(view);
+  const activePage = ['workout', 'active', 'result'].includes(page) ? 'library' : page === 'session' ? 'history' : ['stats', 'dashboard'].includes(page) ? 'progress' : page;
   document.querySelectorAll('nav a').forEach(a => {
-    if (a.hash === `#${page}` || (['workout', 'active', 'result'].includes(page) && a.hash === '#library')) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    if (a.hash === `#${activePage}`) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
   if (focus) { app.focus(); window.scrollTo(0, 0); }
 }

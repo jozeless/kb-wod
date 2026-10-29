@@ -30,13 +30,13 @@ test('approved logo, home and account links load offline with the existing PWA i
  await page.keyboard.press('Enter');await expect(page).toHaveURL(/#account$/);await expect(page.getByText(/Cloud is not configured/)).toBeVisible();
  await brand.click();await expect(page).toHaveURL(/#today$/);
  await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
- for(const file of ['./assets/branding/hmkblogo001.png','./styles/hm-header.css'])expect(await page.evaluate(async file=>Boolean(await (await caches.open('kb2-static-v27')).match(new URL(file,location.href))),file)).toBe(true);
+ for(const file of ['./assets/branding/hmkblogo001.png','./styles/hm-header.css'])expect(await page.evaluate(async file=>Boolean(await (await caches.open('kb2-static-v28')).match(new URL(file,location.href))),file)).toBe(true);
  await context.setOffline(true);await page.reload();
  await expect(brand).toBeVisible();await expect(page.locator('.cloud-indicator')).toHaveText('Local mode');
  expect(await page.locator('.brand-logo').evaluate(n=>n.complete&&n.naturalWidth===1254)).toBe(true);
  await page.getByRole('link',{name:'Library',exact:true}).click();await expect(page.locator('.workout-card')).toHaveCount(4);
  const manifest=await page.evaluate(async()=>fetch('./manifest.webmanifest').then(r=>r.json()));
- expect(manifest.name).toBe('KB 2.0');expect(manifest.short_name).toBe('KB 2.0');expect(manifest.icons.map(i=>i.src)).toEqual(['./icon-192.png','./icon-512.png']);
+ expect(manifest.name).toBe('Heavy Metal KB');expect(manifest.short_name).toBe('HM/KB');expect(manifest.icons.map(i=>i.src)).toEqual(['./assets/icons/hmkb-icon-v2-192.png','./assets/icons/hmkb-icon-v2-512.png','./assets/icons/hmkb-maskable-v2-512.png']);
  await context.setOffline(false);
 });
 

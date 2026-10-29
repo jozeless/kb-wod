@@ -1,3 +1,4 @@
+import { activePresentation } from './active-presentation.js';
 import { prescription } from './exercise-prescription.js';
 import { createCueTracker } from '../domain/workout-cues.js';
 import { createWeightField } from './weight-field.js';
@@ -21,24 +22,23 @@ export function createActiveWorkout(workout, onEnd, onToday) {
   const circuit = el('ol', { className: 'prescriptions active-circuit', 'aria-label': 'AMRAP circuit', hidden: '' });
   let circuitPhase = null;
   const progress = el('progress', { max: '1', value: '0', 'aria-label': 'Workout progress' });
-  const panel = el('section', { className: 'active-panel', 'aria-label': 'Active workout' }, phase, exercise, target, weight.root, clock, total, position, circuit, next, progress);
   const pause = button('Pause', () => {
     if (engine.status === 'paused') { engine.resume(); startTicker(); }
     else { engine.pause(); audio.silence(); stopTicker(); update(); }
   });
-  const sound = button('Sound: Off', async () => {
-    await audio.toggle(); updateSound();
-  }, true);
-  sound.setAttribute('aria-pressed', 'false');
   const end = button('End Workout', () => onEnd(), true);
-  const controls = el('div', { className: 'active-controls' }, pause, end, sound);
-  const root = el('div', { className: 'active-workout' }, heading('ACTIVE WORKOUT', workout.name, 'Follow the prescribed movement, then rest. No session data is saved.'), panel, controls,
+  const controls = el('div', { className: 'active-controls' }, pause, end);
+  const presentation = activePresentation({
+    heading: heading('ACTIVE WORKOUT', workout.name, 'Follow the prescribed movement, then rest. No session data is saved.'),
+    phase, exercise, target, weight, clock, total, position, next, circuit, progress, controls,
+  });
+  const panel = presentation.panel;
+  const root = el('div', { className: 'active-workout' }, presentation.root,
     el('p', { className: 'muted' }, 'Keep this screen open. Mobile browsers may suspend timers and audio when locked; the display catches up when the browser clock advances.'));
   let ticker = null;
   let disposed = false;
-  function updateSound() { sound.textContent = audio.enabled ? 'Sound: On' : 'Sound: Off'; sound.setAttribute('aria-pressed', String(audio.enabled)); }
   // This runs inside the Start Workout click, before its gesture is lost.
-  audio.enable().then(updateSound);
+  void audio.enable();
   function setText(node, text) { if (node.textContent !== text) node.textContent = text; }
   function update(audible = true) {
     if (disposed) return;
@@ -83,6 +83,7 @@ export function createActiveWorkout(workout, onEnd, onToday) {
       next.textContent = s.nextExercise ? `Next: ${s.nextExercise.name}` : s.nextPhase?.format === 'amrap' ? `Next: ${s.nextPhase.name} circuit` : 'Next: Workout Complete';
 
     }
+    presentation.update(s);
   }
   function stopTicker() { if (ticker !== null) clearInterval(ticker); ticker = null; }
   function startTicker(audible = true) { update(audible); if (!disposed && ticker === null && engine.status === 'running') ticker = setInterval(update, 100); }

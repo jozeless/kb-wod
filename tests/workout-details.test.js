@@ -9,5 +9,5 @@ test('details styles are scoped exclusively to real pre-workout pages without re
  assert.ok(!/@import|@font-face|url\(|box-shadow|[;{]\s*(?:transform|content)\s*:/i.test(css));
  const view=fs.readFileSync(new URL('../src/ui/views.js',import.meta.url),'utf8');assert.match(view,/if \(w.phases.length && stage === 'workout'\) \{\s*view.classList.add\('hm-detail-view'\)/);
  const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');assert.ok(html.indexOf('./styles/hm-library.css')<html.indexOf('./styles/hm-details.css'));
- const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');assert.match(worker,/kb2-static-v25/);assert.ok(worker.includes("'./styles/hm-details.css'"));assert.ok(!/skipWaiting|clients\.claim/.test(worker));
+ const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');assert.match(worker,/kb2-static-v26/);assert.ok(worker.includes("'./styles/hm-details.css'"));assert.ok(!/skipWaiting|clients\.claim/.test(worker));
 });

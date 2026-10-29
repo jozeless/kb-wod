@@ -1,3 +1,4 @@
+import { activePresentation } from './active-presentation.js';
 import { usesSessionWeights } from '../domain/weights-finisher-results.js';
 import { canReadLocal } from '../cloud/identity.js';
 import { syncStatus } from './account.js';
@@ -42,13 +43,6 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
   }
   function stopTicker() { if (ticker !== null) clearInterval(ticker); ticker = null; }
   function stopAudio() { audio.silence(); }
-  function soundButton() {
-    const control = button(record.soundEnabled ? 'Sound: On' : 'Sound: Off', async () => {
-      await audio.setEnabled(!record.soundEnabled); record.soundEnabled = audio.enabled;
-      control.textContent = audio.enabled ? 'Sound: On' : 'Sound: Off'; control.setAttribute('aria-pressed', String(audio.enabled)); void persist();
-    }, true);
-    control.setAttribute('aria-pressed', String(record.soundEnabled)); return control;
-  }
   function showSaved() {
     stopTicker(); if(engine?.status!=='complete')stopAudio(); formView = null;
     root.replaceChildren(heading('SAVED', 'Workout saved', 'Your results were committed to local session storage.'),
@@ -143,6 +137,7 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     training.weight.root.hidden = !s.exercise || s.exercise.equipment === 'bodyweight'; if (s.exercise && s.exercise.equipment !== 'bodyweight') training.weight.setExercise(s.exercise);
     training.progress.value = (offset + s.elapsedMs) / (workout.durationSeconds * 1000);
     training.pause.textContent = s.status === 'paused' ? 'Resume' : 'Pause';
+    training.presentation.update(s);
     const checkpoint = Math.floor(engine.elapsed() / 1000);
     if (checkpoint !== lastCheckpoint) { lastCheckpoint = checkpoint; capture(); void persist(); }
   }
@@ -171,10 +166,13 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     });
     const circuit = el('ol', { className: 'prescriptions active-circuit', 'aria-label': 'AMRAP circuit', hidden: '' });
     const progress = el('progress', { max: '1', value: '0', 'aria-label': 'Workout progress' });
-    const panel = el('section', { className: 'active-panel', 'aria-label': 'Active workout' }, phaseLabel, exercise, side, target, weight.root, clock, block, total, position, circuit, next, progress);
-    training = { panel, phase: phaseLabel, exercise, side, target, clock, block, total, position, next, weight, pause, progress, circuit, circuitPhase: null };
-    root.replaceChildren(heading(`${workout.code} · VERSION ${workout.version}`, workout.name, continuous ? usesSessionWeights(workout) ? 'Recorded weights stay with this session. Results follow the finisher.' : 'Record actual results after all 20 active minutes.' : 'Record actual results between the blocks.'), panel,
-      el('div', { className: 'active-controls' }, pause, button('End Workout', () => { if (confirm('Leave this workout? A recoverable draft will remain.')) onExit(); }, true), soundButton()), draftMessage);
+    const presentation = activePresentation({
+      heading: heading(`${workout.code} · VERSION ${workout.version}`, workout.name, continuous ? usesSessionWeights(workout) ? 'Recorded weights stay with this session. Results follow the finisher.' : 'Record actual results after all 20 active minutes.' : 'Record actual results between the blocks.'),
+      phase: phaseLabel, exercise, side, target, weight, clock, block, total, position, next, circuit, progress,
+      controls: el('div', { className: 'active-controls' }, pause, button('End Workout', () => { if (confirm('Leave this workout? A recoverable draft will remain.')) onExit(); }, true)),
+    });
+    training = { panel: presentation.panel, presentation, phase: phaseLabel, exercise, side, target, clock, block, total, position, next, weight, pause, progress, circuit, circuitPhase: null };
+    root.replaceChildren(presentation.root, draftMessage);
     if (restored && engine.status === 'complete') finishBlock(false);
     else { update(false); if (engine.status === 'running') tick(); }
   }

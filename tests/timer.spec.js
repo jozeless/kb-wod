@@ -57,7 +57,7 @@ test('cancel or confirm exit for links, browser Back, hash navigation and End Wo
 });
 test('unavailable audio does not break execution; active layout remains responsive',async({page})=>{
  await page.addInitScript(()=>{window.AudioContext=class{constructor(){throw Error('unavailable')}};window.webkitAudioContext=undefined;});
- await start(page);await page.getByRole('button',{name:'Sound: Off'}).click();await expect(page.getByRole('button',{name:'Sound: Off'})).toBeVisible();
+ await start(page);await expect(page.getByRole('button',{name:/Sound:/})).toHaveCount(0);
  await page.clock.fastForward(4000);await expect(page.locator('.phase-clock')).toHaveText('00:59');
  for(const width of [320,390,768,1280]) {await page.setViewportSize({width,height:740});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await expect(page.getByRole('button',{name:'Pause',exact:true})).toBeVisible();}
 });

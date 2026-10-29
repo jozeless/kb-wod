@@ -1,0 +1,140 @@
+/* Active sessions only. Result forms and the surrounding app keep their styles. */
+.hm-active-view {
+  max-width: 660px;
+  margin-inline: auto;
+  color: var(--hm-text-primary, #EDECEE);
+}
+.hm-active-view .page-heading { margin-bottom: 16px; text-align: center; }
+.hm-active-view .page-heading h1 {
+  font-size: clamp(1.625rem, 7vw, 3rem);
+  font-weight: 900;
+  line-height: 1.1;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+.hm-active-view .page-heading .eyebrow { color: var(--hm-accent, #B37ACB); }
+.hm-active-view .page-heading > p:last-child {
+  color: var(--hm-text-primary, #EDECEE);
+  font-size: .75rem;
+}
+.hm-active-view .active-panel {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--hm-text-primary, #EDECEE);
+  text-align: center;
+}
+.hm-active-view .active-panel > .eyebrow {
+  color: var(--hm-highlight, #EEEF58);
+  font-size: 1rem;
+  letter-spacing: .08em;
+  margin: 0 0 12px;
+}
+.hm-active-view .session-dial {
+  display: grid;
+  place-items: center;
+  width: min(100%, 360px);
+  margin-inline: auto;
+}
+.hm-active-view .session-ring,
+.hm-active-view .session-dial-face { grid-area: 1 / 1; }
+.hm-active-view .session-ring { width: 100%; height: auto; overflow: visible; }
+.hm-active-view .session-ring-track,
+.hm-active-view .session-ring-fill { fill: none; stroke-width: 4; }
+.hm-active-view .session-ring-track { stroke: var(--hm-surface-secondary, #4D4A6A); }
+.hm-active-view .session-ring-fill {
+  stroke: var(--hm-highlight, #EEEF58);
+  stroke-dasharray: 100;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: center;
+}
+.hm-active-view[data-state="rest"] .session-ring-fill,
+.hm-active-view[data-state="transition"] .session-ring-fill { stroke: var(--hm-accent, #B37ACB); }
+.hm-active-view[data-state="paused"] .session-ring-fill { stroke: var(--hm-text-primary, #EDECEE); }
+.hm-active-view .session-dial-face { width: 80%; padding-block: 14%; min-width: 0; }
+.hm-active-view .session-time-label {
+  background: var(--hm-bg, #212227);
+  color: var(--hm-accent, #B37ACB);
+  font-size: .875rem;
+  font-weight: 750;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.hm-active-view .phase-clock {
+  font-size: clamp(2rem, 16vw, 6rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -.04em;
+  margin-block: 8px;
+}
+.hm-active-view .session-dial-face p { margin: 8px 0 14px; font-size: .75rem; overflow-wrap: anywhere; }
+.hm-active-view .session-state {
+  display: inline-block;
+  max-width: 100%;
+  padding: 4px 18px;
+  border-radius: var(--hm-radius-pill, 999px);
+  background: var(--hm-highlight, #EEEF58);
+  color: var(--hm-bg, #212227);
+  font-size: .875rem;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+.hm-active-view[data-state="rest"] .session-state,
+.hm-active-view[data-state="transition"] .session-state { background: var(--hm-accent, #B37ACB); }
+.hm-active-view[data-state="paused"] .session-state { background: var(--hm-text-primary, #EDECEE); }
+.hm-active-view .session-timing { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 20px; margin: 8px 0 16px; }
+.hm-active-view .session-timing p { font-size: .75rem; margin: 0; }
+.hm-active-view .current-exercise-card {
+  border: 1px solid var(--hm-surface-secondary, #4D4A6A);
+  border-radius: var(--hm-radius-lg, 16px);
+  background: var(--hm-surface-primary, #312F4E);
+  padding: 16px;
+  text-align: left;
+}
+.hm-active-view .current-exercise-label { margin: 0 0 6px; font-size: .75rem; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; }
+.hm-active-view .active-exercise { font-size: clamp(1.5rem, 6vw, 2.25rem); font-weight: 850; line-height: 1.15; text-transform: uppercase; margin: 0 0 12px; }
+.hm-active-view .session-prescription { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+.hm-active-view .session-prescription > .weight-preference { flex: 0 1 7rem; margin: 0; max-width: 100%; }
+.hm-active-view .active-target { flex: 1 1 8rem; font-size: .875rem; margin: 0; overflow-wrap: anywhere; }
+.hm-active-view .holding-side { color: var(--hm-highlight, #EEEF58); font-size: 1.125rem; margin: 0 0 12px; }
+.hm-active-view .weight-label { font-size: .75rem; }
+.hm-active-view input { min-height: 44px; font-size: 1rem; border: 1px solid var(--hm-accent, #B37ACB); background: var(--hm-bg, #212227); color: var(--hm-text-primary, #EDECEE); }
+.hm-active-view .weight-error { color: var(--hm-highlight, #EEEF58); }
+.hm-active-view .session-next { border-top: 1px solid var(--hm-surface-secondary, #4D4A6A); padding-top: 12px; margin: 16px 0 0; font-size: .8125rem; font-weight: 650; overflow-wrap: anywhere; }
+.hm-active-view .session-next:empty { display: none; }
+.hm-active-view .active-circuit { padding-left: 20px; margin: 12px 0; }
+.hm-active-view .active-circuit li { border-bottom: 1px solid var(--hm-surface-secondary, #4D4A6A); padding: 12px 0; }
+.hm-active-view .active-circuit p { color: var(--hm-text-primary, #EDECEE); font-size: .875rem; margin: 8px 0 0; }
+.hm-active-view .exercise-weight-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.hm-active-view .exercise-weight-row > strong { flex: 1 1 8rem; min-width: 0; overflow-wrap: anywhere; }
+.hm-active-view .exercise-weight-row > .weight-preference { flex: 0 1 7rem; max-width: 100%; margin: 0; }
+/* Keep the existing overall progress semantics; the visible ring shows segment time. */
+.hm-active-view progress { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); }
+.hm-active-view .active-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr)); gap: 12px; margin: 16px 0; }
+.hm-active-view .active-controls button {
+  min-width: 0;
+  min-height: 56px;
+  padding: 12px 8px;
+  border: 1px solid var(--hm-highlight, #EEEF58);
+  border-radius: var(--hm-radius-lg, 16px);
+  background: var(--hm-highlight, #EEEF58);
+  color: var(--hm-bg, #212227);
+  font-size: .875rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+.hm-active-view .active-controls button:last-child { grid-column: auto; background: var(--hm-surface-primary, #312F4E); border-color: var(--hm-accent, #B37ACB); color: var(--hm-text-primary, #EDECEE); }
+.hm-active-view .active-controls button::before { content: ''; display: inline-block; width: .75em; height: .875em; margin-right: .5em; vertical-align: -.05em; background: currentColor; }
+.hm-active-view .active-controls button:first-child::before { background: linear-gradient(to right, currentColor 35%, transparent 35% 65%, currentColor 65%); }
+.hm-active-view[data-state="paused"] .active-controls button:first-child::before { background: currentColor; clip-path: polygon(0 0, 100% 50%, 0 100%); }
+.hm-active-view .active-controls button:hover { border-color: var(--hm-text-primary, #EDECEE); }
+.hm-active-view :focus-visible { outline: 3px solid var(--hm-highlight, #EEEF58); outline-offset: 4px; }
+@media (forced-colors: active) {
+  .hm-active-view .session-ring-track { stroke: GrayText; }
+  .hm-active-view .session-ring-fill { stroke: Highlight; }
+  .hm-active-view .session-state { background: Canvas; color: CanvasText; border: 1px solid CanvasText; }
+  .hm-active-view .active-controls button { background: ButtonFace; color: ButtonText; border-color: ButtonText; }
+  .hm-active-view :focus-visible { outline-color: Highlight; }
+}

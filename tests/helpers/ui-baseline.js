@@ -1,12 +1,19 @@
 import {expect} from '@playwright/test';
 import fs from 'node:fs/promises';
 export const legacyCSS=await fs.readFile(new URL('../fixtures/ui-v2-01-app.css',import.meta.url),'utf8');
-const root='/workspace/artifacts/ui-v2-07/regressions';
+const root='/workspace/artifacts/ui-v2-08/regressions';
+const previousActive=Object.fromEntries(await Promise.all(['block-training','active-workout'].map(async name=>[name,await fs.readFile(new URL(`../fixtures/ui-v2-07/${name}.js`,import.meta.url),'utf8')])));
 const previousHeader=await fs.readFile(new URL('../fixtures/ui-v2-02-header.html',import.meta.url),'utf8');
-export async function capture(browser,baseURL,viewport,name,state,tokens,{audit=false,headerBaseline=false,headerEvidence=false,artifactRoot=root,todayBaseline=false,todayEvidence=false,libraryBaseline=false,detailsBaseline=false,workoutId='monday-paranoid',workoutVersion=3}={}){
+export async function capture(browser,baseURL,viewport,name,state,tokens,{audit=false,headerBaseline=false,headerEvidence=false,artifactRoot=root,todayBaseline=false,todayEvidence=false,libraryBaseline=false,detailsBaseline=false,activeBaseline=false,workoutId='monday-paranoid',workoutVersion=3}={}){
  const context=await browser.newContext({baseURL,viewport,serviceWorkers:'block'});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  await page.addInitScript(()=>{window.KB_SUPABASE_CONFIG={url:'https://ui-fixture.supabase.co',publishableKey:'sb_publishable_fixture'};window.AudioContext=class{constructor(){throw Error('Fixture: audio unavailable');}};window.webkitAudioContext=undefined;localStorage.setItem('kb2.weekly-plan.v1',JSON.stringify({Monday:{workoutId:'monday-paranoid',version:3},Tuesday:{workoutId:'tuesday-of-spades',version:1},Thursday:{workoutId:'thursday-bells',version:1},Friday:{workoutId:'friday-to-black',version:1}}));});
+ if(activeBaseline)await page.route('**/*',async route=>{
+  const path=new URL(route.request().url()).pathname;
+  for(const [name,body]of Object.entries(previousActive))if(path.endsWith(`/src/ui/${name}.js`))return route.fulfill({contentType:'text/javascript',body});
+  if(route.request().isNavigationRequest()){const response=await route.fetch();return route.fulfill({response,body:(await response.text()).replace(/\s*<link rel="stylesheet" href="\.\/styles\/hm-active\.css">/,'')});}
+  return route.continue();
+ });
  if(detailsBaseline)await page.route('**/*',async route=>{
   if(route.request().isNavigationRequest()){const response=await route.fetch();return route.fulfill({response,body:(await response.text()).replace(/\s*<link rel="stylesheet" href="\.\/styles\/hm-details\.css">/,'')});}
   return route.continue();
@@ -30,6 +37,14 @@ export async function capture(browser,baseURL,viewport,name,state,tokens,{audit=
  await page.goto(state==='assignment'?'./#library?day=Monday':state==='account'?'./#account':state==='today'?'./#today':state==='library'?'./#library':`./#workout/${workoutId}/${workoutVersion}`);
  if(state==='library'||state==='assignment')await expect(page.locator('.workout-card')).toHaveCount(4);
  if(state==='timer'){await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');await page.clock.runFor(13000);await expect(page.locator('.phase-clock')).toHaveText('00:50');await expect(page.getByText('Draft saved locally.',{exact:true})).toBeVisible();}
+ if(state.startsWith('timer-')){
+  await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');
+  if(state==='timer-rest')await page.clock.fastForward(528000);
+  if(state==='timer-amrap')await page.clock.fastForward(973000);
+  if(state==='timer-paused'){await page.clock.runFor(13000);await page.getByRole('button',{name:'Pause',exact:true}).click();}
+  if(state==='timer-completed')await page.clock.fastForward(1273000);
+  await expect(page.getByText('Draft saved locally.',{exact:true})).toBeVisible();
+ }
  if(state==='results'||state==='history'||state==='history-list'){
   await page.evaluate(async()=>{const {findWorkout}=await import('./src/data/catalog.js');const {createDraft}=await import('./src/domain/result-schemas.js');const {putDraft,completeSession}=await import('./src/storage/session-store.js');const {finalResults}=await import('./src/domain/result-schemas.js');const w=findWorkout('monday-paranoid',3),r=createDraft(w,{getItem:()=>null},'ui-foundation-fixture','2026-10-28T12:00:00Z');r.stage='finisher-results';r.blockIndex=5;r.completedBlocks=w.phases.map(p=>p.id);r.activeDurationMs=1270000;r.checkpointMs=1273000;r.completedAt='2026-10-28T12:21:13Z';r.form.weights['push-press']='12.5';r.form.finisherReps='17';r.form.perceivedEffort='7';r.form.notes='UI baseline fixture only';await putDraft(r);});
   if(state==='history'||state==='history-list'){await page.evaluate(async()=>{const {getSession,completeSession}=await import('./src/storage/session-store.js');const {finalResults}=await import('./src/domain/result-schemas.js');const r=await getSession('ui-foundation-fixture');r.results=finalResults(r);await completeSession(r);});await page.goto(state==='history-list'?'./#history/monday-paranoid':'./#session/ui-foundation-fixture');if(state==='history-list'){await expect(page.getByRole('heading',{name:'Saved workouts',exact:true})).toBeVisible();await expect(page.locator('.library-grid button')).toHaveCount(1);}else await expect(page.getByText('KB Thruster completed repetitions: 17',{exact:true})).toBeVisible();}else await page.goto('./#active/monday-paranoid/3?draft=ui-foundation-fixture');if(state==='results'){await expect(page.getByRole('heading',{name:'Workout Results',exact:true})).toBeVisible();await expect(page.getByRole('spinbutton')).toHaveCount(13);}
@@ -43,7 +58,7 @@ export async function capture(browser,baseURL,viewport,name,state,tokens,{audit=
  await page.evaluate(()=>scrollTo(0,document.body.scrollHeight));const reachable=await page.evaluate(()=>{const nodes=[...document.querySelectorAll('#app button,#app input,#app textarea,#app select,#app a')].filter(n=>n.checkVisibility());return !nodes.length||nodes.at(-1).getBoundingClientRect().bottom<=document.querySelector('nav').getBoundingClientRect().top;});expect(reachable).toBe(true);await page.evaluate(()=>scrollTo(0,0));
  }
  const metrics=await page.evaluate(()=>{const nodes=[...document.querySelectorAll('.workout-card,.phase-bar,nav,nav a,input,textarea,select,.active-panel,.phase-clock')];return {geometry:nodes.map(n=>{const r=n.getBoundingClientRect();return [n.tagName,r.x,r.y,r.width,r.height];}),styles:nodes.filter(n=>!n.matches('.phase-bar')).map(n=>{const s=getComputedStyle(n);return [s.backgroundColor,s.color,s.fontSize,s.borderRadius,s.padding];})};});
- const dir=`${artifactRoot}/${process.env.HM_CAPTURE_PRECHANGE?'pre-change':headerBaseline||todayBaseline||libraryBaseline||detailsBaseline?'before':tokens?'after':'before'}`;await fs.mkdir(dir,{recursive:true});const png=await page.screenshot({path:`${dir}/${name}-${state}.png`,fullPage:true,animations:'disabled',style:'nav{visibility:hidden}'});if(audit){await page.evaluate(()=>scrollTo(0,document.body.scrollHeight));await page.screenshot({path:`${dir}/${name}-${state}-viewport.png`,animations:'disabled'});}let protectedMetrics,contentPNG,viewportPNG;
+ const dir=`${artifactRoot}/${process.env.HM_CAPTURE_PRECHANGE?'pre-change':headerBaseline||todayBaseline||libraryBaseline||detailsBaseline||activeBaseline?'before':tokens?'after':'before'}`;await fs.mkdir(dir,{recursive:true});const png=await page.screenshot({path:`${dir}/${name}-${state}.png`,fullPage:true,animations:'disabled',style:'nav{visibility:hidden}'});if(audit){await page.evaluate(()=>scrollTo(0,document.body.scrollHeight));await page.screenshot({path:`${dir}/${name}-${state}-viewport.png`,animations:'disabled'});}let protectedMetrics,contentPNG,viewportPNG;
  if(headerEvidence){
   await page.evaluate(()=>scrollTo(0,0));
   protectedMetrics=await page.evaluate(()=>{

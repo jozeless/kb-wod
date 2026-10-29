@@ -32,5 +32,5 @@ export async function verifyWorkoutBeeps(page,id,version){
   }else {if(next.kind==='REST')add('rest');else if(next.kind==='AMRAP_REPS'||next.phase.audioCue==='finisher'&&segment.phase.id!==next.phase.id)add('finisher');else if(next.kind==='SIDE_HOLD'||next.kind==='WORK'||segment.phase.id!==next.phase.id&&next.kind!=='TRANSITION')add('work');else if(next.kind==='EMOM')add('minute');await check();}
  }
  await page.clock.fastForward(600000);await check();
- if(data.mode) {const record=await page.evaluate(async({id,version})=>{const {listSessions}=await import('./src/storage/session-store.js');return (await listSessions(id)).find(r=>r.workoutVersion===version);},{id,version});expect(record.activeDurationMs).toBe(data.duration*1000);}
+ if(data.mode) {const record=await page.evaluate(async({id,version})=>{const {listSessions}=await import('./src/storage/session-store.js');return (await listSessions(id)).find(r=>r.workoutVersion===version);},{id,version});expect(record).toBeUndefined();}
 }

@@ -28,13 +28,12 @@ function startWorkout(workout) {
   activeHash = `#active/${workout.id}/${workout.version}`;
   if (supportsResults(workout)) {
     session = resultSession(workout);
-    activeHash += `?draft=${session.id}`;
   } else session = createActiveWorkout(workout, () => { if (allowExit()) go('#today'); }, () => { stopSession(); go('#today'); });
   if (location.hash === activeHash) render(); else go(activeHash);
 }
 
-function resultSession(workout, draftId) {
-  return createBlockTraining(workout, { draftId, recover: Boolean(draftId), onExit: () => { stopSession(); go('#today'); }, onHistory: id => { stopSession(); go(`#session/${id}`); } });
+function resultSession(workout) {
+  return createBlockTraining(workout, { onExit: () => { if (allowExit()) go('#today'); }, onHistory: id => { stopSession(); go(`#session/${id}`); } });
 }
 
 function reloadPlan() { state = loadPlan(window.localStorage); status.textContent = state.error ?? ''; }
@@ -65,9 +64,6 @@ function render(focus = true) {
   const day = days.includes(requestedDay) ? requestedDay : null;
   let view;
   if (session && location.hash === activeHash) view = session.root;
-  else if (page === 'active' && new URLSearchParams(query).get('draft') && supportsResults(findWorkout(id, version))) {
-    session = resultSession(findWorkout(id, version), new URLSearchParams(query).get('draft')); activeHash = location.hash; view = session.root;
-  }
   else if (page === 'history') view = historyView(id, go);
   else if (page === 'session') view = savedSessionView(id, go);
   else if (page === 'account') view = accountView();
@@ -111,8 +107,10 @@ window.addEventListener('hashchange', () => {
   }
   render();
 });
+// A document left in the back/forward cache must not resurrect an abandoned session.
+window.addEventListener('pagehide', stopSession);
+window.addEventListener('pageshow', event => { if (event.persisted) render(false); });
 window.addEventListener('beforeunload', event => {
-  session?.checkpoint?.();
   if (session?.inProgress) { event.preventDefault(); event.returnValue = ''; }
 });
 window.addEventListener('storage', e => { if (e.key === planKey || e.key === null) { try { reloadPlan(); render(false); } catch { /* Keep current state if storage becomes unavailable. */ } } });

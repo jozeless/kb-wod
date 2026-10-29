@@ -88,15 +88,14 @@ test('exercise-specific decimal, zero, blank and invalid weights retain validati
  expect(JSON.parse(await page.evaluate(()=>localStorage.getItem('kb2.weekly-plan.v1')))).toEqual(initialPlan);
 });
 
-test('Start, saved-session and existing draft recovery actions remain functional without changing the plan',async({page})=>{
+test('Start, saved-session and in-memory pause actions remain functional without changing the plan',async({page})=>{
  await localMode(page);await page.clock.install({time:new Date('2026-10-28T12:00:00Z')});await page.clock.pauseAt(new Date('2026-10-28T12:00:01Z'));
  for(const [id,version]of approved){
   await page.goto(url(id,version));const start=page.getByRole('button',{name:'Start Workout',exact:true});
   expect(await start.evaluate(n=>({bg:getComputedStyle(n).backgroundColor,color:getComputedStyle(n).color,height:n.getBoundingClientRect().height}))).toEqual({bg:'rgb(238, 239, 88)',color:'rgb(33, 34, 39)',height:50});
   await start.click();await expect(page.locator('.phase-clock')).toHaveText('3');await expect(page.locator('.hm-detail-view')).toHaveCount(0);
-  await page.clock.runFor(4000);await page.getByRole('button',{name:'Pause',exact:true}).click();await expect(page.getByText('Draft saved locally.',{exact:true})).toBeVisible();
-  await page.getByRole('button',{name:'End Workout',exact:true}).click();await page.goto(url(id,version));const resume=page.getByRole('button',{name:/Resume draft —/});await expect(resume).toHaveCount(1);
-  await resume.click();await expect(page.getByRole('button',{name:'Resume',exact:true})).toBeVisible();await expect(page.locator('.hm-detail-view')).toHaveCount(0);
+  await page.clock.runFor(4000);await page.getByRole('button',{name:'Pause',exact:true}).click();await expect(page.getByText('Draft saved locally.',{exact:true})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Resume',exact:true})).toBeVisible();await expect(page.locator('.hm-detail-view')).toHaveCount(0);
   await page.getByRole('button',{name:'End Workout',exact:true}).click();await page.goto(url(id,version));await page.getByRole('button',{name:'View saved sessions',exact:true}).click();await expect(page.getByRole('heading',{name:'Saved workouts',exact:true})).toBeVisible();await expect(page.locator('.hm-detail-view')).toHaveCount(0);
  }
  expect(JSON.parse(await page.evaluate(()=>localStorage.getItem('kb2.weekly-plan.v1')))).toEqual(initialPlan);
@@ -125,7 +124,7 @@ test('detail fields, targets, instructions and actions fit four widths and 200% 
 
 test('offline approved/historical detail links work and demo/fallback stages never receive detail styles',async({page,context})=>{
  await localMode(page);await page.goto(url('monday-paranoid',3));await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
- expect(await page.evaluate(async()=>Boolean(await (await caches.open('kb2-static-v29')).match(new URL('./styles/hm-details.css',location.href))))).toBe(true);
+ expect(await page.evaluate(async()=>Boolean(await (await caches.open('kb2-static-v30')).match(new URL('./styles/hm-details.css',location.href))))).toBe(true);
  await context.setOffline(true);
  for(const [id,version,name]of [...approved,['focus-001-upper-abs',1,'Upper Body + ABS']]){await page.goto(url(id,version));await expect(page.getByRole('heading',{name,exact:true})).toBeVisible();await expect(page.locator('.hm-detail-view')).toHaveCount(1);await expect(page.getByRole('button',{name:'Start Workout',exact:true})).toBeVisible();}
  await page.goto('./#active/monday-paranoid/3');await expect(page.getByRole('heading',{name:'Ready when you are',exact:true})).toBeVisible();await expect(page.locator('.hm-detail-view')).toHaveCount(0);

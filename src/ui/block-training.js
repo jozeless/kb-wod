@@ -1,40 +1,26 @@
+import { currentUserId } from '../cloud/identity.js';
 import { activePresentation } from './active-presentation.js';
 import { usesSessionWeights } from '../domain/weights-finisher-results.js';
-import { canReadLocal } from '../cloud/identity.js';
 import { syncStatus } from './account.js';
 import { WorkoutTimer, formatTime } from '../domain/workout-timer.js';
 import { createCueTracker } from '../domain/workout-cues.js';
 import { createDraft, blockResults, finalResults, blockOffset, resultSchema } from '../domain/result-schemas.js';
-import { getSession, putDraft, completeSession } from '../storage/session-store.js';
+import { completeSession } from '../storage/session-store.js';
 import { createWorkoutAudio } from '../platform/workout-audio.js';
 import { createWeightField } from './weight-field.js';
 import { resultForm } from './block-result-form.js';
 import { prescription } from './exercise-prescription.js';
 import { el, button, heading } from './components.js';
 
-export function createBlockTraining(workout, { draftId, recover = false, onExit, onHistory }) {
-  const id = draftId || crypto.randomUUID();
-  const root = el('div', { className: 'active-workout' }, heading(workout.code, 'Preparing session', 'Opening local session storage…'));
+export function createBlockTraining(workout, { onExit, onHistory }) {
+  const id = crypto.randomUUID();
+  const root = el('div', { className: 'active-workout' }, heading(workout.code, 'Preparing session', 'Preparing your workout…'));
   const audio = createWorkoutAudio();
   const continuous = workout.execution?.mode === 'continuous-results';
   const timeOffset = () => continuous ? 0 : blockOffset(workout, record.blockIndex);
   let record, engine, cues, ticker = null, disposed = false, busy = false;
-  let queue = Promise.resolve(), pending = 0, lastError = false, lastCheckpoint = -1;
   let formView = null, training = null;
-  const draftMessage = el('p', { role: 'status', className: 'result-message' });
-  function message(text) { (formView?.message || draftMessage).textContent = text; }
-  function persist() {
-    if (!record || record.status === 'completed') return Promise.resolve(true);
-    const snapshot = structuredClone(record); pending++;
-    draftMessage.textContent = 'Saving draft…';
-    const operation = queue.then(() => putDraft(snapshot));
-    queue = operation.catch(() => {});
-    return operation.then(saved => {
-      lastError = false;
-      if (saved.status === 'completed' && !disposed) { record = saved; showSaved(); }
-      return true;
-    }, () => { lastError = true; draftMessage.textContent = 'Draft could not be saved. Keep this screen open and retry before continuing.'; return false; }).finally(() => { pending--; if (!lastError) draftMessage.textContent = pending ? 'Saving draft…' : 'Draft saved locally.'; });
-  }
+  function message(text) { if (formView) formView.message.textContent = text; }
   function capture() {
     if (!engine || !record?.stage?.endsWith('-active')) return;
     const s = engine.snapshot();
@@ -51,33 +37,27 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
   function showForm() {
     stopTicker(); training = null;
     const blockId = workout.phases[record.blockIndex].id;
-    formView = resultForm(record, blockId, { changed: () => { message(''); void persist(); }, continueBlock, save });
-    root.replaceChildren(formView.root, draftMessage, button('Return to Today', onExit, true));
-    if (lastError) message('Draft could not be saved. Keep this screen open and retry before continuing.');
+    formView = resultForm(record, blockId, { changed: () => message(''), continueBlock, save });
+    root.replaceChildren(formView.root, button('Return to Today', onExit, true));
   }
   async function continueBlock() {
     if (busy) return;
     try { blockResults(workout, record.form, workout.phases[record.blockIndex].id); }
     catch (error) { message(error.message); return; }
     busy = true; formView.setBusy(true);
-    // Re-unlock after recovery, within this explicit user gesture. Do not replay start.
+    // Continue is an explicit audio-unlock gesture; never replay earlier cues.
     if (record.soundEnabled) void audio.enable();
-    if (await persist()) {
-      if (disposed) return;
-      const previous = { blockIndex: record.blockIndex, stage: record.stage, checkpointMs: record.checkpointMs };
-      record.blockIndex++; record.stage = `${workout.phases[record.blockIndex].id}-active`; record.checkpointMs = 0;
-      if (await persist()) { if (!disposed) beginBlock(false); }
-      else Object.assign(record, previous);
-    }
-    busy = false; if (formView) formView.setBusy(false);
+    record.blockIndex++; record.stage = `${workout.phases[record.blockIndex].id}-active`; record.checkpointMs = 0;
+    beginBlock();
+    busy = false;
   }
   async function save() {
     if (busy) return;
+    if (record.ownerId !== currentUserId()) { message('Account changed. Start a new workout before saving.'); return; }
     try { record.results = finalResults(record); }
     catch (error) { message(error.message); return; }
     busy = true; formView.setBusy(true); message('Saving workout…');
     try {
-      await queue;
       record = await completeSession(record);
       if (!disposed) showSaved();
     } catch { message('Workout could not be saved. Your entries are still here. Retry Save Workout.'); }
@@ -98,7 +78,7 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     record.stage = `${phase.id}-results`;
     if (record.blockIndex === workout.phases.length - 1) record.completedAt = new Date().toISOString();
     // Session fields were prefilled at creation. Never overwrite actual entries at a transition.
-    showForm(); void persist();
+    showForm();
   }
   function update(audible = true) {
     if (disposed || !engine || !record.stage.endsWith('-active')) return;
@@ -113,7 +93,7 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     const offset = timeOffset();
     const cue = cues.next({ ...s, elapsedMs: offset + s.elapsedMs }, audible && !document.hidden);
     if (cue === 'start') {
-      if (!record.hasStarted) { record.hasStarted = true; audio.cue('start'); void persist(); }
+      if (!record.hasStarted) { record.hasStarted = true; audio.cue('start'); }
     } else if (cue) audio.cue(cue);
     training.panel.className = `active-panel ${s.kind?.toLowerCase() || 'countdown'}${s.status === 'paused' ? ' paused' : ''}`;
     const text = (node, value) => { if (node.textContent !== value) node.textContent = value; };
@@ -138,78 +118,66 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     training.progress.value = (offset + s.elapsedMs) / (workout.durationSeconds * 1000);
     training.pause.textContent = s.status === 'paused' ? 'Resume' : 'Pause';
     training.presentation.update(s);
-    const checkpoint = Math.floor(engine.elapsed() / 1000);
-    if (checkpoint !== lastCheckpoint) { lastCheckpoint = checkpoint; capture(); void persist(); }
+    capture();
   }
   function sessionWeightField(initialExercise) {
     if(!usesSessionWeights(workout))return createWeightField(workout,initialExercise);
     return createWeightField(workout,initialExercise,{
       read:exercise=>record.form.weights[exercise.id],
-      changed:(exercise,raw)=>{record.form.weights[exercise.id]=raw;delete record.form.invalid[`weights.${exercise.id}`];void persist();},
+      changed:(exercise,raw)=>{record.form.weights[exercise.id]=raw;delete record.form.invalid[`weights.${exercise.id}`];},
     });
   }
-  function beginBlock(restored) {
+  function beginBlock() {
     if (disposed) return;
-    formView = null; lastCheckpoint = -1;
+    formView = null;
     const phase = workout.phases[record.blockIndex];
     engine = new WorkoutTimer(continuous ? workout : { ...workout, durationSeconds: phase.durationSeconds, phases: [phase] });
-    if (restored) engine.restorePaused(record.checkpointMs); else engine.start();
+    engine.start();
     cues = createCueTracker(); cues.next({ ...engine.snapshot(), elapsedMs: timeOffset() + engine.snapshot().elapsedMs }, false);
     const weight = sessionWeightField(); weight.root.hidden = true;
     const phaseLabel = el('p', { className: 'eyebrow', 'aria-live': 'polite' }), exercise = el('h2', { className: 'active-exercise' }), target = el('p', {});
     const side = el('h2', {className: 'holding-side', 'aria-live': 'polite', hidden: ''});
     const clock = el('div', { className: 'phase-clock', role: 'timer' }), block = el('p', { className: 'block-time' }), total = el('p', {}), position = el('p', {}), next = el('p', {});
     const pause = button(engine.status === 'paused' ? 'Resume' : 'Pause', () => {
-      // Resume is also the audio opt-in for historical muted drafts. Keep that
-      // intent for later blocks even if this browser blocks the current attempt.
+      // Resume retries audio within a user gesture without replaying missed cues.
       if (engine.status === 'paused') { record.soundEnabled = true; void audio.enable(); engine.resume(); tick(); }
       else { engine.pause(); stopTicker(); stopAudio(); update(false); }
-      capture(); void persist();
+      capture();
     });
     const circuit = el('ol', { className: 'prescriptions active-circuit', 'aria-label': 'AMRAP circuit', hidden: '' });
     const progress = el('progress', { max: '1', value: '0', 'aria-label': 'Workout progress' });
     const presentation = activePresentation({
       heading: heading(`${workout.code} · VERSION ${workout.version}`, workout.name, continuous ? usesSessionWeights(workout) ? 'Recorded weights stay with this session. Results follow the finisher.' : 'Record actual results after all 20 active minutes.' : 'Record actual results between the blocks.'),
       phase: phaseLabel, exercise, side, target, weight, clock, block, total, position, next, circuit, progress,
-      controls: el('div', { className: 'active-controls' }, pause, button('End Workout', () => { if (confirm('Leave this workout? A recoverable draft will remain.')) onExit(); }, true)),
+      controls: el('div', { className: 'active-controls' }, pause, button('End Workout', onExit, true)),
     });
     training = { panel: presentation.panel, presentation, phase: phaseLabel, exercise, side, target, clock, block, total, position, next, weight, pause, progress, circuit, circuitPhase: null };
-    root.replaceChildren(presentation.root, draftMessage);
-    if (restored && engine.status === 'complete') finishBlock(false);
-    else { update(false); if (engine.status === 'running') tick(); }
+    root.replaceChildren(presentation.root);
+    update(false); if (engine.status === 'running') tick();
   }
   function tick(audible = true) { if (disposed) return; update(audible); if (ticker === null && record.stage.endsWith('-active') && engine.status === 'running') ticker = setInterval(update, 100); }
   async function initialize() {
     try {
-      if (recover) {
-        record = await getSession(id);
-        if (!canReadLocal(record) || record.schemaVersion !== 1 || record.workoutId !== workout.id || record.workoutVersion !== workout.version || !record.form?.invalid || !workout.phases.some(p => record.stage === `${p.id}-active` || record.stage === `${p.id}-results`) || !Number.isInteger(record.blockIndex) || !workout.phases[record.blockIndex] || record.workoutSnapshot?.id !== workout.id || record.workoutSnapshot.version !== workout.version) throw new Error('Draft unavailable');
-        workout = record.workoutSnapshot;
-      } else {
-        let storage; try { storage = window.localStorage; } catch { storage = { getItem() { throw new Error('Storage unavailable'); } }; }
-        record = createDraft(workout, storage, id);
-        await putDraft(record);
-        await unlock; record.soundEnabled = audio.enabled;
-      }
-      if (disposed) return;
-      if (record.status === 'completed') showSaved();
-      else if (record.stage.endsWith('-results')) showForm();
-      else beginBlock(recover);
+      let storage; try { storage = window.localStorage; } catch { storage = { getItem() { throw new Error('Storage unavailable'); } }; }
+      // Reuse the existing result envelope/validation without persisting it.
+      // Preserve the ownership previously captured by the initial draft transaction.
+      record = {...createDraft(workout, storage, id), ownerId: currentUserId()};
+      await unlock; if (disposed) return; record.soundEnabled = true;
+      if (!disposed) beginBlock();
     } catch {
       record = null;
-      root.replaceChildren(heading('LOCAL STORAGE', 'Session could not be opened', 'No workout has started. Existing data has not been replaced.'), button('Retry', initialize), button('Return to Today', onExit, true));
+      root.replaceChildren(heading('WORKOUT', 'Session could not be opened', 'No workout has started. Existing data has not been replaced.'), button('Retry', initialize), button('Return to Today', onExit, true));
     }
   }
-  const unlock = !recover ? audio.enable() : Promise.resolve();
+  const unlock = audio.enable();
   function onVisibility() { if (document.hidden) stopAudio(); else update(false); }
-  function onPageHide() { capture(); void persist(); stopTicker(); stopAudio(); }
+  function onPageHide() { capture(); stopTicker(); stopAudio(); }
   function onPageShow() { if (record?.stage?.endsWith('-active') && engine?.status === 'running') tick(false); }
   document.addEventListener('visibilitychange', onVisibility); window.addEventListener('pagehide', onPageHide); window.addEventListener('pageshow', onPageShow);
   void initialize();
   return {
-    id, root, exitMessage: 'Leave this workout? A draft is retained; unsaved changes may be lost.',
-    get inProgress() { if (record?.status === 'completed') return false; return busy || pending > 0 || lastError || Boolean(record?.stage?.endsWith('-active') && record.status !== 'completed'); },
-    checkpoint() { if (record?.stage?.endsWith('-active')) { capture(); void persist(); } },
-    dispose() { capture(); if (record?.status !== 'completed') void persist(); disposed = true; stopTicker(); audio.dispose(); document.removeEventListener('visibilitychange', onVisibility); window.removeEventListener('pagehide', onPageHide); window.removeEventListener('pageshow', onPageShow); },
+    id, root, exitMessage: 'End this workout? Your progress will not be saved.',
+    get inProgress() { return !disposed && Boolean(record && record.status !== 'completed'); },
+    dispose() { disposed = true; engine?.end(); stopTicker(); audio.dispose(); record = null; formView = null; training = null; document.removeEventListener('visibilitychange', onVisibility); window.removeEventListener('pagehide', onPageHide); window.removeEventListener('pageshow', onPageShow); },
   };
 }

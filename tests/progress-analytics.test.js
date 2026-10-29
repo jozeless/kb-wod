@@ -135,5 +135,5 @@ test('Progress CSS is scoped and dependency-free; new resources are precached wi
   assert.ok(!/@import|@font-face|url\(/.test(css));
   const sw = fs.readFileSync(new URL('../service-worker.js', import.meta.url), 'utf8');
   for (const path of ['src/domain/progress-analytics.js', 'src/ui/progress.js', 'styles/hm-progress.css']) assert.ok(sw.includes(`'./${path}'`));
-  assert.match(sw, /kb2-static-v29/); assert.ok(!/skipWaiting|clients\.claim/.test(sw));
+  assert.match(sw, /kb2-static-v30/); assert.ok(!/skipWaiting|clients\.claim/.test(sw));
 });

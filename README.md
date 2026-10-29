@@ -1,5 +1,12 @@
 # KB 2.0 — Foundation
 
+## Current session persistence policy
+
+Workouts are kept **in memory only** until the full workout is completed and **Save Workout** succeeds. There is no automatic draft saving or Resume draft action. Normal Pause/Resume remains available. Ending/leaving or refreshing an unsaved workout discards it; result forms warn before departure. A failed final save can be retried while the page remains open. Old drafts are retained unused; completed History/Progress, weight preferences and cloud sync are preserved. See [completed-only session policy](docs/COMPLETED_ONLY_SESSIONS.md).
+
+This policy supersedes draft persistence/recovery descriptions in the historical feature release notes below.
+
+
 A mobile-first static application built with HTML, CSS and native JavaScript ES modules. No runtime framework, CDN or build step. Supabase is optional; local training needs no backend. This branch replaces the experimental prototype; it does not migrate its data or Supabase integration.
 
 ## Develop and test
@@ -29,7 +36,7 @@ Today has seven fixed Monday–Sunday slots. Add/change opens Library in assignm
 
 Library and assignment choices use the explicit `libraryWorkouts` export: **Monday Paranoid v3 → Tuesday of Spades v1 → Thursday Bells v1 → Friday To Black v1**, in that order. There are exactly four cards, no search box, no type dropdown and no demo explanation. This is catalog cleanup, not the upcoming UI v2 redesign.
 
-The internal `workouts` registry retains all **15** definitions/versions, including legacy Focus/Hybrid workouts, Monday v1/v2 and demos. `currentWorkouts` remains an internal/latest-version compatibility export; `findWorkout(id, version)` still resolves exact historical references. Existing plans, history, drafts and weight preferences are never rewritten merely because a card is hidden. Historical assigned workouts can still be opened/removed, and direct versioned links plus draft recovery continue to work offline. Only an explicit new selection replaces an assignment. Later release notes describe features at their introduction; current public visibility follows this cleanup.
+The internal `workouts` registry retains all **15** definitions/versions, including legacy Focus/Hybrid workouts, Monday v1/v2 and demos. `currentWorkouts` remains an internal/latest-version compatibility export; `findWorkout(id, version)` still resolves exact historical references. Existing plans, history, drafts and weight preferences are never rewritten merely because a card is hidden. Historical assigned workouts can still be opened/removed and direct versioned links work offline; old draft rows remain unused, with no recovery action. Only an explicit new selection replaces an assignment. Later release notes describe features at their introduction; current public visibility follows this cleanup.
 
 See [Library cleanup: public selection, historical compatibility and verification](docs/LIBRARY_CLEANUP.md).
 
@@ -89,7 +96,7 @@ Sine tones use short attack/release envelopes, bounded gain, silent sub-note gap
 
 ## Focus 001 version 2 — results and recovery
 
-Focus v2 uses ten 40-second WORK / 20-second REST intervals in each block, preserving exercise order and rep targets. Upper begins after a 3-second lead-in. At 10:00 it stops completely and opens Upper Results; no ticker runs and no stale cues accumulate while filling the form. Continue to ABS validates and commits the draft before starting a new 3-second countdown and the ABS block. There is no second START signal. ABS ends after its final rest at 20:00 active time, sounds the existing completion cue and opens ABS Results. The block timer begins at 10:00; lead-ins, pauses and result-form time are excluded from `activeDurationMs`.
+Focus v2 uses ten 40-second WORK / 20-second REST intervals in each block, preserving exercise order and rep targets. Upper begins after a 3-second lead-in. At 10:00 it stops completely and opens Upper Results; no ticker runs and no stale cues accumulate while filling the form. Continue to ABS validates the in-memory entries before starting a new 3-second countdown and the ABS block. There is no second START signal. ABS ends after its final rest at 20:00 active time, sounds the existing completion cue and opens ABS Results. The block timer begins at 10:00; lead-ins, pauses and result-form time are excluded from `activeDurationMs`.
 
 All interval blocks use the shared double REST and single higher WORK patterns. Intermediate result forms remain silent and subsequent lead-ins use WORK, with no repeated initial START. Timelines, durations, stored results and historical version references are unchanged.
 
@@ -99,13 +106,12 @@ Session weights are initially prefilled from the current v2 preferences. If abse
 
 ### IndexedDB lifecycle
 
-- A UUID is generated once and an initial draft must commit before any training starts. An unavailable database blocks starting with a retryable error.
-- Drafts include schemaVersion, workoutId/workoutVersion, workoutSnapshot, startedAt/completedAt, activeDurationMs, status, stage, blockIndex, checkpointMs, completedBlocks, sound/initial-start flags, raw form entries and validated final results. `completedAt` marks the end of the final active block; `savedAt` marks successful final commit.
-- Form inputs enqueue ordered draft writes immediately, including invalid/incomplete values so they can be corrected after recovery. The UI says Draft saved locally only when queued writes have completed. Upper is recoverably checkpointed before ABS can start.
-- Reloading the session's draft URL restores a result form automatically. Workout Detail also exposes Resume draft actions. Active checkpoints are saved roughly every second and on explicit pause/departure; reload restores the latest committed position **paused**, requiring Resume. Time away is excluded and old cues are never replayed.
-- Sudden browser/OS termination may lose uncommitted inputs or the newest active checkpoint. Beforeunload warnings are best-effort; browser storage can also be evicted. IndexedDB is local persistence, not a backup.
-- Save Workout validates all blocks, disables editing while saving, and commits the same UUID in a read/write transaction. Confirmation appears only after transaction completion. Repeated saves return the existing completed record; later autosaves cannot overwrite it. Failed commits keep inputs and allow retry without creating another session.
-- Saved sessions can be opened from View saved sessions in Focus v2 or Hybrid v2 detail or directly after saving. The basic history renders the stored snapshot and results; there are no graphs or remote sync. Draft writes in separate tabs are last-write-wins until completion; completed records are protected.
+- A UUID is generated once for the current in-memory workout. Starting and block transitions do not access session storage.
+- Session/result-envelope fields and snapshot formats are retained for compatibility; no incomplete record is written.
+- Inputs and ordinary Pause/Resume retain state only while the current session remains open. No Resume draft UI or automatic restoration exists. Reloaded/old active links show a ready screen until explicit Start.
+- End/navigation/result-form departure uses one confirmation. Confirmed exit or document departure discards unsaved state; browser unload warnings remain where supported.
+- Save Workout validates all blocks, disables editing while saving and commits the same UUID through the existing completed-session transaction. Failed commits keep the open form available for retry.
+- Saved sessions remain accessible through View saved sessions and History, contribute to Progress and retain existing account/sync rules. Existing old drafts are not deleted or rewritten.
 
 Automated tests exercise exact block boundaries and sounds, a long stopped result-form period, the second countdown without a second START signal, numeric validation, null versus zero, per-round/session loads, reload recovery, paused checkpoint restoration, duplicate-save prevention, transaction failure/retry, offline history and unchanged legacy assignments/Hybrid/v1 execution. Mobile/desktop Chromium is covered; Safari/iOS/Android and eviction/lock behavior still require device checks.
 

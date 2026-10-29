@@ -84,7 +84,7 @@ test('Today styling and real detail CTA work offline, with preserved legacy and 
  });
  await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
  const original=await page.evaluate(()=>localStorage.getItem('kb2.weekly-plan.v1'));
- expect(await page.evaluate(async()=>Boolean(await (await caches.open('kb2-static-v29')).match(new URL('./styles/hm-today.css',location.href))))).toBe(true);
+ expect(await page.evaluate(async()=>Boolean(await (await caches.open('kb2-static-v30')).match(new URL('./styles/hm-today.css',location.href))))).toBe(true);
  await context.setOffline(true);await page.reload();
  await expect(page.locator('.day-slot')).toHaveCount(7);await expect(page.locator('.week-grid .workout-card')).toHaveCount(5);
  const legacy=page.getByRole('region',{name:'Saturday',exact:true});

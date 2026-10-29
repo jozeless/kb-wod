@@ -17,7 +17,7 @@ export async function capture(browser,baseURL,viewport,name,state,tokens,{audit=
  });
  if(activeBaseline)await page.route('**/*',async route=>{
   const path=new URL(route.request().url()).pathname;
-  for(const [name,body]of Object.entries(previousActive))if(path.endsWith(`/src/ui/${name}.js`))return route.fulfill({contentType:'text/javascript',body});
+  for(const [name,body]of Object.entries(previousActive))if(path.endsWith(`/src/ui/${name}.js`))return route.fulfill({contentType:'text/javascript',body:name==='block-training'?body.replace('formView.root, draftMessage,','formView.root,').replace('soundButton()), draftMessage);','soundButton()));'):body});
   if(route.request().isNavigationRequest()){const response=await route.fetch();return route.fulfill({response,body:(await response.text()).replace(/\s*<link rel="stylesheet" href="\.\/styles\/hm-active\.css">/,'')});}
   return route.continue();
  });
@@ -43,16 +43,21 @@ export async function capture(browser,baseURL,viewport,name,state,tokens,{audit=
  await page.clock.install({time:new Date('2026-10-28T12:00:00Z')});await page.clock.pauseAt(new Date('2026-10-28T12:00:01Z'));
  await page.goto(state==='progress'?(footerBaseline?'./#stats':'./#progress'):state==='assignment'?'./#library?day=Monday':state==='account'?'./#account':state==='today'?'./#today':state==='library'?'./#library':`./#workout/${workoutId}/${workoutVersion}`);
  if(state==='library'||state==='assignment')await expect(page.locator('.workout-card')).toHaveCount(4);
- if(state==='timer'){await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');await page.clock.runFor(13000);await expect(page.locator('.phase-clock')).toHaveText('00:50');await expect(page.getByText('Draft saved locally.',{exact:true})).toBeVisible();}
+ if(state==='timer'){await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');await page.clock.runFor(13000);await expect(page.locator('.phase-clock')).toHaveText('00:50');await expect(page.getByRole('button',{name:state==='timer-paused'?'Resume':state==='timer-completed'?'Save Workout':'Pause',exact:true})).toBeVisible();}
  if(state.startsWith('timer-')){
   await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');
   if(state==='timer-rest')await page.clock.fastForward(528000);
   if(state==='timer-amrap')await page.clock.fastForward(973000);
   if(state==='timer-paused'){await page.clock.runFor(13000);await page.getByRole('button',{name:'Pause',exact:true}).click();}
   if(state==='timer-completed')await page.clock.fastForward(1273000);
-  await expect(page.getByText('Draft saved locally.',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:state==='timer-paused'?'Resume':state==='timer-completed'?'Save Workout':'Pause',exact:true})).toBeVisible();
  }
- if(state==='results'||state==='history'||state==='history-list'||state==='history-global'){
+ if(state==='results'){
+  await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');await page.clock.fastForward(1273000);
+  await expect(page.getByRole('heading',{name:'Workout Results',exact:true})).toBeVisible();
+  await page.getByLabel('KB Push Press actual weight (kg)',{exact:true}).fill('12.5');await page.getByLabel('Thruster repetitions',{exact:true}).fill('17');await page.getByLabel('Perceived effort',{exact:true}).fill('7');await page.getByLabel('Workout notes',{exact:true}).fill('UI baseline fixture only');
+ }
+ if(state==='history'||state==='history-list'||state==='history-global'){
   await page.evaluate(async()=>{const {findWorkout}=await import('./src/data/catalog.js');const {createDraft}=await import('./src/domain/result-schemas.js');const {putDraft,completeSession}=await import('./src/storage/session-store.js');const {finalResults}=await import('./src/domain/result-schemas.js');const w=findWorkout('monday-paranoid',3),r=createDraft(w,{getItem:()=>null},'ui-foundation-fixture','2026-10-28T12:00:00Z');r.stage='finisher-results';r.blockIndex=5;r.completedBlocks=w.phases.map(p=>p.id);r.activeDurationMs=1270000;r.checkpointMs=1273000;r.completedAt='2026-10-28T12:21:13Z';r.form.weights['push-press']='12.5';r.form.finisherReps='17';r.form.perceivedEffort='7';r.form.notes='UI baseline fixture only';await putDraft(r);});
   if(state==='history'||state==='history-list'||state==='history-global'){await page.evaluate(async()=>{const {getSession,completeSession}=await import('./src/storage/session-store.js');const {finalResults}=await import('./src/domain/result-schemas.js');const r=await getSession('ui-foundation-fixture');r.results=finalResults(r);await completeSession(r);});await page.goto(state==='history-global'?'./#history':state==='history-list'?'./#history/monday-paranoid':'./#session/ui-foundation-fixture');if(state==='history-list'||state==='history-global'){await expect(page.getByRole('heading',{name:'Saved workouts',exact:true})).toBeVisible();await expect(page.locator('.library-grid button')).toHaveCount(1);}else await expect(page.getByText('KB Thruster completed repetitions: 17',{exact:true})).toBeVisible();}else await page.goto('./#active/monday-paranoid/3?draft=ui-foundation-fixture');if(state==='results'){await expect(page.getByRole('heading',{name:'Workout Results',exact:true})).toBeVisible();await expect(page.getByRole('spinbutton')).toHaveCount(13);}
  }

@@ -22,7 +22,7 @@ async function soundAbsent(page) {
   expect(await page.locator('.active-controls button').allTextContents()).toEqual([expect.stringMatching(/^(Pause|Resume)$/), 'End Workout']);
 }
 
-test('four approved WODs use live circular interval time, editable weights, nested Next and unchanged pause/draft/end actions', async ({ page }) => {
+test('four approved WODs use live circular interval time, editable weights, nested Next and unchanged ordinary pause/resume and end actions', async ({ page }) => {
   await setup(page); await installBeepSpy(page);
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   for (const [id, version] of approved) {
@@ -44,8 +44,8 @@ test('four approved WODs use live circular interval time, editable weights, nest
     await page.clock.fastForward(600000);
     await expect(page.getByRole('timer')).toHaveText(time); expect(await offset(page)).toBe(ring);
     await expect(page.locator('.session-state')).toHaveText('PAUSED');
-    await expect(page.getByText('Draft saved locally.', { exact: true })).toBeVisible();
-    await page.reload(); await expect(page.getByRole('button', { name: 'Resume', exact: true })).toBeVisible();
+    await expect(page.getByText('Draft saved locally.', { exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Resume', exact: true })).toBeVisible();
     await soundAbsent(page); await expect(card.getByRole('spinbutton').first()).toHaveValue('12.5');
     await expect(page.getByRole('timer')).toHaveText(time); expect(await offset(page)).toBeCloseTo(ring);
     await page.getByRole('button', { name: 'Resume', exact: true }).click();
@@ -139,10 +139,10 @@ test('Today, Library, details, results, history and account stay pixel-identical
   }
 });
 
-test('v29 precaches the full presentation, starts all approved and historical timers offline, and restores muted draft audio on Resume', async ({ page, context }) => {
+test('v30 precaches the full presentation, starts all approved and historical timers offline, and leaves old muted draft links inactive', async ({ page, context }) => {
   await setup(page); await installBeepSpy(page); await page.goto('./#library');
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => true)); await page.reload(); await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
-  const cached = await page.evaluate(async () => { const cache = await caches.open('kb2-static-v29'); return Promise.all(['styles/hm-active.css', 'src/ui/active-presentation.js', 'assets/audio/start.wav', 'assets/audio/minute.wav'].map(async path => Boolean(await cache.match(new URL(path, document.baseURI))))); });
+  const cached = await page.evaluate(async () => { const cache = await caches.open('kb2-static-v30'); return Promise.all(['styles/hm-active.css', 'src/ui/active-presentation.js', 'assets/audio/start.wav', 'assets/audio/minute.wav'].map(async path => Boolean(await cache.match(new URL(path, document.baseURI))))); });
   expect(cached).toEqual([true, true, true, true]); await context.setOffline(true);
   for (const [id, version] of [...approved, ['focus-001-upper-abs', 1]]) {
     await start(page, id, version); await page.clock.runFor(13000); await expect(page.locator('.session-state')).toHaveText('WORK');
@@ -153,9 +153,10 @@ test('v29 precaches the full presentation, starts all approved and historical ti
     const { findWorkout } = await import('./src/data/catalog.js'); const { createDraft } = await import('./src/domain/result-schemas.js'); const { putDraft } = await import('./src/storage/session-store.js');
     const r = createDraft(findWorkout('monday-paranoid', 3), { getItem: () => null }, 'existing-muted-draft'); r.soundEnabled = false; r.checkpointMs = 13000; await putDraft(r);
   });
-  await page.goto('./#active/monday-paranoid/3?draft=existing-muted-draft'); await expect(page.getByRole('button', { name: 'Resume', exact: true })).toBeVisible();
-  const notes = await page.evaluate(() => window.beepNotes.map(n => n.frequency)); await page.getByRole('button', { name: 'Resume', exact: true }).click();
-  expect(await page.evaluate(() => window.beepNotes.map(n => n.frequency))).toEqual(notes);
-  await page.clock.fastForward(49900); await page.clock.runFor(100);
-  expect(await page.evaluate(() => window.beepNotes.map(n => n.frequency))).toEqual([...notes, 760]); await soundAbsent(page); await context.setOffline(false);
+  await page.goto('./#active/monday-paranoid/3?draft=existing-muted-draft');
+  await expect(page.getByText('Ready when you are', {exact: true})).toBeVisible(); await expect(page.getByRole('timer')).toHaveCount(0);
+  const notes = await page.evaluate(() => window.beepNotes.map(n => n.frequency));
+  await page.getByRole('button', {name: 'Start Workout', exact: true}).click(); await page.clock.runFor(3000);
+  expect(await page.evaluate(() => window.beepNotes.map(n => n.frequency))).toEqual([...notes, 640]);
+  await soundAbsent(page); await context.setOffline(false);
 });

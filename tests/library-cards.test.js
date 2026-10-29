@@ -10,7 +10,7 @@ test('Library has its own view scope; new styles cannot target shared grids or c
  assert.ok(!/@import|@font-face|url\(|box-shadow|[;{]\s*(?:transform|content)\s*:/i.test(css));
  const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');assert.ok(html.indexOf('./styles/hm-today.css')<html.indexOf('./styles/hm-library.css'));
  const view=fs.readFileSync(new URL('../src/ui/views.js',import.meta.url),'utf8');assert.match(view,/const container = el\('div', \{className: 'hm-library-view'\}/);
- const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');assert.match(worker,/kb2-static-v29/);assert.ok(worker.includes("'./styles/hm-library.css'"));assert.ok(!/skipWaiting|clients\.claim/.test(worker));
+ const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');assert.match(worker,/kb2-static-v30/);assert.ok(worker.includes("'./styles/hm-library.css'"));assert.ok(!/skipWaiting|clients\.claim/.test(worker));
 });
 
 test('Library keeps exact released IDs, versions, duration seconds and all fifteen internal definitions',()=>{

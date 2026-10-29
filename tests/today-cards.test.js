@@ -10,6 +10,6 @@ test('Today redesign stylesheet is isolated to the existing weekly grid and adds
  const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
  assert.ok(html.indexOf('./styles/hm-header.css')<html.indexOf('./styles/hm-today.css'));
  const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');
- assert.match(worker,/kb2-static-v29/);assert.ok(worker.includes("'./styles/hm-today.css'"));
+ assert.match(worker,/kb2-static-v30/);assert.ok(worker.includes("'./styles/hm-today.css'"));
  assert.ok(!/skipWaiting|clients\.claim/.test(worker));
 });

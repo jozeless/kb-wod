@@ -8,15 +8,6 @@ import { resultSchema, partialLabel } from '../domain/result-schemas.js';
 import { listSessions, getSession } from '../storage/session-store.js';
 import { el, button, heading, emptyState } from './components.js';
 import { formatTime } from '../domain/workout-timer.js';
-export function draftActions(workout, go) {
-  const root = el('div', { className: 'draft-actions' });
-  void listSessions(workout.id).then(records => {
-    for (const record of records.filter(r => canReadLocal(r) && r.status === 'draft' && r.workoutVersion === workout.version)) {
-      root.append(button(`Resume draft — ${new Date(record.startedAt).toLocaleString()}`, () => go(`#active/${workout.id}/${workout.version}?draft=${record.id}`), true));
-    }
-  }).catch(() => root.append(el('p', { role: 'status' }, 'Saved drafts could not be read.')));
-  return root;
-}
 export function historyView(workoutId, go) {
   const root = el('div', {}, heading('LOCAL SESSIONS', 'Saved workouts', 'Local results and downloaded sessions for the current account.'), button('← Library', () => go('#library'), true));
   const list = el('div', { className: 'library-grid' }); root.append(list);

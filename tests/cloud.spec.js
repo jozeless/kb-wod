@@ -61,11 +61,15 @@ test('shared-device tabs follow logout/account changes without revealing another
  await page.goto('./#account');await page.getByRole('button',{name:'Log out',exact:true}).click();await expect(other.getByRole('heading',{name:'Session unavailable'})).toBeVisible();
  await login(page,B.email);await expect(other.getByRole('heading',{name:'Session unavailable'})).toBeVisible();expect(db.sessions.size).toBe(1);expect([...db.sessions.values()][0].user_id).toBe(A.id);await other.close();
 });
-test('cached verified login permits offline reload and locally owned draft recovery',async({page,context})=>{
+test('cached verified login permits offline reload and completed-only local saving',async({page,context})=>{
  await mockCloud(page);await login(page);await expect.poll(async()=>(await metadata(page)).plan.confirmed).toBe(true);
  await page.clock.install({time:new Date('2026-01-01T00:00:00Z')});await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));await page.goto('./#workout/focus-002-lower-abs/1');await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await expect.poll(()=>page.evaluate(async()=>{const {auth}=await import('./src/cloud/runtime.js');return auth.user?.id;})).toBe(A.id);
- await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');await page.clock.runFor(63000);await page.getByRole('button',{name:'Pause',exact:true}).click();await expect(page.getByText('Draft saved locally.',{exact:true})).toBeVisible();
- await context.setOffline(true);await page.route('https://kb-test.supabase.co/**',route=>route.abort());page.on('dialog',d=>d.accept());await page.reload();await expect(page.getByRole('button',{name:'Resume',exact:true})).toBeVisible();await expect(page.locator('.block-time')).toHaveText('Block remaining: 09:00');await page.clock.fastForward(600000);await expect(page.locator('.block-time')).toHaveText('Block remaining: 09:00');await context.setOffline(false);
+ await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');await page.clock.runFor(63000);await page.getByRole('button',{name:'Pause',exact:true}).click();await expect(page.getByText('Draft saved locally.',{exact:true})).toHaveCount(0);
+ await context.setOffline(true);await page.route('https://kb-test.supabase.co/**',route=>route.abort());page.on('dialog',d=>d.accept());await page.reload();
+ await expect(page.getByText('Ready when you are',{exact:true})).toBeVisible();await expect.poll(()=>page.evaluate(async()=>(await import('./src/cloud/runtime.js')).auth.user?.id)).toBe(A.id);
+ await expect(page.getByRole('button',{name:'Resume',exact:true})).toHaveCount(0);await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');
+ await page.clock.fastForward(1203000);await page.getByRole('button',{name:'Save Workout',exact:true}).click();await expect(page.getByRole('heading',{name:'Workout saved',exact:true})).toBeVisible();
+ const owned=await page.evaluate(async()=>(await import('./src/storage/session-store.js')).listSessions());expect(owned).toHaveLength(1);expect(owned[0].ownerId).toBe(A.id);expect(owned[0].status).toBe('completed');await context.setOffline(false);
 });
 
 test('cloud history downloads on a fresh device with original snapshot and UUID',async({page,browser})=>{

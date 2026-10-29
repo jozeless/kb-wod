@@ -139,7 +139,7 @@ test('Today, Library, details, results, history and account stay pixel-identical
   }
 });
 
-test('v26 precaches the full presentation, starts all approved and historical timers offline, and retains existing muted drafts', async ({ page, context }) => {
+test('v26 precaches the full presentation, starts all approved and historical timers offline, and restores muted draft audio on Resume', async ({ page, context }) => {
   await setup(page); await installBeepSpy(page); await page.goto('./#library');
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => true)); await page.reload(); await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
   const cached = await page.evaluate(async () => { const cache = await caches.open('kb2-static-v26'); return Promise.all(['styles/hm-active.css', 'src/ui/active-presentation.js', 'assets/audio/start.wav', 'assets/audio/minute.wav'].map(async path => Boolean(await cache.match(new URL(path, document.baseURI))))); });
@@ -154,6 +154,8 @@ test('v26 precaches the full presentation, starts all approved and historical ti
     const r = createDraft(findWorkout('monday-paranoid', 3), { getItem: () => null }, 'existing-muted-draft'); r.soundEnabled = false; r.checkpointMs = 13000; await putDraft(r);
   });
   await page.goto('./#active/monday-paranoid/3?draft=existing-muted-draft'); await expect(page.getByRole('button', { name: 'Resume', exact: true })).toBeVisible();
-  const notes = await page.evaluate(() => window.beepNotes.length); await page.getByRole('button', { name: 'Resume', exact: true }).click(); await page.clock.fastForward(60000);
-  expect(await page.evaluate(() => window.beepNotes.length)).toBe(notes); await soundAbsent(page); await context.setOffline(false);
+  const notes = await page.evaluate(() => window.beepNotes.map(n => n.frequency)); await page.getByRole('button', { name: 'Resume', exact: true }).click();
+  expect(await page.evaluate(() => window.beepNotes.map(n => n.frequency))).toEqual(notes);
+  await page.clock.fastForward(49900); await page.clock.runFor(100);
+  expect(await page.evaluate(() => window.beepNotes.map(n => n.frequency))).toEqual([...notes, 760]); await soundAbsent(page); await context.setOffline(false);
 });

@@ -160,7 +160,9 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     const side = el('h2', {className: 'holding-side', 'aria-live': 'polite', hidden: ''});
     const clock = el('div', { className: 'phase-clock', role: 'timer' }), block = el('p', { className: 'block-time' }), total = el('p', {}), position = el('p', {}), next = el('p', {});
     const pause = button(engine.status === 'paused' ? 'Resume' : 'Pause', () => {
-      if (engine.status === 'paused') { if (record.soundEnabled) void audio.enable(); engine.resume(); tick(); }
+      // Resume is also the audio opt-in for historical muted drafts. Keep that
+      // intent for later blocks even if this browser blocks the current attempt.
+      if (engine.status === 'paused') { record.soundEnabled = true; void audio.enable(); engine.resume(); tick(); }
       else { engine.pause(); stopTicker(); stopAudio(); update(false); }
       capture(); void persist();
     });

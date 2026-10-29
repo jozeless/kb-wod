@@ -12,9 +12,9 @@ The timer retains `role="timer"`, with remaining-time labels. Existing polite ph
 
 ## Audio and data protection
 
-There is no visible or hidden Sound button, and no replacement switch elsewhere. Fresh sessions still enable Web Audio from the Start Workout gesture using the unchanged audio infrastructure. Browser audio failure remains nonfatal. Existing `soundEnabled` values are retained for recovered drafts, including historically muted drafts; recovery does not silently rewrite that preference. Pause, resume, audio patterns, cue timing and missed-cue suppression remain unchanged.
+There is no visible or hidden Sound button, and no replacement switch elsewhere. Fresh sessions still enable Web Audio from the Start Workout gesture using the unchanged audio infrastructure. Browser audio failure remains nonfatal. Recovered drafts remain paused and do not unlock audio just by loading. An explicit Resume sets `soundEnabled` to true and attempts audio unlock within that user gesture, including for historical muted drafts. That intent is persisted so later block continuations can re-unlock audio; a browser rejection does not block the timer or prevent retry on the next gesture. No missed cues or START pattern are replayed. Timer pause/resume behavior, audio patterns and cue timing remain unchanged.
 
-No catalog, exercises, durations, phase order, timer engine, audio/cue module, result schema/form, weight storage, session store, IndexedDB schema, Auth, cloud sync, SQL, Today, Library, pre-workout details, header, navigation, Stats or Dashboard code was changed. Persistence, recovery, block continuation, completion and save functions are byte-identical to the base. Existing actual weight inputs and their handlers are moved, not recreated or replaced by sample values.
+No catalog, exercises, durations, phase order, timer engine, audio/cue module, result schema/form, weight storage, session store, IndexedDB schema, Auth, cloud sync, SQL, Today, Library, pre-workout details, header, navigation, Stats or Dashboard code was changed. Persistence, recovery, block continuation, completion and save functions are byte-identical to the base. Only explicit Resume additionally restores audio intent; existing checkpoints and result entries are preserved. Existing actual weight inputs and their handlers are moved, not recreated or replaced by sample values.
 
 ## Files
 
@@ -24,6 +24,7 @@ No catalog, exercises, durations, phase order, timer engine, audio/cue module, r
 - `index.html`: load the stylesheet after the existing HM/KB styles.
 - `service-worker.js`: cache v25 → v26; retain all 69 previous precache URLs and add the stylesheet and presentation module. Activation policy and app identity are unchanged.
 - `tests/active-timer.spec.js`, `tests/active-timer.test.js`: active-state, responsive, visual, scope and offline checks.
+- `tests/recovered-audio.spec.js`: historical muted draft Resume, gesture-only unlock, no missed-cue replay, blocked-audio retry, persisted intent, later Hybrid blocks and preserved final results.
 - `tests/helpers/ui-baseline.js`, `tests/fixtures/ui-v2-07/`: original-controller comparison fixtures, byte-identical to merged main, served only by screenshot tests. Test fixtures are not production assets.
 - Existing tests: update cache/style ordering, artifact paths and intentional Sound-control expectations. Native rendered audio and API mute/unmute coverage remain; unrelated assertions are retained.
 
@@ -35,7 +36,7 @@ Responsive checks cover no horizontal overflow, readable exercise/Next content, 
 
 Screenshots are local review artifacts at `/workspace/artifacts/ui-v2-08/index.md`: countdown, work, rest, AMRAP, paused and completion at all four widths; Today, Library, details, results, saved history/list and account. Baseline captures use the actual main controllers and omit only the new stylesheet. Completed/result/protected screens must remain pixel-identical, including the header and bottom navigation. Capture data is synthetic and fixed-clock; it does not represent real sessions or statistics. Full-page captures hide the fixed navigation only while taking that image; separate viewport captures retain the actual navigation. Additional 200% text captures are under `accessibility/`.
 
-Final validation: **88 Node tests passed; 270 Playwright tests passed (12.8 minutes, one worker, mobile and desktop), with no failures or skipped cases**. All 52 screenshot pairs passed: 20 intentionally changed active states and 32 identical completion/protected screens. All 111 JavaScript files parse; all 53 reachable runtime modules are precached. Pixel hashes and source checks are recorded with the delivery artifacts.
+Final validation: **88 Node tests passed; 276 Playwright tests passed (12.8m, one worker, mobile and desktop), with no failures or skipped cases**. All 52 screenshot pairs passed: 20 intentionally changed active states and 32 identical completion/protected screens. All 53 reachable runtime modules remain precached. The focused recovery checks cover historical muted continuous and multi-block drafts, blocked-audio retry, and offline playback. Pixel hashes and source checks are recorded with the delivery artifacts.
 
 ## Limits
 

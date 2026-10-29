@@ -1,3 +1,4 @@
+import { progressView } from './ui/progress.js';
 import { authKey } from './cloud/auth.js';
 import { workspaceKey } from './cloud/sync.js';
 import { auth, sync } from './cloud/runtime.js';
@@ -16,6 +17,7 @@ const status = document.querySelector('#status');
 let state;
 let session = null;
 let activeHash = '';
+let disposeProgress = () => {};
 function stopSession() { session?.dispose(); session = null; }
 function allowExit() {
   if (session?.inProgress && !window.confirm(session.exitMessage || 'End this workout? Your progress will not be saved.')) return false;
@@ -56,6 +58,7 @@ function assign(day, workout) {
   } catch { status.textContent = 'The change could not be saved. Your previous plan has been preserved.'; }
 }
 function render(focus = true) {
+  disposeProgress(); disposeProgress = () => {};
   const [path, query = ''] = location.hash.slice(1).split('?');
   const [page = 'today', id, version] = (path || 'today').split('/');
   const requestedDay = new URLSearchParams(query).get('day');
@@ -71,7 +74,7 @@ function render(focus = true) {
   else if (page === 'today') view = todayView(state.plan, go, d => assign(d, null), Boolean(state.error));
   else if (page === 'library') view = libraryView(day, go, assign);
   else if (['workout', 'active', 'result'].includes(page)) view = workoutView(id, version, page, go, startWorkout);
-  else if (page === 'progress') view = el('div', {}, heading('COMING LATER', 'Progress', 'Workout statistics and achievements are coming later.'));
+  else if (page === 'progress') { const progress = progressView(); view = progress.root; disposeProgress = progress.dispose; }
   else if (page === 'stats' || page === 'dashboard') view = el('div', {}, heading('COMING LATER', page === 'stats' ? 'Stats' : 'Dashboard', page === 'stats' ? 'Performance over time, by workout.' : 'A place for your training totals.'), emptyState('No statistics yet', 'Advanced statistics are not available yet. Saved sessions can be viewed from the workout detail.'));
   else view = emptyState('Page not found', 'Use the navigation below to continue.');
   // Keep the live auth form attached during status updates: moving/recreating

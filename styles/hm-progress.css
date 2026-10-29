@@ -1,0 +1,48 @@
+/* Progress-only surfaces and controls; no styles escape this page. */
+.hm-progress { min-width: 0; color: var(--hm-text-primary, #EDECEE); }
+.hm-progress .progress-month-nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: 1rem; }
+.hm-progress .progress-month-nav h2 { flex: 1 1 100%; order: -1; margin: 0; font-size: 1.4rem; }
+.hm-progress button { min-height: 44px; max-width: 100%; white-space: normal; overflow-wrap: anywhere; border: 1px solid var(--hm-surface-secondary, #4D4A6A); background: var(--hm-surface-primary, #312F4E); color: var(--hm-text-primary, #EDECEE); }
+.hm-progress button:hover { border-color: var(--hm-highlight, #EEEF58); }
+.hm-progress .progress-content { display: grid; gap: 1rem; }
+.hm-progress .progress-section { min-width: 0; padding: 1rem; border: 1px solid var(--hm-surface-secondary, #4D4A6A); border-radius: 16px; background: var(--hm-surface-primary, #312F4E); overflow-wrap: anywhere; }
+.hm-progress .progress-section h2 { margin: 0 0 .5rem; font-size: 1.2rem; }
+.hm-progress .progress-section p { margin: .5rem 0 1rem; font-size: .875rem; line-height: 1.5; color: var(--hm-text-primary, #EDECEE); }
+.hm-progress .empty-state { padding: .75rem; border: 1px solid var(--hm-surface-secondary, #4D4A6A); border-radius: 10px; background: var(--hm-bg, #212227); color: var(--hm-text-primary, #EDECEE); }
+.hm-progress .empty-state h2 { font-size: 1rem; }
+.hm-progress .empty-state p { margin-bottom: 0; }
+.hm-progress .progress-overview, .hm-progress .progress-weight-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin: 1rem 0; }
+.hm-progress .progress-metric { min-width: 0; padding: .75rem; border-radius: 10px; background: var(--hm-bg, #212227); }
+.hm-progress dt { font-size: .8rem; line-height: 1.5; }
+.hm-progress dd { margin: .35rem 0 0; font-size: 1.4rem; font-weight: 750; line-height: 1.3; color: var(--hm-highlight, #EEEF58); }
+.hm-progress .progress-weekdays, .hm-progress .progress-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: .25rem; padding: 0; margin: .5rem 0; text-align: center; list-style: none; }
+.hm-progress .progress-weekdays abbr { padding: .25rem 0; font-size: .8rem; font-weight: 650; text-decoration: none; }
+.hm-progress .progress-week p { margin: 1rem 0 .5rem; font-size: .75rem; }
+.hm-progress .progress-days li { display: grid; place-items: center; min-width: 0; min-height: 2rem; padding: .25rem 0; border-radius: 6px; background: var(--hm-bg, #212227); font-size: .8rem; }
+.hm-progress .progress-days li[aria-hidden] { background: transparent; }
+.hm-progress .progress-days .is-trained { background: var(--hm-highlight, #EEEF58); color: var(--hm-bg, #212227); font-weight: 750; }
+.hm-progress label { display: block; margin: 1rem 0 .5rem; font-size: .875rem; font-weight: 650; }
+.hm-progress select { display: block; width: 100%; min-width: 0; max-width: 100%; min-height: 44px; padding: .75rem .5rem; border: 1px solid var(--hm-accent, #B37ACB); border-radius: 8px; background: var(--hm-bg, #212227); color: var(--hm-text-primary, #EDECEE); font: inherit; }
+.hm-progress .progress-chart { display: block; width: 100%; height: auto; margin-top: .75rem; overflow: visible; }
+.hm-progress .progress-axis { fill: none; stroke: var(--hm-accent, #B37ACB); stroke-width: 2; }
+.hm-progress .progress-line { fill: none; stroke: var(--hm-accent, #B37ACB); stroke-width: 3; }
+.hm-progress .progress-chart circle { fill: var(--hm-highlight, #EEEF58); stroke: var(--hm-bg, #212227); stroke-width: 2; }
+.hm-progress .progress-chart-dates { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; font-size: .75rem; }
+.hm-progress details { margin-top: 1rem; }
+.hm-progress summary { display: list-item; min-height: 44px; padding: .75rem .25rem; cursor: pointer; font-weight: 650; }
+.hm-progress table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: .75rem; font-size: .75rem; }
+.hm-progress caption { text-align: left; padding-bottom: .5rem; }
+.hm-progress th, .hm-progress td { padding: .5rem .25rem; text-align: left; border-bottom: 1px solid var(--hm-surface-secondary, #4D4A6A); overflow-wrap: anywhere; }
+.hm-progress .progress-performance { margin: 0; }
+.hm-progress .progress-performance > div { padding: 1rem 0; border-top: 1px solid var(--hm-surface-secondary, #4D4A6A); }
+.hm-progress .progress-performance p { margin-bottom: 0; }
+.hm-progress :is(button, select, summary):focus-visible { outline: 3px solid var(--hm-highlight, #EEEF58); outline-offset: 3px; }
+@media (min-width: 768px) {
+  .hm-progress .progress-overview { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .hm-progress .progress-month-nav h2 { flex: 1; order: 0; text-align: center; }
+}
+@media (forced-colors: active) {
+  .hm-progress .progress-days .is-trained { background: Highlight; color: HighlightText; outline: 2px solid Highlight; forced-color-adjust: none; }
+  .hm-progress .progress-line, .hm-progress .progress-axis { stroke: CanvasText; }
+  .hm-progress .progress-chart circle { fill: Highlight; stroke: CanvasText; }
+}

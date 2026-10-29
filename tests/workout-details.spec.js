@@ -125,7 +125,7 @@ test('detail fields, targets, instructions and actions fit four widths and 200% 
 
 test('offline approved/historical detail links work and demo/fallback stages never receive detail styles',async({page,context})=>{
  await localMode(page);await page.goto(url('monday-paranoid',3));await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
- expect(await page.evaluate(async()=>Boolean(await (await caches.open('kb2-static-v28')).match(new URL('./styles/hm-details.css',location.href))))).toBe(true);
+ expect(await page.evaluate(async()=>Boolean(await (await caches.open('kb2-static-v29')).match(new URL('./styles/hm-details.css',location.href))))).toBe(true);
  await context.setOffline(true);
  for(const [id,version,name]of [...approved,['focus-001-upper-abs',1,'Upper Body + ABS']]){await page.goto(url(id,version));await expect(page.getByRole('heading',{name,exact:true})).toBeVisible();await expect(page.locator('.hm-detail-view')).toHaveCount(1);await expect(page.getByRole('button',{name:'Start Workout',exact:true})).toBeVisible();}
  await page.goto('./#active/monday-paranoid/3');await expect(page.getByRole('heading',{name:'Ready when you are',exact:true})).toBeVisible();await expect(page.locator('.hm-detail-view')).toHaveCount(0);

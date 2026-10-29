@@ -5,7 +5,7 @@ test('navigation and simplified approved Library', async ({page}) => {
  await expect(page.locator('.day-slot')).toHaveCount(7);
  await page.getByRole('link',{name:'Library',exact:true}).click();
  await expect(page.locator('.workout-card')).toHaveCount(4);await expect(page.getByRole('searchbox')).toHaveCount(0);await expect(page.getByRole('combobox')).toHaveCount(0);await expect(page.getByText('4 workouts',{exact:true})).toBeVisible();
- await page.getByRole('link',{name:'Progress',exact:true}).click();await expect(page.getByRole('heading',{name:'Progress',exact:true})).toBeVisible();await expect(page.getByText('Workout statistics and achievements are coming later.',{exact:true})).toBeVisible();
+ await page.getByRole('link',{name:'Progress',exact:true}).click();await expect(page.getByRole('heading',{name:'Progress',exact:true})).toBeVisible();await expect(page.getByText('No completed workouts this month',{exact:true})).toBeVisible();
  await page.getByRole('link',{name:'History',exact:true}).click();await expect(page.getByRole('heading',{name:'Saved workouts',exact:true})).toBeVisible();await expect(page.getByText('No saved sessions',{exact:true})).toBeVisible();
  for (const name of ['Stats','Dashboard']) { await page.goto(`./#${name.toLowerCase()}`); await expect(page.getByRole('heading',{name,exact:true})).toBeVisible(); await expect(page.getByText('No statistics yet')).toBeVisible(); }
  expect(errors).toEqual([]);

@@ -1,3 +1,4 @@
+import { floorPressReference } from '../domain/friday-benchmark.js';
 import { isFridayResults } from '../domain/friday-results.js';
 import { isThursdayResults } from '../domain/thursday-results.js';
 import { isTuesdayResults, weightedExercises } from '../domain/tuesday-results.js';
@@ -40,7 +41,7 @@ export function savedSessionView(id, go) {
       if(isFridayResults(record.workoutSnapshot)) {
         root.append(weights, el('section', {'aria-label': 'Recorded key exercise'},
           el('h2', {}, 'Alternating Floor Press — Final set'),
-          el('p', {}, 'Fourth Floor Press set (06:00–07:00), not totals across all rounds.'),
+          el('p', {}, floorPressReference(record.workoutSnapshot).savedDescription),
           el('p', {}, `Floor Press left arm repetitions: ${value(record.results.keyExercise.leftReps)}`),
           el('p', {}, `Floor Press right arm repetitions: ${value(record.results.keyExercise.rightReps)}`)),
           el('section', {'aria-label': 'Recorded finisher'}, el('h2', {}, 'Finisher'), el('p', {}, `Complete finisher rounds: ${value(record.results.finisher.fullRounds)}`)));

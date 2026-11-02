@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 import {capture} from './helpers/ui-baseline.js';
 
-const approved=[['monday-paranoid',3,'Monday Paranoid',1270,'21:10 total'],['tuesday-of-spades',1,'Tuesday of Spades',1200,'20 minutes'],['thursday-bells',1,'Thursday Bells',1270,'21:10 total'],['friday-to-black',1,'Friday To Black',1200,'20 minutes']];
+const approved=[['monday-paranoid',4,'Monday Paranoid',1270,'21:10 total'],['tuesday-of-spades',2,'Tuesday of Spades',1200,'20 minutes'],['thursday-bells',2,'Thursday Bells',1270,'21:10 total'],['friday-to-black',2,'Friday To Black',1200,'20 minutes']];
 const plan={Monday:{workoutId:'monday-paranoid',version:3},Tuesday:{workoutId:'tuesday-of-spades',version:1},Thursday:{workoutId:'thursday-bells',version:1},Friday:{workoutId:'friday-to-black',version:1}};
 async function localMode(page){
  await page.addInitScript(value=>{window.KB_SUPABASE_CONFIG={url:'',publishableKey:''};if(localStorage.getItem('kb2.weekly-plan.v1')===null)localStorage.setItem('kb2.weekly-plan.v1',JSON.stringify(value));},plan);
@@ -102,12 +102,12 @@ test('Library remains readable at four widths, enlarged text and forced colors w
 
 test('offline Library and assignment keep current and historical resources and the existing app identity',async({page,context})=>{
  await localMode(page);await page.goto('./#library');await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
- expect(await page.evaluate(async()=>Boolean(await (await caches.open('kb2-static-v29')).match(new URL('./styles/hm-library.css',location.href))))).toBe(true);
+ expect(await page.evaluate(async()=>Boolean(await (await caches.open('kb2-static-v30')).match(new URL('./styles/hm-library.css',location.href))))).toBe(true);
  await context.setOffline(true);await page.reload();await publicCards(page);
- const original=await stored(page);await page.locator('.hm-library-view .card-footer').first().click();await expect(page).toHaveURL(/#workout\/monday-paranoid\/3$/);await expect(page.getByRole('button',{name:'Start Workout',exact:true})).toBeVisible();
+ const original=await stored(page);await page.locator('.hm-library-view .card-footer').first().click();await expect(page).toHaveURL(/#workout\/monday-paranoid\/4$/);await expect(page.getByRole('button',{name:'Start Workout',exact:true})).toBeVisible();
  await page.getByRole('link',{name:'Today',exact:true}).click();await page.getByRole('region',{name:'Wednesday',exact:true}).getByRole('button',{name:'Add workout',exact:true}).click();await publicCards(page,'Assign to Wednesday');
- await page.getByRole('button',{name:'Assign to Wednesday: Friday To Black',exact:true}).click();expect(await stored(page)).toEqual({...original,Wednesday:{workoutId:'friday-to-black',version:1}});
+ await page.getByRole('button',{name:'Assign to Wednesday: Friday To Black',exact:true}).click();expect(await stored(page)).toEqual({...original,Wednesday:{workoutId:'friday-to-black',version:2}});
  await page.goto('./#workout/focus-001-upper-abs/1');await expect(page.getByRole('heading',{name:'Upper Body + ABS',exact:true})).toBeVisible();
- expect(await page.evaluate(async()=>{const {workouts}=await import('./src/data/catalog.js');return workouts.length;})).toBe(15);
+ expect(await page.evaluate(async()=>{const {workouts}=await import('./src/data/catalog.js');return workouts.length;})).toBe(19);
  await context.setOffline(false);
 });

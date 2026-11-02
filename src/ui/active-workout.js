@@ -8,7 +8,7 @@ import { el, button, heading } from './components.js';
 
 export function createActiveWorkout(workout, onEnd, onToday) {
   const engine = new WorkoutTimer(workout);
-  const audio = createWorkoutAudio();
+  const audio = createWorkoutAudio({profile: workout.audioProfile});
   const cues = createCueTracker();
   const weight = createWeightField(workout);
   weight.root.hidden = true;
@@ -70,12 +70,12 @@ export function createActiveWorkout(workout, onEnd, onToday) {
           circuitPhase = s.phase.id;
           circuit.replaceChildren(...s.circuit.map(ex => el('li', {},
             el('div', { className: 'exercise-weight-row' }, el('strong', {}, ex.name), createWeightField(workout, ex).root),
-            el('p', {}, prescription(ex, s.phase)), ex.note ? el('p', {}, ex.note) : null)));
+            el('p', {}, prescription(ex, s.phase, {active: true})), ex.note ? el('p', {}, ex.note) : null)));
         }
       } else {
         weight.setExercise(s.exercise);
         setText(exercise, s.exercise.name);
-        target.textContent = s.kind === 'REST' ? 'Rest and prepare for the next exercise.' : `${s.exercise.target ? prescription(s.exercise, s.phase) : 'Work with correct technique.'}${s.exercise.note ? ` · ${s.exercise.note}` : ''}`;
+        target.textContent = s.kind === 'REST' ? 'Rest and prepare for the next exercise.' : `${s.exercise.target ? prescription(s.exercise, s.phase, {active: true}) : 'Work with correct technique.'}${s.exercise.note ? ` · ${s.exercise.note}` : ''}`;
       }
       clock.textContent = s.go ? 'GO' : formatTime(s.remainingMs);
       clock.setAttribute('aria-label', `Phase time remaining: ${formatTime(s.remainingMs)}`);

@@ -8,7 +8,13 @@ export const cuePatterns = Object.freeze({
   finisher: { frequency: 880, durations: [0.11, 0.11, 0.36], gap: 0.10, peak: 0.27 },
   complete: { frequency: 620, durations: [0.40, 0.40], gap: 0.16, peak: 0.26 },
 });
-export function createWorkoutAudio() {
+// Opt-in for the new 40/20 releases; archived workouts retain their exact sine cues.
+// A single triangle oscillator adds mild odd harmonics without a harsh square wave.
+export const loudCuePatterns = Object.freeze(Object.fromEntries(Object.entries(cuePatterns).map(([name, pattern]) => [name,
+  {...pattern, waveform: 'triangle', peak: {start: .74, minute: .64, rest: .68, work: .78, finisher: .74, complete: .72}[name]},
+])));
+export function createWorkoutAudio({profile} = {}) {
+  const patterns = profile === 'clear-loud-v1' ? loudCuePatterns : cuePatterns;
   let context = null, enabled = false, generation = 0, voice = [], quietUntil = 0, disposed = false;
   function disconnect(node) {
     node.source.onended = null;
@@ -45,14 +51,14 @@ export function createWorkoutAudio() {
   return {
     get enabled(){return enabled;},setEnabled,enable(){return setEnabled(true);},toggle(){return setEnabled(!enabled);},silence,
     cue(type) {
-      const pattern=cuePatterns[type];
+      const pattern=patterns[type];
       if(!pattern || !enabled || context?.state!=='running')return;
       silence();
       try {
         let start=Math.max(context.currentTime,quietUntil);
         for(const duration of pattern.durations){
           const source=context.createOscillator(),gain=context.createGain(),node={source,gain,start,end:start+duration};voice.push(node);
-          source.type='sine';source.frequency.value=pattern.frequency;
+          source.type=pattern.waveform || 'sine';source.frequency.value=pattern.frequency;
           gain.gain.setValueAtTime(0,start);
           gain.gain.linearRampToValueAtTime(pattern.peak,start+0.012);
           gain.gain.setValueAtTime(pattern.peak,start+duration-0.035);

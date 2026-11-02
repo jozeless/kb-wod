@@ -1,4 +1,8 @@
-export function prescription(exercise, phase) {
+export function prescription(exercise, phase, {active = false} = {}) {
+  if (phase.timeBasedPrescription && phase.format === 'intervals') {
+    const timed = `${phase.timer.workSeconds} seconds work / ${phase.timer.restSeconds} seconds rest`;
+    return active || !exercise.target ? `${timed} · Controlled technique; repetitions are optional.` : `${timed} · Optional reference: ${prescription(exercise, {...phase, timeBasedPrescription: false})}`;
+  }
   if (exercise.target) {
     const { min, max, unit } = exercise.target;
     return `${min === max ? min : `${min}–${max}`} ${unit}`;

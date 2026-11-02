@@ -75,6 +75,6 @@ test('historical Focus prescription and assignment remain usable before explicit
  await page.getByRole('button',{name:'Assign to Tuesday: Tuesday of Spades'}).click();
  await page.reload();await expect(tuesday.getByText('Tuesday of Spades',{exact:true})).toBeVisible();
  await expect(monday.getByText('Hybrid Foundation')).toBeVisible();
- expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('kb2.weekly-plan.v1')).Tuesday)).toEqual({workoutId:'tuesday-of-spades',version:1});
+ expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('kb2.weekly-plan.v1')).Tuesday)).toEqual({workoutId:'tuesday-of-spades',version:2});
  expect(await page.evaluate(()=>localStorage.getItem('kb2.sessions.v1'))).toBeNull();
 });

@@ -30,5 +30,5 @@ export function writeWeight(storage, workout, exercise, raw) {
 export function readWeightPreference(storage, workout, exercise) {
   const current=readWeight(storage,workout,exercise),source=workout.weightPreferenceSource;
   return source?.exerciseIds.includes(exercise.id) && storage.getItem(weightKey(workout,exercise))===null
-    ? readWeight(storage,{id:workout.id,version:source.version},exercise) : current;
+    ? readWeight(storage,{id:workout.id,version:source.version,execution:source.execution},exercise) : current;
 }

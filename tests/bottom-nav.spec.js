@@ -110,7 +110,7 @@ test('footer SVG clicks keep active exit confirmations, audio, paused checkpoint
   accept = true; await nav(page).getByRole('link', { name: 'History', exact: true }).locator('svg').click(); await expect(page).toHaveURL(/#history$/); await active(page, 'History');
   const record = (await records(page))[0]; expect(record.checkpointMs).toBe(17000); expect(record.activeDurationMs).toBe(14000); expect(record.form.weights['push-press']).toBe('12.5'); expect(record.status).toBe('draft');
   await nav(page).getByRole('link', { name: 'Library', exact: true }).click(); await page.getByRole('button', { name: 'View workout: Monday Paranoid', exact: true }).click();
-  await page.getByRole('button', { name: /Resume draft —/ }).click(); await expect(page.getByRole('button', { name: 'Resume', exact: true })).toBeVisible(); await expect(page.getByRole('timer')).toHaveText('00:46'); await expect(page.getByLabel('KB Push Press weight (kg)', { exact: true })).toHaveValue('12.5'); await active(page, 'Library');
+  await page.goto('./#workout/monday-paranoid/3'); await page.getByRole('button', { name: /Resume draft —/ }).click(); await expect(page.getByRole('button', { name: 'Resume', exact: true })).toBeVisible(); await expect(page.getByRole('timer')).toHaveText('00:46'); await expect(page.getByLabel('KB Push Press weight (kg)', { exact: true })).toHaveValue('12.5'); await active(page, 'Library');
 });
 
 test('footer stays fixed and aligned without clipping or covering End/Save/fields at four widths and 200% text', async ({ page }, info) => {
@@ -161,7 +161,7 @@ test('keyboard, active underline, AA footer contrast and forced-colors states re
 test('footer and all four destinations work offline under the Pages subpath with retained history and details', async ({ page, context }) => {
   await setup(page); await page.goto('./#today'); await seed(page); const before = await records(page);
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => true)); await page.reload(); await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
-  expect(await page.evaluate(async () => Boolean(await (await caches.open('kb2-static-v29')).match(new URL('./styles/hm-footer.css', document.baseURI))))).toBe(true);
+  expect(await page.evaluate(async () => Boolean(await (await caches.open('kb2-static-v30')).match(new URL('./styles/hm-footer.css', document.baseURI))))).toBe(true);
   await context.setOffline(true); await page.reload();
   for (const [name] of tabs) { await nav(page).getByRole('link', { name, exact: true }).click(); await active(page, name); }
   await expect(page.locator('.library-grid > button')).toHaveCount(2); await page.locator('.library-grid > button').filter({ hasText: 'Monday Paranoid' }).click(); await active(page, 'History'); await expect(page.getByText('Active duration: 21:10', { exact: true })).toBeVisible();

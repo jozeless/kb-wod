@@ -10,8 +10,8 @@ import {assignWorkout,filterWorkouts} from '../src/domain/planning.js';
 const storage=()=>{const map=new Map();return {map,getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v),removeItem:k=>map.delete(k)};};
 function finished(s=storage()){const r=createDraft(w,s,'tuesday','2026-10-26T12:00:00Z');r.stage='cardio-sweat-results';r.blockIndex=2;r.completedBlocks=w.phases.map(p=>p.id);r.activeDurationMs=1200000;return r;}
 test('Tuesday v1 catalog, manual assignment and immutable 8+8+4 prescriptions',()=>{
- assert.equal(findWorkout(w.id,1),w);assert.ok(currentWorkouts.includes(w));assert.equal(w.suggestedDay,'Tuesday');assert.equal(w.demo,false);assert.equal(w.durationSeconds,1200);
- assert.deepEqual(filterWorkouts(currentWorkouts,'Tuesday of Spades','hybrid'),[w]);
+ assert.equal(findWorkout(w.id,1),w);assert.equal(currentWorkouts.find(x=>x.id===w.id),findWorkout(w.id,2));assert.equal(w.suggestedDay,'Tuesday');assert.equal(w.demo,false);assert.equal(w.durationSeconds,1200);
+ assert.deepEqual(filterWorkouts(currentWorkouts,'Tuesday of Spades','hybrid'),[findWorkout(w.id,2)]);
  const plan={Tuesday:{workoutId:'monday-paranoid',version:2},Monday:{workoutId:'focus-001-upper-abs',version:1}};const next=assignWorkout(plan,'Tuesday',w);assert.equal(plan.Tuesday.version,2);assert.deepEqual(next.Monday,plan.Monday);assert.deepEqual(next.Tuesday,{workoutId:w.id,version:1});
  const {segments,durationMs}=compileWorkout(w);assert.equal(durationMs,1200000);assert.equal(segments.length,25);
  assert.deepEqual(segments.slice(0,8).map(s=>[s.kind,s.exercise.id,s.round,s.endMs-s.startMs]),Array.from({length:8},(_,i)=>['EMOM',i%2?'swing':'renegade-row',Math.floor(i/2)+1,60000]));

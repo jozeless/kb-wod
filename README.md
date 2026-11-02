@@ -2,6 +2,12 @@
 
 A mobile-first static application built with HTML, CSS and native JavaScript ES modules. No runtime framework, CDN or build step. Supabase is optional; local training needs no backend. This branch replaces the experimental prototype; it does not migrate its data or Supabase integration.
 
+## Current approved 40/20 releases
+
+Library now selects Monday Paranoid v4, Tuesday of Spades v2, Thursday Bells v2 and Friday To Black v2. All normal exercises use 40s WORK / 20s REST; special finishers and total durations stay unchanged. These releases opt into a stronger synthesized triangle-wave audio profile. Historical versions and plans keep their original programming/audio until explicitly changed through Today → Change workout.
+
+See [phase definitions, audio measurements, historical compatibility and validation](docs/WOD_40_20_LOUDER_AUDIO.md). The separate remove-workout-drafts work is not merged in this base; this PR preserves main's existing draft/recovery behavior.
+
 ## Develop and test
 
 - Python 3 and Node.js 22+ are recommended.
@@ -27,9 +33,9 @@ A mobile-first static application built with HTML, CSS and native JavaScript ES 
 
 Today has seven fixed Monday–Sunday slots. Add/change opens Library in assignment mode; cancel makes no change. The same approved workout may occupy multiple days. There is no automatic weekly rollover, scheduling or assignment replacement.
 
-Library and assignment choices use the explicit `libraryWorkouts` export: **Monday Paranoid v3 → Tuesday of Spades v1 → Thursday Bells v1 → Friday To Black v1**, in that order. There are exactly four cards, no search box, no type dropdown and no demo explanation. This is catalog cleanup, not the upcoming UI v2 redesign.
+Library and assignment choices use the explicit `libraryWorkouts` export: **Monday Paranoid v4 → Tuesday of Spades v2 → Thursday Bells v2 → Friday To Black v2**, in that order. There are exactly four cards, no search box, no type dropdown and no demo explanation. This is catalog cleanup, not the upcoming UI v2 redesign.
 
-The internal `workouts` registry retains all **15** definitions/versions, including legacy Focus/Hybrid workouts, Monday v1/v2 and demos. `currentWorkouts` remains an internal/latest-version compatibility export; `findWorkout(id, version)` still resolves exact historical references. Existing plans, history, drafts and weight preferences are never rewritten merely because a card is hidden. Historical assigned workouts can still be opened/removed, and direct versioned links plus draft recovery continue to work offline. Only an explicit new selection replaces an assignment. Later release notes describe features at their introduction; current public visibility follows this cleanup.
+The internal `workouts` registry retains all **19** definitions/versions, including legacy Focus/Hybrid workouts, Monday v1/v2 and demos. `currentWorkouts` remains an internal/latest-version compatibility export; `findWorkout(id, version)` still resolves exact historical references. Existing plans, history, drafts and weight preferences are never rewritten merely because a card is hidden. Historical assigned workouts can still be opened/removed, and direct versioned links plus draft recovery continue to work offline. Only an explicit new selection replaces an assignment. Later release notes describe features at their introduction; current public visibility follows this cleanup.
 
 See [Library cleanup: public selection, historical compatibility and verification](docs/LIBRARY_CLEANUP.md).
 

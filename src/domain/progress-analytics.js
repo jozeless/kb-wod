@@ -1,3 +1,4 @@
+import { floorPressReference } from './friday-benchmark.js';
 // Read-only projections. Dates and numbers are accepted only from final saved records.
 const number = value => typeof value === 'number' && Number.isFinite(value) && value >= 0;
 const count = value => number(value) && Number.isSafeInteger(value);
@@ -131,7 +132,7 @@ export function performanceTotals(sessions) {
     const friday = schema === 'friday-weights-floorpress-rounds-v1' && workout.id === 'friday-to-black';
     if (friday && results.keyExercise?.exerciseId === 'alternating-floor-press' && results.keyExercise.referenceSet === 'final' && exercise('alternating-floor-press')) {
       for (const side of ['left', 'right']) add(`keyExercise.${side}Reps`, results.keyExercise[`${side}Reps`], 'reps',
-        `${workout.name} · Floor Press final set · ${side} arm`, ['alternating-floor-press', 'final', side, exercise('alternating-floor-press').equipment, exercise('alternating-floor-press').target]);
+        `${workout.name} · Floor Press final set · ${side} arm${floorPressReference(workout).metricSuffix}`, ['alternating-floor-press', 'final', side, exercise('alternating-floor-press').equipment, exercise('alternating-floor-press').target, floorPressReference(workout).workSeconds]);
     }
     if ((friday || (schema === 'tuesday-weights-rounds-v1' && workout.id === 'tuesday-of-spades')) &&
         phase?.format === 'amrap' && results.finisher?.phaseId === phase.id && phase.exerciseIds?.length && phase.exerciseIds.every(id => exercise(id))) {

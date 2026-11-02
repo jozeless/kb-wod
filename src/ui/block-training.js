@@ -15,7 +15,7 @@ import { el, button, heading } from './components.js';
 export function createBlockTraining(workout, { draftId, recover = false, onExit, onHistory }) {
   const id = draftId || crypto.randomUUID();
   const root = el('div', { className: 'active-workout' }, heading(workout.code, 'Preparing session', 'Opening local session storage…'));
-  const audio = createWorkoutAudio();
+  const audio = createWorkoutAudio({profile: workout.audioProfile});
   const continuous = workout.execution?.mode === 'continuous-results';
   const timeOffset = () => continuous ? 0 : blockOffset(workout, record.blockIndex);
   let record, engine, cues, ticker = null, disposed = false, busy = false;
@@ -125,10 +125,10 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     training.circuit.hidden = !amrap;
     if (amrap && training.circuitPhase !== phase.id) {
       training.circuitPhase = phase.id;
-      training.circuit.replaceChildren(...s.circuit.map(ex => el('li', {}, el('div', { className: 'exercise-weight-row' }, el('strong', {}, ex.name), ex.equipment === 'bodyweight' ? null : sessionWeightField(ex).root), el('p', {}, prescription(ex, phase)))));
+      training.circuit.replaceChildren(...s.circuit.map(ex => el('li', {}, el('div', { className: 'exercise-weight-row' }, el('strong', {}, ex.name), ex.equipment === 'bodyweight' ? null : sessionWeightField(ex).root), el('p', {}, prescription(ex, phase, {active: true})))));
     }
     text(training.exercise, amrap ? phase.name : s.kind === 'TRANSITION' ? phase.name : s.exercise?.name || 'Starting in');
-    text(training.target, amrap || s.kind === 'TRANSITION' || s.kind === 'AMRAP_REPS' ? phase.instructions : s.exercise ? (s.kind === 'REST' ? 'Rest and prepare for the next exercise.' : prescription(s.exercise, phase)) : 'This countdown is outside your activity time.');
+    text(training.target, amrap || s.kind === 'TRANSITION' || s.kind === 'AMRAP_REPS' ? phase.instructions : s.exercise ? (s.kind === 'REST' ? 'Rest and prepare for the next exercise.' : prescription(s.exercise, phase, {active: true})) : 'This countdown is outside your activity time.');
     training.side.hidden = !s.holdingSide;
     text(training.side, s.holdingSide ? `Holding: ${s.holdingSide.toUpperCase()} hand` : '');
     text(training.position, s.holdingSide ? 'Controlled march · One knee lift = one step · Count total steps' : s.kind === 'TRANSITION' ? 'Automatic transition · Rest and prepare' : s.kind === 'AMRAP_REPS' ? 'AMRAP repetitions · Count complete reps' : amrap ? 'AMRAP · Repeat at your own pace' : s.exercise ? `Round ${s.round} of ${phase.rounds} · Interval ${s.interval + 1} of ${phase.timer.intervals}` : '');

@@ -94,7 +94,7 @@ test('History and saved-session footer routes retain real auth/account separatio
   expect(await records(page)).toEqual(before);
 });
 
-test('hidden footer preserves guarded navigation, exit confirmations, audio, paused checkpoints and recoverable session weights', async ({ page }) => {
+test('hidden footer preserves guarded navigation, exit confirmations, audio, ordinary pause/resume and separately saved weight preferences', async ({ page }) => {
   await setup(page); await installBeepSpy(page); await page.goto('./#workout/monday-paranoid/3');await page.getByLabel('KB Push Press weight (kg)',{exact:true}).fill('12.5');
   await page.getByRole('button', { name: 'Start Workout', exact: true }).click(); await expect(page.getByRole('timer')).toHaveText('3'); await page.clock.runFor(13000);
   await expect(page.locator('.hm-active-view input')).toHaveCount(0);await expect(nav(page)).toBeHidden();
@@ -109,9 +109,10 @@ test('hidden footer preserves guarded navigation, exit confirmations, audio, pau
   await page.getByRole('button', { name: 'Pause', exact: true }).click(); await page.clock.fastForward(600000); await expect(page.getByRole('timer')).toHaveText('00:46');
   await page.getByRole('button', { name: 'Resume', exact: true }).click(); expect(await page.evaluate(() => window.beepNotes.map(n => n.frequency))).toEqual([640]);
   accept = true; await page.locator('nav a[href="#history"] svg').dispatchEvent('click'); await expect(page).toHaveURL(/#history$/); await active(page, 'History');
-  const record = (await records(page))[0]; expect(record.checkpointMs).toBe(17000); expect(record.activeDurationMs).toBe(14000); expect(record.form.weights['push-press']).toBe('12.5'); expect(record.status).toBe('draft');
-  await nav(page).getByRole('link', { name: 'Library', exact: true }).click(); await page.getByRole('button', { name: 'View workout: Monday Paranoid', exact: true }).click();
-  await page.goto('./#workout/monday-paranoid/3'); await page.getByRole('button', { name: /Resume draft —/ }).click(); await expect(page.getByRole('button', { name: 'Resume', exact: true })).toBeVisible(); await expect(page.getByRole('timer')).toHaveText('00:46'); await expect(page.locator('.hm-active-view input')).toHaveCount(0);expect((await records(page)).find(r=>r.id===record.id).form.weights['push-press']).toBe('12.5');await expect(nav(page)).toBeHidden();
+  expect(await records(page)).toEqual([]);
+  await nav(page).getByRole('link', {name:'Library',exact:true}).click();await page.goto('./#workout/monday-paranoid/3');
+  await expect(page.getByRole('button',{name:/Resume draft/})).toHaveCount(0);await expect(page.getByLabel('KB Push Press weight (kg)',{exact:true})).toHaveValue('12.5');
+  await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.getByRole('timer')).toHaveText('3');await expect(nav(page)).toBeHidden();expect(await records(page)).toEqual([]);
 });
 
 test('footer stays fixed and aligned without clipping or covering End/Save/fields at four widths and 200% text', async ({ page }, info) => {
@@ -125,7 +126,12 @@ test('footer stays fixed and aligned without clipping or covering End/Save/field
       expect(await page.locator('html').evaluate(n => getComputedStyle(n).fontSize)).toBe(scale === 200 ? '32px' : '16px');
       if (route === 'history') await expect(page.locator('.library-grid > button')).toHaveCount(2);
       if (route === 'library') await expect(page.locator('.workout-card')).toHaveCount(4);
-      if (route.startsWith('active/')) await expect(page.getByRole('button', { name: route.includes('layout-results') ? 'Save Workout' : 'Resume', exact: true })).toBeVisible();
+      if (route.startsWith('active/')) {
+        await expect(page.getByText('Ready when you are', {exact: true})).toBeVisible(); await page.getByRole('button', {name: 'Start Workout', exact: true}).click();
+        await expect(page.getByRole('timer')).toHaveText('3'); await page.clock.fastForward(route.includes('layout-results') ? 1273000 : 13000);
+        if (!route.includes('layout-results')) await page.getByRole('button', {name: 'Pause', exact: true}).click();
+        await expect(page.getByRole('button', {name: route.includes('layout-results') ? 'Save Workout' : 'Resume', exact: true})).toBeVisible();
+      }
       if (route.startsWith('session/')) await expect(page.getByText('Active duration: 21:10', { exact: true })).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       if(route==='active/monday-paranoid/3?draft=guest-draft'){await expect(nav(page)).toBeHidden();await expect(page.locator('.app-header')).toBeHidden();await page.getByRole('button',{name:'End Workout',exact:true}).scrollIntoViewIfNeeded();await expect(page.getByRole('button',{name:'End Workout',exact:true})).toBeInViewport();continue;}
@@ -163,7 +169,7 @@ test('keyboard, active underline, AA footer contrast and forced-colors states re
 test('footer and all four destinations work offline under the Pages subpath with retained history and details', async ({ page, context }) => {
   await setup(page); await page.goto('./#today'); await seed(page); const before = await records(page);
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => true)); await page.reload(); await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
-  expect(await page.evaluate(async () => Boolean(await (await caches.open('kb2-static-v31')).match(new URL('./styles/hm-footer.css', document.baseURI))))).toBe(true);
+  expect(await page.evaluate(async () => Boolean(await (await caches.open('kb2-static-v32')).match(new URL('./styles/hm-footer.css', document.baseURI))))).toBe(true);
   await context.setOffline(true); await page.reload();
   for (const [name] of tabs) { await nav(page).getByRole('link', { name, exact: true }).click(); await active(page, name); }
   await expect(page.locator('.library-grid > button')).toHaveCount(2); await page.locator('.library-grid > button').filter({ hasText: 'Monday Paranoid' }).click(); await active(page, 'History'); await expect(page.getByText('Active duration: 21:10', { exact: true })).toBeVisible();

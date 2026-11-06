@@ -4,8 +4,8 @@ const detail='./#workout/focus-001-upper-abs/2';
 async function clock(page){await page.clock.install({time:new Date('2026-01-01T00:00:00Z')});await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));}
 async function sessions(page){return page.evaluate(async()=>{const {listSessions}=await import('./src/storage/session-store.js');return listSessions('focus-001-upper-abs');});}
 async function start(page){await clock(page);await page.goto(detail);await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');}
-async function upper(page){await page.clock.fastForward(603000);await expect(page.getByRole('heading',{name:'Upper Results',exact:true})).toBeVisible();await expect(page.getByText('Draft saved locally.',{exact:true})).toBeVisible();}
-async function abs(page){await page.getByRole('button',{name:'Continue to ABS',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');await page.clock.fastForward(603000);await expect(page.getByRole('heading',{name:'ABS Results',exact:true})).toBeVisible();await expect(page.getByText('Draft saved locally.',{exact:true})).toBeVisible();}
+async function upper(page){await page.clock.fastForward(603000);await expect(page.getByRole('heading',{name:'Upper Results',exact:true})).toBeVisible();await expect(page.getByText('Draft saved locally.',{exact:true})).toBeAttached();}
+async function abs(page){await page.getByRole('button',{name:'Continue to ABS',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');await page.clock.fastForward(603000);await expect(page.getByRole('heading',{name:'ABS Results',exact:true})).toBeVisible();await expect(page.getByText('Draft saved locally.',{exact:true})).toBeAttached();}
 const floor=page=>page.getByRole('region',{name:'KB Floor Press results',exact:true});
 test('Hidden Focus v1/v2 links remain usable without migrating a previous weekly assignment',async({page})=>{
  await page.goto('./');await page.evaluate(()=>localStorage.setItem('kb2.weekly-plan.v1',JSON.stringify({Tuesday:{workoutId:'focus-001-upper-abs',version:1}})));await page.reload();
@@ -22,7 +22,7 @@ test('results draft recovers, validates, saves once and preserves session loads 
  await floor(page).getByRole('spinbutton',{name:'Round 1',exact:true}).fill('-1');await page.getByRole('button',{name:'Continue to ABS'}).click();await expect(page.getByText(/KB Floor Press Round 1: enter/)).toBeVisible();
  await floor(page).getByRole('spinbutton',{name:'Round 1',exact:true}).fill('0');await floor(page).getByRole('spinbutton',{name:'Round 2',exact:true}).fill('6');await floor(page).getByRole('spinbutton',{name:'Weight (kg)',exact:true}).fill('12.5');
  await page.getByRole('textbox',{name:'Workout notes',exact:true}).fill('Left 6, right 5.');
- await expect(page.getByText('Draft saved locally.',{exact:true})).toBeVisible();await page.reload();await expect(page.getByRole('heading',{name:'Upper Results',exact:true})).toBeVisible();
+ await expect(page.getByText('Draft saved locally.',{exact:true})).toBeAttached();await page.reload();await expect(page.getByRole('heading',{name:'Upper Results',exact:true})).toBeVisible();
  await expect(floor(page).getByRole('spinbutton',{name:'Round 1',exact:true})).toHaveValue('0');await expect(page.getByRole('textbox',{name:'Workout notes',exact:true})).toHaveValue('Left 6, right 5.');
  await page.clock.fastForward(1800000);expect((await sessions(page))[0].activeDurationMs).toBe(600000);await expect(page.locator('.phase-clock')).toHaveCount(0);
  await abs(page);await expect(page.getByRole('spinbutton',{name:'Perceived effort',exact:true})).toHaveValue('');
@@ -38,7 +38,7 @@ test('results draft recovers, validates, saves once and preserves session loads 
 test('both results forms and saved history recover offline',async({page,context})=>{
  await clock(page);await page.goto(detail);await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));await context.setOffline(true);
  await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');await upper(page);await abs(page);
- await page.getByRole('textbox',{name:'Workout notes',exact:true}).fill('Offline session');await expect(page.getByText('Draft saved locally.',{exact:true})).toBeVisible();await page.reload();await expect(page.getByRole('heading',{name:'ABS Results',exact:true})).toBeVisible();await expect(page.getByRole('textbox',{name:'Workout notes',exact:true})).toHaveValue('Offline session');
+ await page.getByRole('textbox',{name:'Workout notes',exact:true}).fill('Offline session');await expect(page.getByText('Draft saved locally.',{exact:true})).toBeAttached();await page.reload();await expect(page.getByRole('heading',{name:'ABS Results',exact:true})).toBeVisible();await expect(page.getByRole('textbox',{name:'Workout notes',exact:true})).toHaveValue('Offline session');
  await page.getByRole('button',{name:'Save Workout'}).click();await expect(page.getByRole('heading',{name:'Workout saved',exact:true})).toBeVisible();await page.reload();await expect(page.getByRole('heading',{name:'Workout saved',exact:true})).toBeVisible();await page.getByRole('button',{name:'View saved session'}).click();await expect(page.getByText('Workout notes: Offline session',{exact:true})).toBeVisible();await context.setOffline(false);
 });
 test('save failure shows no success and retry keeps one session; mobile forms fit',async({page})=>{
@@ -49,8 +49,8 @@ test('save failure shows no success and retry keeps one session; mobile forms fi
  await page.evaluate(()=>{window.failFinal=false;});await page.getByRole('button',{name:'Save Workout'}).click();await expect(page.getByRole('heading',{name:'Workout saved',exact:true})).toBeVisible();expect(await sessions(page)).toHaveLength(1);
 });
 test('active checkpoint reloads paused and resumes without counting time away',async({page})=>{
- await start(page);await page.clock.runFor(43000);await page.getByRole('button',{name:'Pause',exact:true}).click();await expect(page.getByText('Draft saved locally.',{exact:true})).toBeVisible();
- page.on('dialog',d=>d.accept());await page.reload();await expect(page.getByRole('button',{name:'Resume',exact:true})).toBeVisible();await expect(page.locator('.block-time')).toHaveText('Block remaining: 09:20');await page.clock.fastForward(600000);await expect(page.locator('.block-time')).toHaveText('Block remaining: 09:20');await page.getByRole('button',{name:'Resume',exact:true}).click();await page.clock.runFor(20000);await expect(page.locator('.phase-clock')).toHaveText('00:40');
+ await start(page);await page.clock.runFor(43000);await page.getByRole('button',{name:'Pause',exact:true}).click();await expect(page.getByText('Draft saved locally.',{exact:true})).toBeAttached();
+ page.on('dialog',d=>d.accept());await page.reload();await expect(page.getByRole('button',{name:'Resume',exact:true})).toBeVisible();await expect(page.locator('.block-time')).toHaveText('09:20');await page.clock.fastForward(600000);await expect(page.locator('.block-time')).toHaveText('09:20');await page.getByRole('button',{name:'Resume',exact:true}).click();await page.clock.runFor(20000);await expect(page.locator('.phase-clock')).toHaveText('00:40');
 });
 test('Focus v2 uses one START, format-specific REST/WORK and silent result forms',async({page})=>{
  await verifyWorkoutBeeps(page,'focus-001-upper-abs',2);

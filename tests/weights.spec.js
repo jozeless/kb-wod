@@ -1,6 +1,6 @@
 import {test,expect} from '@playwright/test';
 const detail='./#workout/focus-001-upper-abs/1';
-test('optional weights persist and remain independent; active screen edits the same preference',async({page})=>{
+test('optional weights persist and remain independent; active screen preserves prepared preferences without another editor',async({page})=>{
  await page.clock.install();await page.goto(detail);
  const floor=page.getByRole('spinbutton',{name:'KB Floor Press weight (kg)',exact:true});
  const row=page.getByRole('spinbutton',{name:'Supported Single-Arm KB Row weight (kg)',exact:true});
@@ -9,11 +9,11 @@ test('optional weights persist and remain independent; active screen edits the s
  await floor.fill('12.5');await row.fill('0');await page.reload();await expect(floor).toHaveValue('12.5');await expect(row).toHaveValue('0');
  await floor.fill('-1');await expect(page.getByText('Enter zero or a positive weight in kg.')).toBeVisible();
  await page.reload();await expect(floor).toHaveValue('12.5');
- await page.getByRole('button',{name:'Start Workout',exact:true}).click();await page.clock.runFor(3000);await expect(floor).toHaveValue('12.5');
- await floor.fill('16.25');await page.clock.fastForward(60000);await expect(row).toHaveValue('0');
- await row.fill('');await page.clock.fastForward(240000);await expect(floor).toHaveValue('16.25');
+ await page.getByRole('button',{name:'Start Workout',exact:true}).click();await page.clock.runFor(3000);await expect(page.getByRole('spinbutton')).toHaveCount(0);
+ await page.clock.fastForward(300000);await expect(page.getByRole('spinbutton')).toHaveCount(0);
  page.on('dialog',d=>d.accept());await page.getByRole('button',{name:'End Workout'}).click();await page.goto(detail);
- await expect(floor).toHaveValue('16.25');await expect(row).toHaveValue('');
+ await expect(floor).toHaveValue('12.5');await expect(row).toHaveValue('0');
+ await floor.fill('16.25');await row.fill('');await page.reload();await expect(floor).toHaveValue('16.25');await expect(row).toHaveValue('');
  expect(await page.evaluate(()=>localStorage.getItem('kb2.weekly-plan.v1'))).toBe(plan);
  expect(await page.evaluate(()=>localStorage.getItem('kb2.sessions.v1'))).toBeNull();
  for(const width of [320,390,768,1280]){await page.setViewportSize({width,height:740});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await floor.fill('10.75');

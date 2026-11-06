@@ -26,6 +26,7 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
   function persist() {
     if (!record || record.status === 'completed') return Promise.resolve(true);
     const snapshot = structuredClone(record); pending++;
+    draftMessage.dataset.state = 'saving';
     draftMessage.textContent = 'Saving draft…';
     const operation = queue.then(() => putDraft(snapshot));
     queue = operation.catch(() => {});
@@ -33,7 +34,7 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
       lastError = false;
       if (saved.status === 'completed' && !disposed) { record = saved; showSaved(); }
       return true;
-    }, () => { lastError = true; draftMessage.textContent = 'Draft could not be saved. Keep this screen open and retry before continuing.'; return false; }).finally(() => { pending--; if (!lastError) draftMessage.textContent = pending ? 'Saving draft…' : 'Draft saved locally.'; });
+    }, () => { lastError = true; draftMessage.dataset.state = 'error'; draftMessage.textContent = 'Draft could not be saved. Keep this screen open and retry before continuing.'; return false; }).finally(() => { pending--; if (!lastError) { draftMessage.dataset.state = pending ? 'saving' : 'saved'; draftMessage.textContent = pending ? 'Saving draft…' : 'Draft saved locally.'; } });
   }
   function capture() {
     if (!engine || !record?.stage?.endsWith('-active')) return;
@@ -117,15 +118,14 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     } else if (cue) audio.cue(cue);
     training.panel.className = `active-panel ${s.kind?.toLowerCase() || 'countdown'}${s.status === 'paused' ? ' paused' : ''}`;
     const text = (node, value) => { if (node.textContent !== value) node.textContent = value; };
-    text(training.phase, `${phase.name} · ${s.stage === 'countdown' ? 'GET READY' : s.kind?.replaceAll('_',' ')}${s.status === 'paused' ? ' · PAUSED' : ''}`);
     text(training.clock, s.stage === 'countdown' ? String(s.countdown) : s.go ? 'GO' : formatTime(s.remainingMs));
-    text(training.block, `Block remaining: ${formatTime(continuous ? blockOffset(workout, record.blockIndex) + phase.durationSeconds * 1000 - s.elapsedMs : s.totalRemainingMs)}`);
-    text(training.total, `Total active remaining: ${formatTime(workout.durationSeconds * 1000 - offset - s.elapsedMs)}`);
+    text(training.block, formatTime(continuous ? blockOffset(workout, record.blockIndex) + phase.durationSeconds * 1000 - s.elapsedMs : s.totalRemainingMs));
+    text(training.total, formatTime(workout.durationSeconds * 1000 - offset - s.elapsedMs));
     const amrap = s.kind === 'AMRAP';
     training.circuit.hidden = !amrap;
     if (amrap && training.circuitPhase !== phase.id) {
       training.circuitPhase = phase.id;
-      training.circuit.replaceChildren(...s.circuit.map(ex => el('li', {}, el('div', { className: 'exercise-weight-row' }, el('strong', {}, ex.name), ex.equipment === 'bodyweight' ? null : sessionWeightField(ex).root), el('p', {}, prescription(ex, phase, {active: true})))));
+      training.circuit.replaceChildren(...s.circuit.map(ex => el('li', {}, el('strong', {}, ex.name), el('span', {className:'circuit-target'}, prescription(ex, phase)))));
     }
     text(training.exercise, amrap ? phase.name : s.kind === 'TRANSITION' ? phase.name : s.exercise?.name || 'Starting in');
     text(training.target, amrap || s.kind === 'TRANSITION' || s.kind === 'AMRAP_REPS' ? phase.instructions : s.exercise ? (s.kind === 'REST' ? 'Rest and prepare for the next exercise.' : prescription(s.exercise, phase, {active: true})) : 'This countdown is outside your activity time.');
@@ -133,10 +133,10 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     text(training.side, s.holdingSide ? `Holding: ${s.holdingSide.toUpperCase()} hand` : '');
     text(training.position, s.holdingSide ? 'Controlled march · One knee lift = one step · Count total steps' : s.kind === 'TRANSITION' ? 'Automatic transition · Rest and prepare' : s.kind === 'AMRAP_REPS' ? 'AMRAP repetitions · Count complete reps' : amrap ? 'AMRAP · Repeat at your own pace' : s.exercise ? `Round ${s.round} of ${phase.rounds} · Interval ${s.interval + 1} of ${phase.timer.intervals}` : '');
     const resultTitle = usesSessionWeights(workout) ? 'Workout Results' : resultSchema(workout).blocks[phase.id].title;
-    text(training.next, s.holdingSide === 'right' ? 'Next: LEFT hand (automatic switch)' : amrap ? `Next: ${continuous && s.nextPhase ? s.nextPhase.name : resultTitle}` : s.exercise ? (s.nextExercise ? `Next: ${s.nextExercise.name}` : `Next: ${continuous && s.nextPhase ? s.nextPhase.name : resultTitle}`) : '');
+    text(training.next, s.holdingSide === 'right' ? 'LEFT hand (automatic switch)' : amrap ? `${continuous && s.nextPhase ? s.nextPhase.name : resultTitle}` : s.exercise ? (s.nextExercise ? `${s.nextExercise.name}` : `${continuous && s.nextPhase ? s.nextPhase.name : resultTitle}`) : (s.nextExercise?.name || workout.exercises.find(ex => ex.id === phase.exerciseIds[0])?.name || phase.name));
     training.weight.root.hidden = !s.exercise || s.exercise.equipment === 'bodyweight'; if (s.exercise && s.exercise.equipment !== 'bodyweight') training.weight.setExercise(s.exercise);
     training.progress.value = (offset + s.elapsedMs) / (workout.durationSeconds * 1000);
-    training.pause.textContent = s.status === 'paused' ? 'Resume' : 'Pause';
+    training.pause.setAttribute('aria-label', s.status === 'paused' ? 'Resume' : 'Pause');
     training.presentation.update(s);
     const checkpoint = Math.floor(engine.elapsed() / 1000);
     if (checkpoint !== lastCheckpoint) { lastCheckpoint = checkpoint; capture(); void persist(); }
@@ -156,9 +156,9 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     if (restored) engine.restorePaused(record.checkpointMs); else engine.start();
     cues = createCueTracker(); cues.next({ ...engine.snapshot(), elapsedMs: timeOffset() + engine.snapshot().elapsedMs }, false);
     const weight = sessionWeightField(); weight.root.hidden = true;
-    const phaseLabel = el('p', { className: 'eyebrow', 'aria-live': 'polite' }), exercise = el('h2', { className: 'active-exercise' }), target = el('p', {});
+    const phaseLabel = el('h1', { className: 'eyebrow', 'aria-live': 'polite' }), exercise = el('h2', { className: 'active-exercise' }), target = el('p', {});
     const side = el('h2', {className: 'holding-side', 'aria-live': 'polite', hidden: ''});
-    const clock = el('div', { className: 'phase-clock', role: 'timer' }), block = el('p', { className: 'block-time' }), total = el('p', {}), position = el('p', {}), next = el('p', {});
+    const clock = el('div', { className: 'phase-clock', role: 'timer' }), block = el('dd', { className: 'block-time' }), total = el('dd', {}), position = el('p', {}), next = el('p', {});
     const pause = button(engine.status === 'paused' ? 'Resume' : 'Pause', () => {
       // Resume is also the audio opt-in for historical muted drafts. Keep that
       // intent for later blocks even if this browser blocks the current attempt.
@@ -170,7 +170,7 @@ export function createBlockTraining(workout, { draftId, recover = false, onExit,
     const progress = el('progress', { max: '1', value: '0', 'aria-label': 'Workout progress' });
     const presentation = activePresentation({
       heading: heading(`${workout.code} · VERSION ${workout.version}`, workout.name, continuous ? usesSessionWeights(workout) ? 'Recorded weights stay with this session. Results follow the finisher.' : 'Record actual results after all 20 active minutes.' : 'Record actual results between the blocks.'),
-      phase: phaseLabel, exercise, side, target, weight, clock, block, total, position, next, circuit, progress,
+      initialPhase: phase, phase: phaseLabel, exercise, side, target, weight, clock, block, total, position, next, circuit, progress,
       controls: el('div', { className: 'active-controls' }, pause, button('End Workout', () => { if (confirm('Leave this workout? A recoverable draft will remain.')) onExit(); }, true)),
     });
     training = { panel: presentation.panel, presentation, phase: phaseLabel, exercise, side, target, clock, block, total, position, next, weight, pause, progress, circuit, circuitPhase: null };

@@ -6,7 +6,7 @@ const notes = page => page.evaluate(() => window.beepNotes.map(n => n.frequency)
 const stored = page => page.evaluate(async id => {
   const { getSession } = await import('./src/storage/session-store.js'); return getSession(id);
 }, draftId);
-const saved = page => expect(page.getByText('Draft saved locally.', { exact: true })).toBeVisible();
+const saved = page => expect(page.getByText('Draft saved locally.', { exact: true })).toBeAttached();
 const advanceBoundary = async (page, ms) => { await page.clock.fastForward(ms - 100); await page.clock.runFor(100); };
 
 async function recover(page, id, version, checkpointMs) {

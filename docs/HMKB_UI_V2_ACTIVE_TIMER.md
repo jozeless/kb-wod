@@ -1,5 +1,7 @@
 # HM/KB UI v2 — PR 08: Active Workout Timer
 
+This document records the PR 08 baseline. The current focused presentation and its weight-editor/chrome changes are documented in [Active Workout Focus Mode](ACTIVE_WORKOUT_FOCUS_MODE.md).
+
 Branch: `feature/ui-v2-08-active-timer`. Base: `f8a8ab7` (merged PR #24).
 
 ## Visual scope

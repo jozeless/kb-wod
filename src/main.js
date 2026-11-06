@@ -14,6 +14,10 @@ import { todayView, libraryView, workoutView } from './ui/views.js';
 import { heading, emptyState, el } from './ui/components.js';
 const app = document.querySelector('#app');
 const status = document.querySelector('#status');
+// Live presentation can become a results form without a hash/route change.
+const updateFocusChrome = () => document.body.classList.toggle('hm-training-focus', Boolean(app.querySelector('.hm-active-view')));
+new MutationObserver(updateFocusChrome).observe(app, {childList: true, subtree: true});
+updateFocusChrome();
 let state;
 let session = null;
 let activeHash = '';

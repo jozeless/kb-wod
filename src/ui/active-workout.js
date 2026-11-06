@@ -12,11 +12,12 @@ export function createActiveWorkout(workout, onEnd, onToday) {
   const cues = createCueTracker();
   const weight = createWeightField(workout);
   weight.root.hidden = true;
-  const phase = el('p', { className: 'eyebrow', 'aria-live': 'polite' });
+  const phase = el('h1', { className: 'eyebrow', 'aria-live': 'polite' });
   const exercise = el('h2', { className: 'active-exercise', 'aria-live': 'polite' });
   const target = el('p', { className: 'active-target' });
   const clock = el('div', { className: 'phase-clock', 'aria-label': 'Phase time remaining', role: 'timer' });
-  const total = el('p', { className: 'total-time' });
+  const block = el('dd', {className:'block-time'});
+  const total = el('dd', { className: 'total-time' });
   const position = el('p', {});
   const next = el('p', {});
   const circuit = el('ol', { className: 'prescriptions active-circuit', 'aria-label': 'AMRAP circuit', hidden: '' });
@@ -30,7 +31,7 @@ export function createActiveWorkout(workout, onEnd, onToday) {
   const controls = el('div', { className: 'active-controls' }, pause, end);
   const presentation = activePresentation({
     heading: heading('ACTIVE WORKOUT', workout.name, 'Follow the prescribed movement, then rest. No session data is saved.'),
-    phase, exercise, target, weight, clock, total, position, next, circuit, progress, controls,
+    initialPhase: workout.phases[0], block, phase, exercise, target, weight, clock, total, position, next, circuit, progress, controls,
   });
   const panel = presentation.panel;
   const root = el('div', { className: 'active-workout' }, presentation.root,
@@ -51,26 +52,25 @@ export function createActiveWorkout(workout, onEnd, onToday) {
       return;
     }
     panel.className = `active-panel ${s.stage === 'countdown' ? 'countdown' : s.kind.toLowerCase()}${s.status === 'paused' ? ' paused' : ''}`;
-    pause.textContent = s.status === 'paused' ? 'Resume' : 'Pause';
-    total.textContent = `Total remaining: ${formatTime(s.totalRemainingMs)}`;
+    pause.setAttribute('aria-label', s.status === 'paused' ? 'Resume' : 'Pause');
+    total.textContent = formatTime(s.totalRemainingMs);
+    // Bind the existing compiled phase boundary; do not create another clock.
+    block.textContent = formatTime(s.stage === 'countdown' ? workout.phases[0].durationSeconds * 1000 : engine.timeline.segments.filter(segment => segment.phase.id === s.phase.id).at(-1).endMs - s.elapsedMs);
     progress.value = s.progress;
     if (s.stage === 'countdown') {
-      setText(phase, s.status === 'paused' ? 'PAUSED · GET READY' : 'GET READY');
       setText(exercise, 'Starting in'); clock.textContent = String(s.countdown);
       target.textContent = 'The countdown is outside your workout time.';
-      position.textContent = ''; next.textContent = '';
+      position.textContent = ''; next.textContent = workout.exercises.find(ex => ex.id === workout.phases[0].exerciseIds[0])?.name || workout.phases[0].name;
     } else {
       const amrap = s.kind === 'AMRAP';
       weight.root.hidden = amrap; circuit.hidden = !amrap;
-      setText(phase, `${s.phase.name} · ${s.kind}${s.status === 'paused' ? ' · PAUSED' : ''}`);
       if (amrap) {
         setText(exercise, s.phase.name);
         target.textContent = s.phase.instructions;
         if (circuitPhase !== s.phase.id) {
           circuitPhase = s.phase.id;
           circuit.replaceChildren(...s.circuit.map(ex => el('li', {},
-            el('div', { className: 'exercise-weight-row' }, el('strong', {}, ex.name), createWeightField(workout, ex).root),
-            el('p', {}, prescription(ex, s.phase, {active: true})), ex.note ? el('p', {}, ex.note) : null)));
+            el('strong', {}, ex.name), el('span', {className:'circuit-target'}, prescription(ex, s.phase)))));
         }
       } else {
         weight.setExercise(s.exercise);
@@ -80,7 +80,7 @@ export function createActiveWorkout(workout, onEnd, onToday) {
       clock.textContent = s.go ? 'GO' : formatTime(s.remainingMs);
       clock.setAttribute('aria-label', `Phase time remaining: ${formatTime(s.remainingMs)}`);
       position.textContent = amrap ? 'AMRAP · Repeat at your own pace' : `Round ${s.round} of ${s.phase.rounds} · ${s.kind === 'EMOM' ? 'Minute' : 'Interval'} ${s.interval + 1} of ${s.phase.timer.intervals}`;
-      next.textContent = s.nextExercise ? `Next: ${s.nextExercise.name}` : s.nextPhase?.format === 'amrap' ? `Next: ${s.nextPhase.name} circuit` : 'Next: Workout Complete';
+      next.textContent = s.nextExercise ? `${s.nextExercise.name}` : s.nextPhase?.format === 'amrap' ? `${s.nextPhase.name} circuit` : 'Workout Complete';
 
     }
     presentation.update(s);

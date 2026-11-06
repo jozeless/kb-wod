@@ -1,6 +1,6 @@
 import { supportsResults } from '../domain/result-schemas.js';
 import { formatTime } from '../domain/workout-timer.js';
-export const durationLabel = workout => workout.durationSeconds % 60 ? `${formatTime(workout.durationSeconds * 1000)} total` : `${workout.durationSeconds / 60} minutes`;
+export const durationLabel = workout => workout.presentation?.durationFormat === 'clock' ? formatTime(workout.durationSeconds * 1000) : workout.durationSeconds % 60 ? `${formatTime(workout.durationSeconds * 1000)} total` : `${workout.durationSeconds / 60} minutes`;
 export function recordingSummary(workout) {
   if (workout.demo) return 'Demo · No real workout results.';
   if (!supportsResults(workout)) return 'Session result saving is not configured for this historical version.';

@@ -25,11 +25,11 @@ export function phaseBar(workout) {
 }
 export function workoutCard(workout, onSelect, action = 'View workout') {
   return el('button', {type: 'button', className: `workout-card workout-card--hm-kb${workout.demo ? ' workout-card--demo' : ''}`, onClick: () => onSelect(workout), 'aria-label': `${action}: ${workout.name}`},
-    el('span', {className: 'metal-micro-mark'}, workout.demo ? 'HEAVY METAL KB · DEMO' : `HEAVY METAL KB${workout.suggestedDay ? ` · ${workout.suggestedDay.toUpperCase()}` : ''}`),
+    el('span', {className: 'metal-micro-mark'}, workout.presentation?.showCode ? workout.code : workout.demo ? 'HEAVY METAL KB · DEMO' : `HEAVY METAL KB${workout.suggestedDay ? ` · ${workout.suggestedDay.toUpperCase()}` : ''}`),
     el('span', {className: 'badge'}, `${typeLabel(workout.type)}${workout.demo ? ' · Demo' : ' · APROBADO'}`),
     el('strong', {}, workout.name),
     !workout.demo ? el('span', {className: 'metal-subtitle'}, workout.presentation?.subtitle || workout.category) : null,
-    workout.durationSeconds ? el('span', {}, durationLabel(workout)) : null,
+    workout.durationSeconds ? el('span', {}, `${durationLabel(workout)}${workout.presentation?.timing ? ` · ${workout.presentation.timing}` : ''}`) : null,
     workout.phases.length ? phaseBar(workout) : null,
     workout.phases.length ? el('span', {className: 'card-structure'}, workout.phases.filter(p => p.format !== 'transition').map(p => `${p.name} ${p.durationSeconds % 60 ? `${p.durationSeconds} sec` : `${p.durationSeconds / 60} min`}`).join(' / ')) : null,
     el('span', {className: 'card-footer'}, `${action} →`));

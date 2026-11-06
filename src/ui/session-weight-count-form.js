@@ -17,7 +17,8 @@ export function sessionWeightCountForm(record, {changed, save}, config) {
     fields.append(el('h2', {}, group.label), el('p', {className: 'muted'}, group.description));
     for (const field of group.fields) fields.append(el('label', {}, field.label, number(field.label, field.key, record.form[field.key], v => {record.form[field.key] = v;}, true)));
   }
-  fields.append(el('h2', {}, config.groupLabel), el('label', {}, config.countLabel, number(config.countLabel, config.countKey, record.form[config.countKey], v => {record.form[config.countKey] = v;}, true)), button('Save Workout', save));
+  if(config.countKey)fields.append(el('h2', {}, config.groupLabel), el('label', {}, config.countLabel, number(config.countLabel, config.countKey, record.form[config.countKey], v => {record.form[config.countKey] = v;}, true)));
+  fields.append(button('Save Workout', save));
   const form = el('form', {novalidate: ''}, fields, message); form.addEventListener('submit', e => e.preventDefault());
   return {root: el('div', {}, heading(`${record.workoutSnapshot.code} · VERSION ${record.workoutVersion}`, 'Workout Results', config.description), form), message, setBusy(value) {fields.disabled = value;}};
 }

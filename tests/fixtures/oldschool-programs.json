@@ -1,0 +1,92 @@
+{
+  "sailor": [
+    [
+      "KB Floor Press",
+      "KB Bent-Over Row",
+      "KB Strict Shoulder Press",
+      "KB Biceps Curl",
+      "KB Lying Triceps Extension"
+    ],
+    [
+      "KB Crunch",
+      "KB Russian Twist",
+      "Plank",
+      "Reverse Crunch",
+      "KB Dead Bug"
+    ],
+    [
+      "KB Goblet Squat",
+      "KB Conventional Deadlift",
+      "KB Reverse Lunge",
+      "KB Glute Bridge",
+      "KB Standing Calf Raise"
+    ],
+    [
+      "KB Floor Press",
+      "KB Bent-Over Row",
+      "KB Goblet Squat",
+      "KB Swing",
+      "Burpees"
+    ]
+  ],
+  "tiger": [
+    [
+      "KB Crush Press",
+      "KB Staggered-Stance Row",
+      "KB Half-Kneeling Press",
+      "KB Hammer Curl",
+      "KB Overhead Triceps Extension"
+    ],
+    [
+      "KB Weighted Sit-Up",
+      "KB Standing Wood Chop",
+      "Side Plank",
+      "Hollow Hold",
+      "KB Tall-Kneeling Press-Out"
+    ],
+    [
+      "KB Front Rack Squat",
+      "KB Sumo Deadlift",
+      "KB Lateral Lunge",
+      "KB Hip Thrust",
+      "KB Seated Calf Raise"
+    ],
+    [
+      "KB Crush Press",
+      "KB Staggered-Stance Row",
+      "KB Front Rack Squat",
+      "KB Farmer's March",
+      "Mountain Climbers"
+    ]
+  ],
+  "eagle": [
+    [
+      "KB Single-Arm Floor Press",
+      "KB One-Arm Row",
+      "KB Single-Arm Push Press",
+      "KB Concentration Curl",
+      "KB Single-Arm Overhead Triceps Extension"
+    ],
+    [
+      "KB V-Up",
+      "KB Seated Russian Twist",
+      "Plank Shoulder Tap",
+      "Side Plank Reach-Through",
+      "KB Dead Bug Pullover"
+    ],
+    [
+      "KB Front-Rack Reverse Lunge",
+      "KB Stiff-Leg Deadlift",
+      "KB Step-Up",
+      "KB Single-Leg Glute Bridge",
+      "KB Seated Calf Raise"
+    ],
+    [
+      "KB Floor Press",
+      "KB Single-Arm Row",
+      "KB Split Squat",
+      "KB Clean & Press",
+      "High Knees"
+    ]
+  ]
+}

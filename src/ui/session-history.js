@@ -1,3 +1,4 @@
+import { isOldschoolResults } from '../domain/oldschool-results.js';
 import { floorPressReference } from '../domain/friday-benchmark.js';
 import { isFridayResults } from '../domain/friday-results.js';
 import { isThursdayResults } from '../domain/thursday-results.js';
@@ -29,7 +30,8 @@ export function savedSessionView(id, go) {
     if(usesSessionWeights(record.workoutSnapshot)) {
       const weights=el('section',{'aria-label':'Recorded exercise weights'},el('h2',{},'Exercise weights'));
       for(const exercise of weightedExercises(record.workoutSnapshot))weights.append(el('p',{},`${exercise.name}: ${value(record.results.exerciseWeights[exercise.id])}${record.results.exerciseWeights[exercise.id]===null?'':' kg'}`));
-      if(isFridayResults(record.workoutSnapshot)) {
+      if(isOldschoolResults(record.workoutSnapshot))root.append(weights);
+      else if(isFridayResults(record.workoutSnapshot)) {
         root.append(weights, el('section', {'aria-label': 'Recorded key exercise'},
           el('h2', {}, 'Alternating Floor Press — Final set'),
           el('p', {}, floorPressReference(record.workoutSnapshot).savedDescription),
@@ -50,8 +52,8 @@ export function savedSessionView(id, go) {
       }
       root.append(section);
     }
-    if(!isFridayResults(record.workoutSnapshot) && !isTuesdayResults(record.workoutSnapshot) && !isThursdayResults(record.workoutSnapshot))root.append(el('p', {}, `Perceived effort: ${value(record.results.perceivedEffort)}`), el('p', { className: 'saved-notes' }, `Workout notes: ${record.results.notes || 'Not entered'}`), button('← Saved workouts', () => go(`#history/${record.workoutId}`), true));
-    if(isFridayResults(record.workoutSnapshot) || isTuesdayResults(record.workoutSnapshot) || isThursdayResults(record.workoutSnapshot))root.append(button('← Saved workouts', () => go(`#history/${record.workoutId}`), true));
+    if(!isOldschoolResults(record.workoutSnapshot) && !isFridayResults(record.workoutSnapshot) && !isTuesdayResults(record.workoutSnapshot) && !isThursdayResults(record.workoutSnapshot))root.append(el('p', {}, `Perceived effort: ${value(record.results.perceivedEffort)}`), el('p', { className: 'saved-notes' }, `Workout notes: ${record.results.notes || 'Not entered'}`), button('← Saved workouts', () => go(`#history/${record.workoutId}`), true));
+    if(isOldschoolResults(record.workoutSnapshot) || isFridayResults(record.workoutSnapshot) || isTuesdayResults(record.workoutSnapshot) || isThursdayResults(record.workoutSnapshot))root.append(button('← Saved workouts', () => go(`#history/${record.workoutId}`), true));
   }).catch(() => root.replaceChildren(emptyState('Session unavailable', 'This saved session could not be read.'), button('← Library', () => go('#library'), true)));
   return root;
 }

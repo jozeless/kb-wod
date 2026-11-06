@@ -143,7 +143,7 @@ test('Today, Library, details, results, history and account stay pixel-identical
 test('v32 precaches the full presentation and starts fresh offline workouts without recovering muted draft links', async ({ page, context }) => {
   await setup(page); await installBeepSpy(page); await page.goto('./#library');
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => true)); await page.reload(); await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
-  const cached = await page.evaluate(async () => { const cache = await caches.open('kb2-static-v32'); return Promise.all(['styles/hm-active.css', 'src/ui/active-presentation.js', 'assets/audio/start.wav', 'assets/audio/minute.wav'].map(async path => Boolean(await cache.match(new URL(path, document.baseURI))))); });
+  const cached = await page.evaluate(async () => { const cache = await caches.open('kb2-static-v33'); return Promise.all(['styles/hm-active.css', 'src/ui/active-presentation.js', 'assets/audio/start.wav', 'assets/audio/minute.wav'].map(async path => Boolean(await cache.match(new URL(path, document.baseURI))))); });
   expect(cached).toEqual([true, true, true, true]); await context.setOffline(true);
   for (const [id, version] of [...approved, ['focus-001-upper-abs', 1]]) {
     await start(page, id, version); await page.clock.runFor(13000); await expect(page.locator('.session-state')).toHaveText('WORK');

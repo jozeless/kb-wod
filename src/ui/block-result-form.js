@@ -1,3 +1,5 @@
+import { isOldschoolResults } from '../domain/oldschool-results.js';
+import { oldschoolResultsForm } from './oldschool-results-form.js';
 import { isFridayResults } from '../domain/friday-results.js';
 import { fridayResultsForm } from './friday-results-form.js';
 import { isThursdayResults } from '../domain/thursday-results.js';
@@ -10,6 +12,7 @@ import { el, button, heading } from './components.js';
 import { prescription } from './exercise-prescription.js';
 import { resultSchema, partialLabel } from '../domain/result-schemas.js';
 export function resultForm(record, blockId, { changed, continueBlock, continueToAbs, save }) {
+  if(isOldschoolResults(record.workoutSnapshot))return oldschoolResultsForm(record,{changed,save});
   if(isFridayResults(record.workoutSnapshot))return fridayResultsForm(record,{changed,save});
   if(isThursdayResults(record.workoutSnapshot))return thursdayResultsForm(record,{changed,save});
   if(isTuesdayResults(record.workoutSnapshot))return tuesdayResultsForm(record,{changed,save});

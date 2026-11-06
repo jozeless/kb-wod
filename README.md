@@ -8,6 +8,10 @@ This policy supersedes draft persistence/recovery descriptions in the historical
 
 A mobile-first static application built with HTML, CSS and native JavaScript ES modules. No runtime framework, CDN or build step. Supabase is optional; local training needs no backend. This branch replaces the experimental prototype; it does not migrate its data or Supabase integration.
 
+## Current public workouts
+
+Library contains **seven** approved cards: the four established 40/20 releases below, followed by **HM/KB WOD 005 — Oldschool Sailor**, **006 — Oldschool Tiger** and **007 — Oldschool Eagle**. Each Oldschool WOD is version 1 and exactly 20:00: Upper / ABS / Legs / Muscle Finisher, four consecutive five-minute blocks, each five 45/15 slots including the final rest. Results collect only optional unique kettlebell weights; no new finisher score or required count is introduced. All retain completed-only saving, current Focus Mode and louder audio. [Definitions, results integration and validation](docs/OLDSCHOOL_WODS_005_007.md).
+
 ## Current approved 40/20 releases
 
 Library now selects Monday Paranoid v4, Tuesday of Spades v2, Thursday Bells v2 and Friday To Black v2. All normal exercises use 40s WORK / 20s REST; special finishers and total durations stay unchanged. These releases opt into a stronger synthesized triangle-wave audio profile. Historical versions and plans keep their original programming/audio until explicitly changed through Today → Change workout.
@@ -39,9 +43,9 @@ See [phase definitions, audio measurements, historical compatibility and validat
 
 Today has seven fixed Monday–Sunday slots. Add/change opens Library in assignment mode; cancel makes no change. The same approved workout may occupy multiple days. There is no automatic weekly rollover, scheduling or assignment replacement.
 
-Library and assignment choices use the explicit `libraryWorkouts` export: **Monday Paranoid v4 → Tuesday of Spades v2 → Thursday Bells v2 → Friday To Black v2**, in that order. There are exactly four cards, no search box, no type dropdown and no demo explanation. This is catalog cleanup, not the upcoming UI v2 redesign.
+Library and assignment choices use the explicit `libraryWorkouts` export: **Monday Paranoid v4 → Tuesday of Spades v2 → Thursday Bells v2 → Friday To Black v2**, in that order. Three Oldschool cards follow these four releases. There are seven public cards, no search box, no type dropdown and no demo explanation. This is catalog cleanup, not the upcoming UI v2 redesign.
 
-The internal `workouts` registry retains all **19** definitions/versions, including legacy Focus/Hybrid workouts, Monday v1/v2 and demos. `currentWorkouts` remains an internal/latest-version compatibility export; `findWorkout(id, version)` still resolves exact historical references. Existing plans, history, drafts and weight preferences are never rewritten merely because a card is hidden. Historical assigned workouts can still be opened/removed, and direct versioned links continue to work offline. Legacy draft rows remain untouched but are never offered or recovered. Only an explicit new selection replaces an assignment. Later release notes describe features at their introduction; current public visibility follows this cleanup.
+The internal `workouts` registry retains all **22** definitions/versions, including legacy Focus/Hybrid workouts, Monday v1/v2 and demos. `currentWorkouts` remains an internal/latest-version compatibility export; `findWorkout(id, version)` still resolves exact historical references. Existing plans, history, drafts and weight preferences are never rewritten merely because a card is hidden. Historical assigned workouts can still be opened/removed, and direct versioned links continue to work offline. Legacy draft rows remain untouched but are never offered or recovered. Only an explicit new selection replaces an assignment. Later release notes describe features at their introduction; current public visibility follows this cleanup.
 
 See [Library cleanup: public selection, historical compatibility and verification](docs/LIBRARY_CLEANUP.md).
 

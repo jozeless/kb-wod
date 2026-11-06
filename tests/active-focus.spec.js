@@ -36,14 +36,14 @@ test('inter-block result forms, countdown/transition/finisher and legacy complet
 });
 
 test('special circuits retain only essential names/reps, and Thursday holding-side switch stays clear',async({page},info)=>{
- test.setTimeout(90000);await fs.mkdir('/workspace/artifacts/active-workout-focus-mode',{recursive:true});
+ test.setTimeout(90000);await fs.mkdir('/workspace/artifacts/completed-only-sessions-v2/focus',{recursive:true});
  async function scaledSpecial(label){
   const style=await page.addStyleTag({content:'html{font-size:200%}'});
   for(const width of info.project.name==='mobile'?[320,390]:[768,1280]){
    await page.setViewportSize({width,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
    const boxes=await page.locator('.focus-phase,.session-dial,.active-controls,.session-timing,.current-exercise-card').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {top:r.top,bottom:r.bottom};}));for(let i=1;i<boxes.length;i++)expect(boxes[i].top).toBeGreaterThanOrEqual(boxes[i-1].bottom-1);
    await page.getByRole('button',{name:'End Workout',exact:true}).scrollIntoViewIfNeeded();await expect(page.getByRole('button',{name:'End Workout',exact:true})).toBeInViewport();await page.evaluate(()=>scrollTo(0,0));
-   await page.screenshot({path:`/workspace/artifacts/active-workout-focus-mode/${width}-${label}-200.png`,fullPage:true});
+   await page.screenshot({path:`/workspace/artifacts/completed-only-sessions-v2/focus/${width}-${label}-200.png`,fullPage:true});
   }
   await style.evaluate(n=>n.remove());
  }
@@ -58,7 +58,7 @@ test('End cancellation keeps focus/timer, confirmed End restores Today once and 
 });
 
 test('Focus Mode fits four widths/200% text with safe areas, two touch targets, keyboard and no overlaps',async({page},info)=>{
- test.setTimeout(120000);await setup(page);await start(page);await page.clock.runFor(13000);const root='/workspace/artifacts/active-workout-focus-mode';await fs.mkdir(root,{recursive:true});
+ test.setTimeout(120000);await setup(page);await start(page);await page.clock.runFor(13000);const root='/workspace/artifacts/completed-only-sessions-v2/focus';await fs.mkdir(root,{recursive:true});
  for(const scale of [100,200]){const style=scale===200?await page.addStyleTag({content:'html{font-size:200%}'}):null;for(const width of info.project.name==='mobile'?[320,390]:[768,1280]){await page.setViewportSize({width,height:844});await page.keyboard.press('Tab');await page.getByRole('button',{name:'Pause',exact:true}).focus();expect(await page.getByRole('button',{name:'Pause',exact:true}).evaluate(n=>getComputedStyle(n).outlineStyle)).toBe('solid');await page.keyboard.press('Tab');await expect(page.getByRole('button',{name:'End Workout',exact:true})).toBeFocused();
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);const sizes=await page.locator('.active-controls button').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {w:r.width,h:r.height,left:r.left,right:r.right};}));for(const b of sizes){expect(b.w).toBeGreaterThanOrEqual(44);expect(b.h).toBeGreaterThanOrEqual(44);expect(b.left).toBeGreaterThanOrEqual(0);expect(b.right).toBeLessThanOrEqual(width);}expect(sizes[0].right).toBeLessThan(sizes[1].left);
    const boxes=await page.locator('.focus-phase,.session-dial,.active-controls,.session-timing,.current-exercise-card').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {top:r.top,bottom:r.bottom};}));for(let i=1;i<boxes.length;i++)expect(boxes[i].top).toBeGreaterThanOrEqual(boxes[i-1].bottom-1);
@@ -67,10 +67,11 @@ test('Focus Mode fits four widths/200% text with safe areas, two touch targets, 
  await page.emulateMedia({forcedColors:'active'});await page.getByRole('button',{name:'Pause',exact:true}).focus();await page.keyboard.press('Enter');await expect(page.getByRole('button',{name:'Resume',exact:true})).toBeVisible();await expect(page.locator('.session-state')).toHaveText('PAUSED');
 });
 
-// Hiding routine status must never conceal the existing storage failure warning.
-test('live focus hides routine draft status but retains failures and the timer continues',async({page})=>{
- await setup(page);await start(page);await page.clock.runFor(13000);await expect(page.getByText('Draft saved locally.',{exact:true})).toBeHidden();
+test('live focus has no draft status or storage dependency; final save failure retains the original form',async({page})=>{
+ await setup(page);await start(page);await page.clock.runFor(13000);await expect(page.getByText(/Saving draft|Draft saved locally|Draft could not be saved/)).toHaveCount(0);
  await page.evaluate(()=>{window.restoreStorePut=IDBObjectStore.prototype.put;IDBObjectStore.prototype.put=function(...args){if(this.name==='sessions')throw Error('Fixture quota failure');return window.restoreStorePut.apply(this,args);};});
- await page.clock.runFor(1000);await expect(page.getByText('Draft could not be saved. Keep this screen open and retry before continuing.',{exact:true})).toBeVisible();await expect(page.getByRole('timer')).toHaveText('00:29');await focus(page,true);
- await page.evaluate(()=>{IDBObjectStore.prototype.put=window.restoreStorePut;});await page.clock.runFor(1000);await expect(page.getByText('Draft saved locally.',{exact:true})).toBeHidden();await expect(page.getByRole('timer')).toHaveText('00:28');
+ await page.clock.runFor(1000);await expect(page.getByRole('timer')).toHaveText('00:29');await focus(page,true);
+ await page.clock.fastForward(1260000);await expect(page.getByRole('heading',{name:'Workout Results',exact:true})).toBeVisible();await focus(page,false);
+ await page.getByLabel('Thruster repetitions',{exact:true}).fill('17');await page.getByRole('button',{name:'Save Workout',exact:true}).click();await expect(page.getByText('Workout could not be saved. Your entries are still here. Retry Save Workout.',{exact:true})).toBeVisible();await expect(page.getByLabel('Thruster repetitions',{exact:true})).toHaveValue('17');
+ await page.evaluate(()=>{IDBObjectStore.prototype.put=window.restoreStorePut;});await page.getByRole('button',{name:'Save Workout',exact:true}).click();await expect(page.getByRole('heading',{name:'Workout saved',exact:true})).toBeVisible();
 });

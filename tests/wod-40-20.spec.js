@@ -6,7 +6,7 @@ const artifactRoot='/workspace/artifacts/wod-40-20-louder-audio';
 async function setup(page){await page.addInitScript(()=>{window.KB_SUPABASE_CONFIG={url:'',publishableKey:''};});}
 async function clock(page){await page.clock.install({time:new Date('2026-11-02T12:00:00Z')});await page.clock.pauseAt(new Date('2026-11-02T12:00:01Z'));}
 async function start(page,id,v){await page.goto(`./#workout/${id}/${v}`);await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.getByRole('timer')).toHaveText('3');}
-const savedDraft=page=>expect(page.getByText('Draft saved locally.',{exact:true})).toBeAttached();
+const savedDraft=page=>expect(page.getByText('Draft saved locally.',{exact:true})).toHaveCount(0);
 const records=page=>page.evaluate(async()=>(await import('./src/storage/session-store.js')).listSessions());
 
 test('Library selects newest releases while old weekly references remain untouched until each explicit Change workout',async({page})=>{
@@ -77,7 +77,7 @@ test('40/20 details, WORK/REST, inputs and footer remain usable at four widths a
 
 test('new version modules and richer cues work offline with existing PWA assets, plans and session persistence',async({page,context})=>{
  await setup(page);await clock(page);await installBeepSpy(page);page.on('dialog',d=>d.accept());await page.goto('./#library');await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
- const cached=await page.evaluate(async()=>{const sw=await fetch('./service-worker.js').then(r=>r.text()),cache=await caches.open('kb2-static-v31');return Promise.all([...new Set([...sw.matchAll(/'(\.\/[^']*)'/g)].map(m=>m[1]))].map(async url=>Boolean(await cache.match(new URL(url,document.baseURI)))));});expect(cached).toHaveLength(86);expect(cached.every(Boolean)).toBe(true);await context.setOffline(true);
+ const cached=await page.evaluate(async()=>{const sw=await fetch('./service-worker.js').then(r=>r.text()),cache=await caches.open('kb2-static-v32');return Promise.all([...new Set([...sw.matchAll(/'(\.\/[^']*)'/g)].map(m=>m[1]))].map(async url=>Boolean(await cache.match(new URL(url,document.baseURI)))));});expect(cached).toHaveLength(86);expect(cached.every(Boolean)).toBe(true);await context.setOffline(true);
  for(const [id,v]of releases){await start(page,id,v);await page.clock.runFor(43000);await expect(page.locator('.session-state')).toHaveText('REST');await page.getByRole('button',{name:'End Workout',exact:true}).click();}
  await start(page,'thursday-bells',2);await page.clock.fastForward(1273000);await page.getByLabel('Total finisher steps',{exact:true}).fill('81');await page.getByRole('button',{name:'Save Workout',exact:true}).click();await expect(page.getByRole('heading',{name:'Workout saved',exact:true})).toBeVisible();const completed=(await records(page)).filter(r=>r.status==='completed');expect(completed).toHaveLength(1);expect(completed[0].workoutVersion).toBe(2);await context.setOffline(false);
 });

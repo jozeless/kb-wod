@@ -6,12 +6,11 @@ export async function prepareWeights(page, values) {
   await expect(inputs).toHaveCount(values.length);
   for (const [i,value] of values.entries()) await inputs.nth(i).fill(value);
 }
-export async function initializedWeight(page, name, value) {
+export async function preparedWeight(page, name, value) {
   await expect(page.locator('.hm-active-view input')).toHaveCount(0);
-  await expect.poll(()=>page.evaluate(async({name})=>{
-    const {getSession}=await import('./src/storage/session-store.js');
-    const id=new URLSearchParams(location.hash.split('?')[1]).get('draft');
-    const record=await getSession(id), exercise=record?.workoutSnapshot.exercises.find(e=>e.name===name);
-    return exercise?record.form.weights[exercise.id]:undefined;
-  },{name})).toBe(value);
+  expect(await page.evaluate(async name=>{
+    const {findWorkout}=await import('./src/data/catalog.js'),{readWeightPreference}=await import('./src/storage/weight-preferences.js');
+    const [,id,version]=location.hash.slice(1).split('/'),workout=findWorkout(id,version);
+    return readWeightPreference(localStorage,workout,workout.exercises.find(e=>e.name===name));
+  },name)).toBe(value);
 }

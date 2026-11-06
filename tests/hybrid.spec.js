@@ -19,17 +19,17 @@ test('Historical Hybrid detail, independent weights and existing Monday/Friday r
  await page.goto('./#workout/focus-001-upper-abs/1');await expect(page.getByRole('spinbutton',{name:'KB Floor Press weight (kg)',exact:true})).toHaveValue('');
 });
 test('Hybrid runs all blocks, pauses AMRAP and never advances its circuit automatically',async({page})=>{
- await clock(page);await page.goto(detail);await page.getByRole('button',{name:'Start Workout',exact:true}).click();
+ await clock(page);await page.goto(detail);await page.getByLabel('KB Thrusters weight (kg)',{exact:true}).fill('12.5');await page.getByRole('button',{name:'Start Workout',exact:true}).click();
  await expect(page.locator('.phase-clock')).toHaveText('3');await page.clock.runFor(3000);
  await expect(page.locator('.active-exercise')).toHaveText('KB Goblet Squat');
  await page.clock.fastForward(60000);await expect(page.locator('.active-exercise')).toHaveText('Push-Up + KB Renegade Row');
  await page.clock.fastForward(420000);await expect(page.locator('.active-panel .eyebrow')).toHaveText('Conditioning · WORK');await expect(page.locator('.phase-clock')).toHaveText('00:40');
  await page.clock.fastForward(460000);await expect(page.locator('.active-panel .eyebrow')).toHaveText('Conditioning · REST');
- await expect(page.getByText('Next: Combo Finisher circuit')).toBeVisible();await page.clock.fastForward(20000);
+ await expect(page.locator('.session-next-name')).toHaveText('Combo Finisher circuit');await page.clock.fastForward(20000);
  await expect(page.locator('.active-panel .eyebrow')).toHaveText('Combo Finisher · AMRAP');await expect(page.locator('.phase-clock')).toHaveText('04:00');
  await expect(page.getByRole('list',{name:'AMRAP circuit'}).locator('li')).toHaveCount(3);
- const thrusters=page.getByRole('spinbutton',{name:'KB Thrusters weight (kg)',exact:true});await thrusters.fill('12.5');
- await page.clock.fastForward(60000);await expect(page.locator('.phase-clock')).toHaveText('03:00');await expect(page.getByRole('list',{name:'AMRAP circuit'}).locator('li')).toHaveCount(3);await expect(thrusters).toHaveValue('12.5');
+ await expect(page.getByRole('spinbutton')).toHaveCount(0);
+ await page.clock.fastForward(60000);await expect(page.locator('.phase-clock')).toHaveText('03:00');await expect(page.getByRole('list',{name:'AMRAP circuit'}).locator('li')).toHaveCount(3);expect(await page.evaluate(()=>localStorage.getItem('kb2.weight-preference.v1:hybrid-001-strength-sweat:1:thrusters'))).toBe('12.5');
  await page.getByRole('button',{name:'Pause',exact:true}).click();await page.clock.fastForward(300000);await expect(page.locator('.phase-clock')).toHaveText('03:00');await page.getByRole('button',{name:'Resume',exact:true}).click();
  await page.clock.fastForward(179900);await expect(page.locator('.phase-clock')).toHaveText('00:01');await page.clock.runFor(100);
  await expect(page.getByRole('heading',{name:'Workout Complete',exact:true})).toBeVisible();expect(await page.evaluate(()=>localStorage.getItem('kb2.sessions.v1'))).toBeNull();

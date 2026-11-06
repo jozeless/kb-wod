@@ -3,7 +3,7 @@ import {test,expect} from '@playwright/test';
 const workouts=[{id:'focus-002-lower-abs',name:'Lower Body + ABS',day:'Thursday',boundaries:[600000],restStart:10,rests:10,first:'KB Goblet Squat',block:'legs',rounds:2},{id:'hybrid-002-full-body-engine',name:'Full Body Engine',day:'Friday',boundaries:[480000,960000],restStart:8,rests:8,first:'KB Floor Press',block:'strength',rounds:4}];
 async function clock(page){await page.clock.install({time:new Date('2026-01-01T00:00:00Z')});await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));}
 async function start(page,w){await clock(page);await page.goto(`./#workout/${w.id}/1`);await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');}
-async function saved(page){await expect(page.getByText('Draft saved locally.',{exact:true})).toBeVisible();}
+async function saved(page){await expect(page.getByText('Draft saved locally.',{exact:true})).toBeAttached();}
 async function records(page,id){return page.evaluate(async id=>{const {listSessions}=await import('./src/storage/session-store.js');return listSessions(id);},id);}
 for(const w of workouts){
  test(`${w.name}: format-specific synthesized cues`,async({page})=>{await verifyWorkoutBeeps(page,w.id,1);});

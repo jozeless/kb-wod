@@ -1,3 +1,4 @@
+import { isClassicIron, classicIronSchema, createClassicIronSession, classicIronFinalResults } from './classic-iron-results.js';
 import { isOldschoolResults, oldschoolSchema, createOldschoolDraft, oldschoolFinalResults } from './oldschool-results.js';
 import { isFridayResults, fridaySchema, createFridayDraft, fridayFinalResults } from './friday-results.js';
 import { isThursdayResults, thursdaySchema, createThursdayDraft, thursdayFinalResults } from './thursday-results.js';
@@ -7,11 +8,12 @@ import { continuousSchema, continuousFinalResults } from './continuous-results.j
 import { createDraft as focusDraft, blockResults as focusBlockResults, finalResults as focusFinalResults, preferredWeight } from './focus-results.js';
 import { hybridSchema, hybridBlockResults, hybridFinalResults } from './hybrid-results.js';
 const focusSchema={weightLabel:'Weight (kg)',blocks:{upper:{kind:'rounds',rounds:2,title:'Upper Results',continueLabel:'Continue to ABS'},abs:{kind:'intervals',max:2,title:'ABS Results'}}};
-export function supportsResults(workout){return workout?.execution?.mode==='continuous-results'||workout?.execution?.mode==='two-block-results'||workout?.execution?.schema==='hybrid-001-v2';}
-export function resultSchema(workout){return isOldschoolResults(workout)?oldschoolSchema:isFridayResults(workout)?fridaySchema:isThursdayResults(workout)?thursdaySchema:isTuesdayResults(workout)?tuesdaySchema:usesSessionWeights(workout)?weightsFinisherSchema:workout.execution?.mode==='continuous-results'?continuousSchema(workout):workout.execution?.schema==='hybrid-001-v2'?hybridSchema:focusSchema;}
+export function supportsResults(workout){return isClassicIron(workout)||workout?.execution?.mode==='continuous-results'||workout?.execution?.mode==='two-block-results'||workout?.execution?.schema==='hybrid-001-v2';}
+export function resultSchema(workout){return isClassicIron(workout)?classicIronSchema:isOldschoolResults(workout)?oldschoolSchema:isFridayResults(workout)?fridaySchema:isThursdayResults(workout)?thursdaySchema:isTuesdayResults(workout)?tuesdaySchema:usesSessionWeights(workout)?weightsFinisherSchema:workout.execution?.mode==='continuous-results'?continuousSchema(workout):workout.execution?.schema==='hybrid-001-v2'?hybridSchema:focusSchema;}
 export function blockOffset(workout,index){return workout.phases.slice(0,index).reduce((sum,phase)=>sum+phase.durationSeconds*1000,0);}
 export function partialLabel(exercise){return exercise.target?.unit.includes('combinations')?'Additional partial combinations':'Additional partial reps';}
 export function createDraft(workout,storage,id,now){
+  if(isClassicIron(workout))return createClassicIronSession(workout,storage,id,now);
   if(isOldschoolResults(workout))return createOldschoolDraft(workout,storage,id,now);
   if(isFridayResults(workout))return createFridayDraft(workout,storage,id,now);
   if(isThursdayResults(workout))return createThursdayDraft(workout,storage,id,now);
@@ -36,4 +38,4 @@ export function createDraft(workout,storage,id,now){
   return {...envelope,workoutSnapshot:structuredClone(workout),stage:`${workout.phases[0].id}-active`,form};
 }
 export const blockResults=(workout,form,id)=>workout.execution?.mode==='continuous-results'?hybridBlockResults(workout,form,id,continuousSchema(workout)):workout.execution?.schema==='hybrid-001-v2'?hybridBlockResults(workout,form,id):focusBlockResults(workout,form,id);
-export const finalResults=record=>isOldschoolResults(record.workoutSnapshot)?oldschoolFinalResults(record):isFridayResults(record.workoutSnapshot)?fridayFinalResults(record):isThursdayResults(record.workoutSnapshot)?thursdayFinalResults(record):isTuesdayResults(record.workoutSnapshot)?tuesdayFinalResults(record):usesSessionWeights(record.workoutSnapshot)?weightFinalResults(record):record.workoutSnapshot.execution?.mode==='continuous-results'?continuousFinalResults(record):record.workoutSnapshot.execution?.schema==='hybrid-001-v2'?hybridFinalResults(record):focusFinalResults(record);
+export const finalResults=record=>isClassicIron(record.workoutSnapshot)?classicIronFinalResults(record):isOldschoolResults(record.workoutSnapshot)?oldschoolFinalResults(record):isFridayResults(record.workoutSnapshot)?fridayFinalResults(record):isThursdayResults(record.workoutSnapshot)?thursdayFinalResults(record):isTuesdayResults(record.workoutSnapshot)?tuesdayFinalResults(record):usesSessionWeights(record.workoutSnapshot)?weightFinalResults(record):record.workoutSnapshot.execution?.mode==='continuous-results'?continuousFinalResults(record):record.workoutSnapshot.execution?.schema==='hybrid-001-v2'?hybridFinalResults(record):focusFinalResults(record);

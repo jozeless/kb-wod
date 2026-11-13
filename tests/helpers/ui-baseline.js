@@ -45,7 +45,7 @@ export async function capture(browser,baseURL,viewport,name,state,tokens,{audit=
  if(!tokens)await page.route('**/*',async route=>{if(new URL(route.request().url()).pathname.endsWith('/styles/app.css'))return route.fulfill({contentType:'text/css',body:legacyCSS});if(route.request().isNavigationRequest()){const response=await route.fetch();return route.fulfill({response,body:(await response.text()).replace(/\s*<link rel="stylesheet" href="\.\/styles\/hm-tokens\.css">/,'')});}return route.continue();});
  await page.clock.install({time:new Date('2026-10-28T12:00:00Z')});await page.clock.pauseAt(new Date('2026-10-28T12:00:01Z'));
  await page.goto(state==='progress'?(footerBaseline?'./#stats':'./#progress'):state==='assignment'?'./#library?day=Monday':state==='account'?'./#account':state==='today'?'./#today':state==='library'?'./#library':`./#workout/${workoutId}/${workoutVersion}`);
- if(state==='library'||state==='assignment')await expect(page.locator('.workout-card')).toHaveCount(7);
+ if(state==='library'||state==='assignment')await expect(page.locator('.workout-card')).toHaveCount(8);
  if(state==='timer'){await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');await page.clock.runFor(13000);await expect(page.locator('.phase-clock')).toHaveText(workoutId==='monday-paranoid'&&workoutVersion===4?'00:30':'00:50');await expect(page.getByRole('button',{name:state==='timer-paused'?'Resume':state==='timer-completed'?'Save Workout':'Pause',exact:true})).toBeVisible();}
  if(state.startsWith('timer-')){
   await page.getByRole('button',{name:'Start Workout',exact:true}).click();await expect(page.locator('.phase-clock')).toHaveText('3');

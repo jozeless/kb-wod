@@ -152,13 +152,13 @@ test('unavailable IndexedDB shows a retryable error instead of fabricated zero s
   await expect(page.getByRole('region', {name: 'Monthly overview', exact: true})).toHaveCount(0);
   await page.getByRole('button', {name: 'Retry loading sessions', exact: true}).click(); await expect(page.getByRole('heading', {name: 'Progress unavailable', exact: true})).toBeVisible();
   await expect(page.getByText('No completed workouts this month', {exact: true})).toHaveCount(0);
-  await page.getByRole('link', {name: 'Library', exact: true}).click(); await expect(page.locator('.workout-card')).toHaveCount(7);
+  await page.getByRole('link', {name: 'Library', exact: true}).click(); await expect(page.locator('.workout-card')).toHaveCount(8);
 });
 
 test('Progress modules, history calculations and month controls work offline with unchanged saved sessions', async ({page, context}) => {
   await setup(page); await page.goto('./#today'); await seed(page); const before = await records(page);
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => true)); await page.reload(); await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
-  for (const file of ['./src/domain/progress-analytics.js', './src/ui/progress.js', './styles/hm-progress.css']) expect(await page.evaluate(async file => Boolean(await (await caches.open('kb2-static-v33')).match(new URL(file, document.baseURI))), file)).toBe(true);
+  for (const file of ['./src/domain/progress-analytics.js', './src/ui/progress.js', './styles/hm-progress.css']) expect(await page.evaluate(async file => Boolean(await (await caches.open('kb2-static-v34')).match(new URL(file, document.baseURI))), file)).toBe(true);
   await context.setOffline(true); await page.reload(); await page.getByRole('link', {name: 'Progress', exact: true}).click(); await ready(page); await value(page, 'Completed workouts', 5);
   await page.getByLabel('Recorded exercise', {exact: true}).selectOption({label: 'KB Push Press · Monday Paranoid · Upper'}); await expect(page.locator('.progress-chart circle')).toHaveCount(2);
   await page.getByRole('button', {name: '← Previous month', exact: true}).click(); await ready(page); await value(page, 'Completed workouts', 1);

@@ -1,3 +1,4 @@
+import { classicIron } from './classic-iron.js';
 import { oldschoolEagle } from './oldschool-eagle.js';
 import { oldschoolTiger } from './oldschool-tiger.js';
 import { oldschoolSailor } from './oldschool-sailor.js';
@@ -21,11 +22,11 @@ import { hybrid001 } from './hybrid-001-strength-sweat.js';
 // A version is immutable once used. Future edits append a new version.
 export const workoutTypes = [{ id: 'hybrid', label: 'Hybrid' }, { id: 'focus', label: 'Focus' }];
 // Internal registry: keep every historical/demo version for exact reference lookup.
-export const workouts = [...demoWorkouts, fridayToBlack, thursdayBells, tuesdayOfSpades, focus001, focus002, hybrid001, hybrid002, focus002LowerAbs, hybrid002FullBodyEngine, mondayParanoid, mondayParanoidV2, mondayParanoidV3, mondayParanoidV4, tuesdayOfSpadesV2, thursdayBellsV2, fridayToBlackV2, oldschoolSailor, oldschoolTiger, oldschoolEagle];
+export const workouts = [...demoWorkouts, fridayToBlack, thursdayBells, tuesdayOfSpades, focus001, focus002, hybrid001, hybrid002, focus002LowerAbs, hybrid002FullBodyEngine, mondayParanoid, mondayParanoidV2, mondayParanoidV3, mondayParanoidV4, tuesdayOfSpadesV2, thursdayBellsV2, fridayToBlackV2, oldschoolSailor, oldschoolTiger, oldschoolEagle, classicIron];
 // Compatibility view of latest versions; not the public Library selection.
 export const currentWorkouts = workouts.filter(w => !workouts.some(other => other.id === w.id && !other.archived && other.version > w.version));
 // Public selection is explicitly pinned and ordered; the full registry above stays intact.
-export const libraryWorkouts = [mondayParanoidV4, tuesdayOfSpadesV2, thursdayBellsV2, fridayToBlackV2, oldschoolSailor, oldschoolTiger, oldschoolEagle];
+export const libraryWorkouts = [mondayParanoidV4, tuesdayOfSpadesV2, thursdayBellsV2, fridayToBlackV2, oldschoolSailor, oldschoolTiger, oldschoolEagle, classicIron];
 export function findWorkout(id, version) {
   return workouts.find(w => w.id === id && w.version === Number(version));
 }

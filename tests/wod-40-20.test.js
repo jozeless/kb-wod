@@ -42,7 +42,7 @@ for (const [id, oldVersion, version, duration] of pairs) {
  });
 }
 test('public Library retains the original four releases first, while all 15 original references remain registered',()=>{
- assert.deepEqual(libraryWorkouts.slice(0,4).map(w=>[w.id,w.version]),pairs.map(([id,,v])=>[id,v]));assert.equal(workouts.length,22);
+ assert.deepEqual(libraryWorkouts.slice(0,4).map(w=>[w.id,w.version]),pairs.map(([id,,v])=>[id,v]));assert.equal(workouts.length,23);
  for(const [id,v]of pairs)assert.equal(findWorkout(id,v).version,v);
  for(const [id,vs]of [['monday-paranoid',[1,2,3]],['focus-001-upper-abs',[1,2]],['hybrid-001-strength-sweat',[1,2]]])for(const v of vs)assert.ok(findWorkout(id,v));
 });

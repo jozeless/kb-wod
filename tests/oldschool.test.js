@@ -42,7 +42,7 @@ for(const [animal,blocks]of Object.entries(approved)){
  });
 }
 test('seven public cards append three immutable identities and keep all 19 original versions; protected main logic remains exact',()=>{
- assert.equal(libraryWorkouts.length,7);assert.deepEqual(libraryWorkouts.slice(4).map(w=>w.id),['oldschool-sailor','oldschool-tiger','oldschool-eagle']);assert.equal(workouts.length,22);
+ assert.equal(libraryWorkouts.length,8);assert.deepEqual(libraryWorkouts.slice(4,7).map(w=>w.id),['oldschool-sailor','oldschool-tiger','oldschool-eagle']);assert.equal(workouts.length,23);
  const hashes=JSON.parse(fs.readFileSync(new URL('./fixtures/oldschool-main-protected.json',import.meta.url)));
  for(const [file,sha]of Object.entries(hashes))assert.equal(createHash('sha256').update(fs.readFileSync(new URL('../'+file,import.meta.url))).digest('hex'),sha,file);
 });

@@ -33,11 +33,11 @@ test('Today, Library, running timer, results, saved history and account remain p
  }
 });
 
-test('all nineteen real details preserve phases and inputs while Start follows the final phase without trailing copy',async({page})=>{
+test('all twenty real details preserve phases and inputs while Start follows the final phase without trailing copy',async({page})=>{
  await localMode(page);await page.goto('./#library');
- const catalog=await page.evaluate(async()=>{const {workouts}=await import('./src/data/catalog.js');return workouts.filter(w=>w.phases.length).map(w=>[w.id,w.version,w.name,w.durationSeconds]);});expect(catalog).toHaveLength(19);
+ const catalog=await page.evaluate(async()=>{const {workouts}=await import('./src/data/catalog.js');return workouts.filter(w=>w.phases.length).map(w=>[w.id,w.version,w.name,w.durationSeconds]);});expect(catalog).toHaveLength(20);
  const known=[...approved,['focus-001-upper-abs',1,'Upper Body + ABS',1200]];
- const definitions=[...known,...catalog.filter(([id,version])=>!known.some(([knownId,knownVersion])=>id===knownId&&version===knownVersion))];expect(definitions).toHaveLength(19);
+ const definitions=[...known,...catalog.filter(([id,version])=>!known.some(([knownId,knownVersion])=>id===knownId&&version===knownVersion))];expect(definitions).toHaveLength(20);
  for(const [id,version,name,seconds]of definitions){
   await page.goto(url(id,version));await expect(page.locator('.hm-detail-view')).toHaveCount(1);await expect(page.getByRole('heading',{level:1,name,exact:true})).toBeVisible();
   const w=await definition(page,id,version);expect(w.durationSeconds).toBe(seconds);
@@ -59,7 +59,7 @@ test('all nineteen real details preserve phases and inputs while Start follows t
     const target=await page.evaluate(async({ex,phase})=>{const {prescription}=await import('./src/ui/exercise-prescription.js');return phase.format==='intervals'&&!ex.target?`${phase.timer.workSeconds} s`:prescription(ex,phase);},{ex,phase});
     await expect(row.locator('.exercise-target')).toHaveText(target);
     if(ex.note)await expect(row).toContainText(ex.note);if(ex.attribution)await expect(row).toContainText(ex.attribution);
-    if(ex.equipment==='bodyweight')await expect(row.locator('input')).toHaveCount(0);else if(w.presentation?.sharedWeightPreferences&&configuredWeights.has(ex.id)){await expect(row.locator('input')).toHaveCount(0);await expect(row).toContainText('Shared weight above');}else {await expect(row.getByRole('spinbutton',{name:`${ex.name} weight (kg)`,exact:true})).toBeVisible();configuredWeights.add(ex.id);}
+    if(ex.equipment==='bodyweight'||w.presentation?.weightPreferences===false)await expect(row.locator('input')).toHaveCount(0);else if(w.presentation?.sharedWeightPreferences&&configuredWeights.has(ex.id)){await expect(row.locator('input')).toHaveCount(0);await expect(row).toContainText('Shared weight above');}else {await expect(row.getByRole('spinbutton',{name:`${ex.name} weight (kg)`,exact:true})).toBeVisible();configuredWeights.add(ex.id);}
    }
    const guide=section.locator('details'),summary=guide.locator('summary');await expect(summary).toHaveText('Instructions & measurable goals');
    await keyboardFocus(page,summary);await page.keyboard.press('Enter');await expect(guide).toHaveAttribute('open','');await expect(guide).toContainText(phase.instructions);
@@ -125,7 +125,7 @@ test('detail fields, targets, instructions and actions fit four widths and 200% 
 
 test('offline approved/historical detail links work and demo/fallback stages never receive detail styles',async({page,context})=>{
  await localMode(page);await page.goto(url('monday-paranoid',3));await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
- expect(await page.evaluate(async()=>Boolean(await (await caches.open('kb2-static-v33')).match(new URL('./styles/hm-details.css',location.href))))).toBe(true);
+ expect(await page.evaluate(async()=>Boolean(await (await caches.open('kb2-static-v34')).match(new URL('./styles/hm-details.css',location.href))))).toBe(true);
  await context.setOffline(true);
  for(const [id,version,name]of [...approved,['focus-001-upper-abs',1,'Upper Body + ABS']]){await page.goto(url(id,version));await expect(page.getByRole('heading',{name,exact:true})).toBeVisible();await expect(page.locator('.hm-detail-view')).toHaveCount(1);await expect(page.getByRole('button',{name:'Start Workout',exact:true})).toBeVisible();}
  await page.goto('./#active/monday-paranoid/3');await expect(page.getByRole('heading',{name:'Ready when you are',exact:true})).toBeVisible();await expect(page.locator('.hm-detail-view')).toHaveCount(0);

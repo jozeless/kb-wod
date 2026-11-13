@@ -1,13 +1,13 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {libraryWorkouts,workouts,currentWorkouts,findWorkout} from '../src/data/catalog.js';
-test('public Library pins exactly seven approved existing versions in release order',()=>{
- assert.deepEqual(libraryWorkouts.map(w=>[w.id,w.version,w.name]),[['monday-paranoid',4,'Monday Paranoid'],['tuesday-of-spades',2,'Tuesday of Spades'],['thursday-bells',2,'Thursday Bells'],['friday-to-black',2,'Friday To Black'],['oldschool-sailor',1,'Oldschool Sailor'],['oldschool-tiger',1,'Oldschool Tiger'],['oldschool-eagle',1,'Oldschool Eagle']]);
+test('public Library pins exactly eight approved existing versions in release order',()=>{
+ assert.deepEqual(libraryWorkouts.map(w=>[w.id,w.version,w.name]),[['monday-paranoid',4,'Monday Paranoid'],['tuesday-of-spades',2,'Tuesday of Spades'],['thursday-bells',2,'Thursday Bells'],['friday-to-black',2,'Friday To Black'],['oldschool-sailor',1,'Oldschool Sailor'],['oldschool-tiger',1,'Oldschool Tiger'],['oldschool-eagle',1,'Oldschool Eagle'],['classic-iron',1,'Classic Iron']]);
  for(const w of libraryWorkouts){assert.equal(w,findWorkout(w.id,w.version));assert.ok(workouts.includes(w));assert.equal(w.demo,false);assert.equal(w.archived,false);assert.equal(w.type,'hybrid');}
- assert.equal(new Set(libraryWorkouts.map(w=>`${w.id}:${w.version}`)).size,7);
+ assert.equal(new Set(libraryWorkouts.map(w=>`${w.id}:${w.version}`)).size,8);
 });
 test('internal registry and latest-version compatibility export retain all historical identities',()=>{
- assert.equal(workouts.length,22);assert.equal(currentWorkouts.length,14);assert.equal(new Set(workouts.map(w=>`${w.id}:${w.version}`)).size,22);
+ assert.equal(workouts.length,23);assert.equal(currentWorkouts.length,15);assert.equal(new Set(workouts.map(w=>`${w.id}:${w.version}`)).size,23);
  for(const id of ['focus-001-upper-abs','hybrid-001-strength-sweat'])for(const version of [1,2]){const w=findWorkout(id,version);assert.ok(w);assert.equal(w.version,version);assert.ok(!libraryWorkouts.includes(w));}
  for(const version of [1,2]){assert.ok(findWorkout('monday-paranoid',version));assert.ok(!libraryWorkouts.includes(findWorkout('monday-paranoid',version)));}
  for(const id of ['focus-002-lower-abs','hybrid-002-full-body-engine','demo-hybrid-foundation','demo-focus-strength','demo-hybrid-flow']){const w=findWorkout(id,1);assert.ok(w);assert.ok(!libraryWorkouts.includes(w));}

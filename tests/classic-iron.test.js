@@ -6,14 +6,14 @@ import {classicIron as w} from '../src/data/classic-iron.js';
 import {workouts, libraryWorkouts} from '../src/data/catalog.js';
 import {compileWorkout} from '../src/domain/workout-timer.js';
 import {RoundAmrapTimer, createRoundAmrapCues} from '../src/domain/round-amrap-timer.js';
-import {createDraft, finalResults, supportsResults, resultSchema} from '../src/domain/result-schemas.js';
+import {createClassicIronSession as createDraft, classicIronFinalResults as finalResults} from '../src/domain/classic-iron-results.js';
 import {analyzeProgress} from '../src/domain/progress-analytics.js';
 import {parseClassicIronPartialReps} from '../src/domain/classic-iron-results.js';
 
 function clock() { let now=0;const timer=new RoundAmrapTimer(w,()=>now);timer.start();return {timer,at(ms){now=ms;return timer.snapshot();},advance(ms){now+=ms;return timer.snapshot();}}; }
-test('Classic Iron is an eighth, separate v1 identity with exactly seven ordered ten-repetition movements and one 20-minute AMRAP',()=>{
+test('Classic Iron is the only available v1 identity with exactly seven ordered ten-repetition movements and one 20-minute AMRAP',()=>{
   assert.equal(w.version,1);assert.equal(w.archived,false);assert.equal(w.demo,false);assert.equal(w.durationSeconds,1200);
-  assert.equal(libraryWorkouts.at(-1),w);assert.equal(workouts.length,23);assert.ok(supportsResults(w));assert.equal(resultSchema(w).kind,'completed-rounds');
+  assert.deepEqual(libraryWorkouts,[w]);assert.deepEqual(workouts,[w]);
   assert.deepEqual(w.exercises.map(ex=>ex.name),['KB Swing','KB Thrusters','Single-Arm KB Bent-Over Row','KB Wood Choppers','KB Hollow-Ups','KB Reverse Lunge + Biceps Curl','KB Goblet Squat']);
   assert.equal(w.exercises.length,7);assert.equal(new Set(w.exercises.map(ex=>ex.id)).size,7);
   for(const ex of w.exercises){assert.equal(ex.target.min,10);assert.equal(ex.target.max,10);assert.equal(ex.equipment,'kettlebell');}
@@ -59,17 +59,16 @@ test('completed-only results accept zero, reject unfinished/malformed counts and
   record.activeDurationMs=1200000;record.completedAt='2026-11-13T12:20:03Z';
   for(const n of [0,1,37]){record.results={completedRounds:n};assert.deepEqual(finalResults(record),{completedRounds:n,partialReps:0});}
   for(const n of [-1,1.5,NaN,Infinity,'2',null,undefined,Number.MAX_SAFE_INTEGER+1]){record.results={completedRounds:n};assert.throws(()=>finalResults(record),/non-negative whole/);}
-  record.results={completedRounds:0};const analysis=analyzeProgress([{...record,status:'completed'}],{year:2026,month:11},()=>true);assert.equal(analysis.month.workouts,1);assert.equal(analysis.month.activeDurationMs,1200000);assert.deepEqual(analysis.strength,[]);
+  record.results={completedRounds:0};const analysis=analyzeProgress([{...record,status:'completed'}],{year:2026,month:11},()=>true);assert.equal(analysis.month.workouts,1);assert.equal(analysis.month.activeDurationMs,1200000);
 });
 test('new completed-only controller has one final write and no draft, weight, automatic interval or recovery persistence',()=>{
   const source=fs.readFileSync(new URL('../src/ui/round-amrap-training.js',import.meta.url),'utf8');assert.doesNotMatch(source,/putDraft|getSession|restorePaused|localStorage|createWeightField/);assert.equal((source.match(/await completeSession\(record\)/g)||[]).length,1);assert.match(source,/record.ownerId !== currentUserId/);
-  const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');assert.match(worker,/kb2-static-v37/);
+  const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');assert.match(worker,/kb2-static-v38/);
   for(const file of ['src/data/classic-iron.js','src/domain/round-amrap-timer.js','src/domain/classic-iron-results.js','src/ui/round-amrap-training.js','src/ui/round-amrap-presentation.js','styles/hm-round-amrap.css'])assert.ok(worker.includes(`'./${file}'`),file);
 });
-test('all legacy workout data, timer/controllers, result logic, audio, storage, cloud, branding and existing styles remain exact to merged main',()=>{
-  const hashes=JSON.parse(fs.readFileSync(new URL('./fixtures/classic-iron-main-protected.json',import.meta.url)));
-  assert.ok(Object.keys(hashes).length>80);
-  for(const [file,hash]of Object.entries(hashes))assert.equal(createHash('sha256').update(fs.readFileSync(new URL('../'+file,import.meta.url))).digest('hex'),hash,file);
+test('Classic Iron program, timer/controllers, result logic, audio, session store, auth and styles remain byte-identical to merged main',()=>{
+  const hashes=JSON.parse(fs.readFileSync(new URL('./fixtures/classic-iron-preserved.json',import.meta.url)));
+  for(const [file,hash] of Object.entries(hashes))assert.equal(createHash('sha256').update(fs.readFileSync(new URL('../'+file,import.meta.url))).digest('hex'),hash,file);
 });
 test('Classic Iron additional repetitions accept every whole count 0–69 and reject malformed, signed, fractional and out-of-range entries',()=>{
   const record=createDraft(w,null,'partial-session','2026-11-13T12:00:00Z');record.activeDurationMs=1200000;record.completedAt='2026-11-13T12:20:03Z';

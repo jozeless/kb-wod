@@ -1,13 +1,6 @@
 /* UI v2 / PR 05: scoped to Library, including its assignment mode.
    The shared card and the history's .library-grid keep their existing styles. */
 .hm-library-view .library-grid { align-items: start; }
-.hm-library-view .library-entry { display: grid; gap: 8px; min-width: 0; }
-.hm-library-view .library-entry > .secondary { justify-self: end; color: var(--hm-accent, #B37ACB); border-color: var(--hm-border, #4D4A6A); }
-.hm-library-view .hidden-workouts { margin-top: 24px; padding: 16px; border: 1px solid var(--hm-border, #4D4A6A); border-radius: 12px; }
-.hm-library-view .hidden-workouts summary { cursor: pointer; font-weight: 750; }
-.hm-library-view .hidden-workout-list { list-style: none; padding: 0; }
-.hm-library-view .hidden-workout-list li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0; overflow-wrap: anywhere; }
-.hm-library-view .library-sync-status { font-size: .8125rem; overflow-wrap: anywhere; }
 .hm-library-view .workout-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, auto);

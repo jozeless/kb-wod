@@ -1,7 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createWorkoutAudio,cuePatterns} from '../src/platform/workout-audio.js';
-import {createCueTracker} from '../src/domain/workout-cues.js';
 function mock(t){const old=globalThis.window,notes=[],contexts=[];
  class Audio{state='running';currentTime=0;destination={};constructor(){contexts.push(this);}resume(){return Promise.resolve();}close(){return Promise.resolve();}
   createOscillator(){const node={frequency:{value:0},connect(){},disconnect(){node.disconnected=true;},start(time){node.startAt=time;notes.push(node);},stop(time){node.stops??=[];node.stops.push(time??0);}};return node;}
@@ -22,16 +21,6 @@ test('blocked/suspended audio and late enable never prevent timer callers or re-
  const old=globalThis.window;t.after(()=>globalThis.window=old);globalThis.window={AudioContext:class{constructor(){throw Error('blocked');}}};const denied=createWorkoutAudio();await denied.enable();assert.equal(denied.enabled,false);assert.doesNotThrow(()=>denied.cue('start'));denied.dispose();
  let resume;globalThis.window={AudioContext:class{state='suspended';resume(){return new Promise(r=>resume=r);}close(){return Promise.resolve();}}};const audio=createWorkoutAudio();const pending=audio.enable();await audio.toggle();resume();await pending;assert.equal(audio.enabled,false);audio.dispose();
 });
-test('REST/WORK override simultaneous minute boundaries; transitions are silent and final Thruster wins over WORK',()=>{
- const tracker=createCueTracker();const base={status:'running',stage:'exercise',elapsedMs:59900,segmentIndex:0,kind:'WORK',phase:{id:'abs'}};tracker.next(base);
- const rest={...base,elapsedMs:60000,segmentIndex:1,kind:'REST'};assert.equal(tracker.next(rest),'rest');assert.equal(tracker.next(rest),null);tracker.next({...rest,elapsedMs:119900});assert.equal(tracker.next({...rest,elapsedMs:120000,segmentIndex:2,kind:'WORK'}),'work');
- tracker.next({...base,elapsedMs:479900,kind:'EMOM'});assert.equal(tracker.next({...base,elapsedMs:480000,segmentIndex:3,kind:'TRANSITION',phase:{id:'transition'}}),null);tracker.next({...base,elapsedMs:484900,segmentIndex:3,kind:'TRANSITION',phase:{id:'transition'}});assert.equal(tracker.next({...base,elapsedMs:485000,segmentIndex:4,kind:'WORK'}),'work');
- tracker.next({...base,elapsedMs:1209900});assert.equal(tracker.next({...base,elapsedMs:1210000,segmentIndex:5,kind:'AMRAP_REPS',phase:{id:'finisher'}}),'finisher');tracker.next({...base,elapsedMs:1269900});assert.equal(tracker.next({...base,elapsedMs:1270000,stage:'complete'}),'complete');
-});
-test('no elapsed-minute/tick sounds within an exercise, and late completion/foreground catch-up are consumed silently',()=>{
- const tracker=createCueTracker(),s={status:'running',stage:'exercise',elapsedMs:59000,remainingMs:2000,segmentIndex:1,kind:'AMRAP_REPS',phase:{id:'finisher'}};tracker.next(s);assert.equal(tracker.next({...s,elapsedMs:60000,remainingMs:1000}),null);assert.equal(tracker.next({...s,elapsedMs:120000,stage:'complete'}),null);assert.equal(tracker.next({...s,elapsedMs:120000,stage:'complete'}),null);
-});
-
 test('a browser that never resolves resume cannot leave workout initialization waiting indefinitely',async t=>{
  const old=globalThis.window;t.after(()=>globalThis.window=old);globalThis.window={AudioContext:class{state='suspended';resume(){return new Promise(()=>{});}close(){return Promise.resolve();}}};const audio=createWorkoutAudio();t.after(()=>audio.dispose());await audio.enable();assert.equal(audio.enabled,false);assert.doesNotThrow(()=>audio.cue('start'));
 });

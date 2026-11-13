@@ -70,11 +70,11 @@ test('Chromium parses the new manifest and future Apple/favicon metadata without
   expect(errors).toEqual([]); await devtools.detach();
 });
 
-test('v30 precaches every install/Apple/favicon icon and retains old icons and app resources offline', async ({ page, context }) => {
+test('v38 precaches every install/Apple/favicon icon and retains old icons and app resources offline', async ({ page, context }) => {
   await localMode(page); await page.goto('./#library'); await page.evaluate(() => navigator.serviceWorker.ready.then(() => true)); await page.reload(); await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
-  const entries = await page.evaluate(async () => { const worker = await fetch('./service-worker.js').then(r => r.text()); const urls = [...new Set([...worker.matchAll(/'(\.\/[^']*)'/g)].map(m => m[1]))]; const cache = await caches.open('kb2-static-v37'); return Promise.all(urls.map(async url => ({ url, cached: Boolean(await cache.match(new URL(url, document.baseURI))) }))); });
-  expect(entries).toHaveLength(104); expect(entries.filter(e => !e.cached)).toEqual([]);
-  await context.setOffline(true); await page.reload(); await expect(page.locator('.workout-card')).toHaveCount(8);
+  const entries = await page.evaluate(async () => { const worker = await fetch('./service-worker.js').then(r => r.text()); const urls = [...new Set([...worker.matchAll(/'(\.\/[^']*)'/g)].map(m => m[1]))]; const cache = await caches.open('kb2-static-v38'); return Promise.all(urls.map(async url => ({ url, cached: Boolean(await cache.match(new URL(url, document.baseURI))) }))); });
+  expect(entries).toHaveLength(54); expect(entries.filter(e => !e.cached)).toEqual([]);
+  await context.setOffline(true); await page.reload(); await expect(page.locator('.workout-card')).toHaveCount(1);
   const decoded = await page.evaluate(async files => {
     const manifest = await fetch('./manifest.webmanifest').then(r => r.json()), output = [];
     for (const url of [...files.map(file => `./assets/icons/${file}`), './icon-192.png', './icon-512.png', './assets/branding/hmkblogo001.png']) {
@@ -89,7 +89,7 @@ test('v30 precaches every install/Apple/favicon icon and retains old icons and a
 });
 
 test('review sheet shows real PNGs under common masks with the mandatory 80%-diameter safe circle', async ({ page }, info) => {
-  await localMode(page); await page.goto('./#library'); await expect(page.locator('.workout-card')).toHaveCount(8);
+  await localMode(page); await page.goto('./#library'); await expect(page.locator('.workout-card')).toHaveCount(1);
   const url = file => new URL(`./assets/icons/${file}`, page.url()).href;
   const markup = `<style>body{margin:0;padding:24px;background:#212227;color:#EDECEE;font:15px system-ui}h1{font-size:24px;color:#EEEF58}main{display:grid;grid-template-columns:repeat(3,220px);gap:24px}figure{margin:0;background:#312F4E;padding:14px;border-radius:16px}figcaption{margin-top:10px}img{display:block;width:192px;height:192px}.circle{clip-path:circle(50%)}.round{border-radius:28%}.mask{position:relative}.safe{position:absolute;inset:10%;border:2px dashed #EEEF58;border-radius:50%;box-sizing:border-box;pointer-events:none}.favicon{width:32px;height:32px}</style><h1>HM/KB — install icon review</h1><p>Exact approved artwork. Yellow guide: maskable safe circle (40% radius).</p><main><figure><img src="${url(files[0])}"><figcaption>192 × 192 · any</figcaption></figure><figure><img src="${url(files[1])}"><figcaption>512 × 512 · any</figcaption></figure><figure><div class="mask"><img class="circle" src="${url(files[2])}"><span class="safe"></span></div><figcaption>512 maskable · circular mask</figcaption></figure><figure><img class="round" src="${url(files[2])}"><figcaption>512 maskable · rounded mask</figcaption></figure><figure><img class="round" src="${url(files[3])}"><figcaption>180 × 180 · Apple touch</figcaption></figure><figure><img class="favicon" src="${url(files[4])}"><figcaption>32 × 32 · favicon (actual size)</figcaption></figure></main>`;
   await page.setViewportSize({ width: 800, height: 820 }); await page.setContent(markup); await page.locator('img').evaluateAll(nodes => Promise.all(nodes.map(n => n.decode())));

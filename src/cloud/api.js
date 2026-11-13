@@ -11,12 +11,6 @@ export function createCloudApi(auth,{config=supabaseConfig,fetcher=globalThis.fe
     return rows;
   }
   return {
-    visibility: () => request('kb_workout_visibility', `user_id=eq.${encodeURIComponent(auth.user.id)}&select=*`),
-    async setVisibility(workoutId, hidden, expectedRevision, clearAssignments = false, operationId) {
-      const rows = await request('rpc/kb_set_workout_visibility', '', {p_workout_id: workoutId, p_hidden: hidden, p_expected_revision: expectedRevision, p_clear_assignments: clearAssignments, p_operation_id: operationId});
-      if (rows.length !== 1 || rows[0].workout_id !== workoutId || rows[0].hidden !== hidden || !Number.isSafeInteger(rows[0].revision) || rows[0].revision < expectedRevision + 1 || (operationId && rows[0].operation_id !== operationId)) throw new Error('Cloud did not confirm the Library setting.');
-      return rows[0];
-    },
     async sessions(){const owner=auth.user.id,all=[];for(let offset=0;;offset+=500){const rows=await request('kb_training_sessions',`user_id=eq.${encodeURIComponent(owner)}&select=*&order=id.asc&limit=500&offset=${offset}`);if(auth.user?.id!==owner)throw new Error('Account changed.');all.push(...rows);if(rows.length<500)return all;}},
     plan:()=>request('kb_weekly_plan',`user_id=eq.${encodeURIComponent(auth.user.id)}&select=*`),
     async uploadSession(record){const user_id=auth.user.id;if(record.ownerId!==user_id||record.status!=='completed')throw new Error('Session is not owned by this account.');

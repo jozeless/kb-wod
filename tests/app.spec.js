@@ -4,7 +4,7 @@ test('navigation and simplified approved Library', async ({page}) => {
  await page.goto('./'); await expect(page.getByRole('heading',{name:'Today',exact:true})).toBeVisible();
  await expect(page.locator('.day-slot')).toHaveCount(7);
  await page.getByRole('link',{name:'Library',exact:true}).click();
- await expect(page.locator('.workout-card')).toHaveCount(7);await expect(page.getByRole('searchbox')).toHaveCount(0);await expect(page.getByRole('combobox')).toHaveCount(0);await expect(page.getByText('7 workouts',{exact:true})).toBeVisible();
+ await expect(page.locator('.workout-card')).toHaveCount(8);await expect(page.getByRole('searchbox')).toHaveCount(0);await expect(page.getByRole('combobox')).toHaveCount(0);await expect(page.getByText('8 workouts',{exact:true})).toBeVisible();
  await page.getByRole('link',{name:'Progress',exact:true}).click();await expect(page.getByRole('heading',{name:'Progress',exact:true})).toBeVisible();await expect(page.getByText('No completed workouts this month',{exact:true})).toBeVisible();
  await page.getByRole('link',{name:'History',exact:true}).click();await expect(page.getByRole('heading',{name:'Saved workouts',exact:true})).toBeVisible();await expect(page.getByText('No saved sessions',{exact:true})).toBeVisible();
  for (const name of ['Stats','Dashboard']) { await page.goto(`./#${name.toLowerCase()}`); await expect(page.getByRole('heading',{name,exact:true})).toBeVisible(); await expect(page.getByText('No statistics yet')).toBeVisible(); }
@@ -46,7 +46,7 @@ test('static shell works offline under the GitHub Pages subpath', async ({page,c
  await page.goto('./');await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();
  await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
  await context.setOffline(true);await page.reload();await expect(page.getByRole('heading',{name:'Today',exact:true})).toBeVisible();
- await page.getByRole('link',{name:'Library',exact:true}).click();await expect(page.locator('.workout-card')).toHaveCount(7);
+ await page.getByRole('link',{name:'Library',exact:true}).click();await expect(page.locator('.workout-card')).toHaveCount(8);
  await page.getByRole('button',{name:'View workout: Tuesday of Spades'}).click();await expect(page.getByRole('region',{name:'Conditioning block'})).toBeVisible();await page.goto('./#workout/focus-001-upper-abs/1');
  await expect(page.getByRole('region',{name:'ABS block'})).toBeVisible();
  await context.setOffline(false);
@@ -71,7 +71,7 @@ test('historical Focus prescription and assignment remain usable before explicit
  expect(await page.evaluate(()=>localStorage.getItem('kb2.weekly-plan.v1'))).toBe(before);
  await expect(page.getByRole('button',{name:'Start Workout'})).toBeVisible();
  await page.getByRole('link',{name:'Today',exact:true}).click();
- await tuesday.getByRole('button',{name:'Change workout'}).click();await expect(page.getByRole('button',{name:'Assign to Tuesday: Upper Body + ABS'})).toHaveCount(0);await expect(page.locator('.workout-card')).toHaveCount(7);
+ await tuesday.getByRole('button',{name:'Change workout'}).click();await expect(page.getByRole('button',{name:'Assign to Tuesday: Upper Body + ABS'})).toHaveCount(0);await expect(page.locator('.workout-card')).toHaveCount(8);
  await page.getByRole('button',{name:'Assign to Tuesday: Tuesday of Spades'}).click();
  await page.reload();await expect(tuesday.getByText('Tuesday of Spades',{exact:true})).toBeVisible();
  await expect(monday.getByText('Hybrid Foundation')).toBeVisible();

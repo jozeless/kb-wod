@@ -1,3 +1,4 @@
+import { isClassicIron } from '../domain/classic-iron-results.js';
 import { isOldschoolResults } from '../domain/oldschool-results.js';
 import { floorPressReference } from '../domain/friday-benchmark.js';
 import { isFridayResults } from '../domain/friday-results.js';
@@ -27,6 +28,10 @@ export function savedSessionView(id, go) {
     const value = n => n === null || n === undefined ? 'Not entered' : String(n);
     root.replaceChildren(heading('SAVED WORKOUT', record.workoutSnapshot.name, `Version ${record.workoutVersion} · ${new Date(record.startedAt).toLocaleString()}`),
       syncStatus(record), el('p', {}, `Active duration: ${formatTime(record.activeDurationMs)}`), el('p', {}, `Finished: ${new Date(record.completedAt).toLocaleString()}`));
+    if(isClassicIron(record.workoutSnapshot)) {
+      root.append(el('p', {}, `Completed rounds: ${value(record.results.completedRounds)}`), button('← Saved workouts', () => go(`#history/${record.workoutId}`), true));
+      return;
+    }
     if(usesSessionWeights(record.workoutSnapshot)) {
       const weights=el('section',{'aria-label':'Recorded exercise weights'},el('h2',{},'Exercise weights'));
       for(const exercise of weightedExercises(record.workoutSnapshot))weights.append(el('p',{},`${exercise.name}: ${value(record.results.exerciseWeights[exercise.id])}${record.results.exerciseWeights[exercise.id]===null?'':' kg'}`));

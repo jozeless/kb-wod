@@ -1,3 +1,5 @@
+import { createRoundAmrapTraining } from './ui/round-amrap-training.js';
+import { isClassicIron } from './domain/classic-iron-results.js';
 import { progressView } from './ui/progress.js';
 import { authKey } from './cloud/auth.js';
 import { workspaceKey } from './cloud/sync.js';
@@ -36,7 +38,7 @@ function startWorkout(workout) {
 }
 
 function resultSession(workout) {
-  return createBlockTraining(workout, { onExit: () => { if (allowExit()) go('#today'); }, onHistory: id => { stopSession(); go(`#session/${id}`); } });
+  return (isClassicIron(workout) ? createRoundAmrapTraining : createBlockTraining)(workout, { onExit: () => { if (allowExit()) go('#today'); }, onHistory: id => { stopSession(); go(`#session/${id}`); } });
 }
 
 function reloadPlan() { state = loadPlan(window.localStorage); status.textContent = state.error ?? ''; }

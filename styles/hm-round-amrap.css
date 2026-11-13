@@ -1,0 +1,7 @@
+/* Classic Iron only; shared Focus Mode geometry and controls remain unchanged. */
+.hm-round-amrap .round-counter { margin: 0 0 8px; font-weight: 800; }
+.hm-round-amrap .round-counter output { margin-inline-start: .5rem; font-size: 2rem; color: var(--hm-highlight, #EEEF58); font-variant-numeric: tabular-nums; }
+.hm-round-amrap .round-rest { margin: 0 0 12px; color: var(--hm-accent, #B37ACB); font-size: 1.125rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.hm-round-amrap .round-complete { display: block; width: min(100%, 28rem); min-height: 56px; margin: 0 auto 20px; font-size: 1.125rem; font-weight: 850; background: var(--hm-highlight, #EEEF58); color: var(--hm-bg, #212227); border: 1px solid var(--hm-highlight, #EEEF58); }
+.hm-round-amrap .round-complete:disabled { opacity: .6; cursor: default; }
+.hm-round-amrap .current-exercise-card h2 { margin: 0; font-size: 1rem; text-transform: uppercase; }

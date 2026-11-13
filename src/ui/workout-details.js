@@ -19,7 +19,7 @@ export function workoutDetails(workout) {
       const ex = workout.exercises.find(e => e.id === id);
       const repeated = workout.presentation?.sharedWeightPreferences && configuredWeights.has(id);
       if(ex.equipment !== 'bodyweight')configuredWeights.add(id);
-      list.append(el('li', {}, el('div', {className: 'exercise-weight-row'}, el('strong', {}, ex.name), ex.equipment === 'bodyweight' ? null : repeated ? el('span', {className:'muted'}, 'Shared weight above') : createWeightField(workout, ex).root),
+      list.append(el('li', {}, el('div', {className: 'exercise-weight-row'}, el('strong', {}, ex.name), ex.equipment === 'bodyweight' || workout.presentation?.weightPreferences === false ? null : repeated ? el('span', {className:'muted'}, 'Shared weight above') : createWeightField(workout, ex).root),
         el('p', {className: 'exercise-target'}, phase.format === 'intervals' && !ex.target ? `${phase.timer.workSeconds} s` : prescription(ex, phase)),
         ex.note ? el('p', {className: 'muted'}, ex.note) : null, ex.attribution ? el('p', {className: 'muted'}, ex.attribution) : null));
     }

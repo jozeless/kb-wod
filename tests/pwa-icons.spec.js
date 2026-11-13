@@ -72,7 +72,7 @@ test('Chromium parses the new manifest and future Apple/favicon metadata without
 
 test('v30 precaches every install/Apple/favicon icon and retains old icons and app resources offline', async ({ page, context }) => {
   await localMode(page); await page.goto('./#library'); await page.evaluate(() => navigator.serviceWorker.ready.then(() => true)); await page.reload(); await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
-  const entries = await page.evaluate(async () => { const worker = await fetch('./service-worker.js').then(r => r.text()); const urls = [...new Set([...worker.matchAll(/'(\.\/[^']*)'/g)].map(m => m[1]))]; const cache = await caches.open('kb2-static-v34'); return Promise.all(urls.map(async url => ({ url, cached: Boolean(await cache.match(new URL(url, document.baseURI))) }))); });
+  const entries = await page.evaluate(async () => { const worker = await fetch('./service-worker.js').then(r => r.text()); const urls = [...new Set([...worker.matchAll(/'(\.\/[^']*)'/g)].map(m => m[1]))]; const cache = await caches.open('kb2-static-v35'); return Promise.all(urls.map(async url => ({ url, cached: Boolean(await cache.match(new URL(url, document.baseURI))) }))); });
   expect(entries).toHaveLength(98); expect(entries.filter(e => !e.cached)).toEqual([]);
   await context.setOffline(true); await page.reload(); await expect(page.locator('.workout-card')).toHaveCount(8);
   const decoded = await page.evaluate(async files => {

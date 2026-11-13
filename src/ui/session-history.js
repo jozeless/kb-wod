@@ -29,7 +29,7 @@ export function savedSessionView(id, go) {
     root.replaceChildren(heading('SAVED WORKOUT', record.workoutSnapshot.name, `Version ${record.workoutVersion} · ${new Date(record.startedAt).toLocaleString()}`),
       syncStatus(record), el('p', {}, `Active duration: ${formatTime(record.activeDurationMs)}`), el('p', {}, `Finished: ${new Date(record.completedAt).toLocaleString()}`));
     if(isClassicIron(record.workoutSnapshot)) {
-      root.append(el('p', {}, `Completed rounds: ${value(record.results.completedRounds)}`), button('← Saved workouts', () => go(`#history/${record.workoutId}`), true));
+      root.append(el('p', {}, `Completed rounds: ${value(record.results.completedRounds)}`), el('p', {}, `Additional repetitions: ${value(record.results.partialReps === undefined ? 0 : record.results.partialReps)}`), button('← Saved workouts', () => go(`#history/${record.workoutId}`), true));
       return;
     }
     if(usesSessionWeights(record.workoutSnapshot)) {

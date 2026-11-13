@@ -21,7 +21,7 @@ test('seven public cards append approved Oldschool identities; exact detail slot
  expect(await page.locator('.workout-card strong').allTextContents()).toEqual(['Monday Paranoid','Tuesday of Spades','Thursday Bells','Friday To Black','Oldschool Sailor','Oldschool Tiger','Oldschool Eagle','Classic Iron']);
  for(const [i,animal]of animals.entries()){
   await page.goto('./#library');const card=page.locator('.workout-card').nth(i+4);await expect(card).toContainText(`HM/KB WOD 00${i+5}`);await expect(card).toContainText('20:00');await expect(card).toContainText('45/15');await expect(card).toContainText('Upper 5 min / ABS 5 min / Legs 5 min / Muscle Finisher 5 min');await card.click();await expect(page).toHaveURL(new RegExp(`oldschool-${animal}/1$`));
-  expect(await page.locator('.exercise-weight-row > strong').allTextContents()).toEqual(programs[animal].flat());await expect(page.locator('.exercise-list')).toHaveCount(4);
+  await expect(page.locator('.exercise-weight-row > strong')).toHaveText(programs[animal].flat());await expect(page.locator('.exercise-list')).toHaveCount(4);
   const unique=[...new Set(programs[animal].flat())].filter(n=>n.startsWith('KB '));await expect(page.getByRole('spinbutton')).toHaveCount(unique.length);
   for(const body of programs[animal].flat().filter(n=>!n.startsWith('KB ')))await expect(page.getByLabel(`${body} weight (kg)`,{exact:true})).toHaveCount(0);
   const first=page.getByLabel(`${unique[0]} weight (kg)`,{exact:true});await expect(first).toHaveCount(1);await first.fill('12.5');await page.reload();await expect(first).toHaveValue('12.5');
@@ -59,7 +59,7 @@ test('early End cancels once or discards; refresh/old URLs never recover; failed
 });
 test('all seven cards, Oldschool preparation/WORK/REST/results and offline assets fit four widths and 200% text',async({page,context},info)=>{
  test.setTimeout(120000);await setup(page);page.on('dialog',d=>d.accept());const root='/workspace/artifacts/oldschool-wods-005-007';await fs.mkdir(root,{recursive:true});await page.goto('./#library');await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
- const cached=await page.evaluate(async()=>{const cache=await caches.open('kb2-static-v34'),source=await fetch('./service-worker.js').then(r=>r.text());return Promise.all([...new Set([...source.matchAll(/'(\.\/[^']*)'/g)].map(m=>m[1]))].map(async path=>Boolean(await cache.match(new URL(path,document.baseURI)))));});expect(cached).toHaveLength(98);expect(cached.every(Boolean)).toBe(true);await context.setOffline(true);
+ const cached=await page.evaluate(async()=>{const cache=await caches.open('kb2-static-v35'),source=await fetch('./service-worker.js').then(r=>r.text());return Promise.all([...new Set([...source.matchAll(/'(\.\/[^']*)'/g)].map(m=>m[1]))].map(async path=>Boolean(await cache.match(new URL(path,document.baseURI)))));});expect(cached).toHaveLength(98);expect(cached.every(Boolean)).toBe(true);await context.setOffline(true);
  for(const width of info.project.name==='mobile'?[320,390]:[768,1280])for(const animal of animals){await page.setViewportSize({width,height:844});
   await page.goto('./#library');
   for(const scale of [100,200]){

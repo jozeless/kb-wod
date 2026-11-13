@@ -8,6 +8,7 @@ import {compileWorkout} from '../src/domain/workout-timer.js';
 import {RoundAmrapTimer, createRoundAmrapCues} from '../src/domain/round-amrap-timer.js';
 import {createDraft, finalResults, supportsResults, resultSchema} from '../src/domain/result-schemas.js';
 import {analyzeProgress} from '../src/domain/progress-analytics.js';
+import {parseClassicIronPartialReps} from '../src/domain/classic-iron-results.js';
 
 function clock() { let now=0;const timer=new RoundAmrapTimer(w,()=>now);timer.start();return {timer,at(ms){now=ms;return timer.snapshot();},advance(ms){now+=ms;return timer.snapshot();}}; }
 test('Classic Iron is an eighth, separate v1 identity with exactly seven ordered ten-repetition movements and one 20-minute AMRAP',()=>{
@@ -53,20 +54,44 @@ test('hidden/late updates and pause/resume consume cues without replay or late r
   assert.equal(cues.next(c.timer.snapshot()),null);c.timer.completeRound();cues.next(c.timer.snapshot(),false);cues.next(c.advance(20000),false);assert.equal(cues.next(c.advance(100)),null);
   assert.equal(cues.next(c.advance(1200000)),null);assert.equal(cues.next(c.timer.snapshot()),null);
 });
-test('completed-only results accept zero, reject unfinished/malformed counts and contain only completedRounds',()=>{
+test('completed-only results accept zero, reject unfinished/malformed counts and contain only completedRounds and partialReps',()=>{
   const record=createDraft(w,{getItem(){throw Error('Preferences must not be read');}},'classic-id','2026-11-13T12:00:00Z');assert.equal(record.status,'in-progress');assert.equal(record.form,undefined);assert.equal(record.results,null);assert.throws(()=>finalResults(record),/whole workout/);
   record.activeDurationMs=1200000;record.completedAt='2026-11-13T12:20:03Z';
-  for(const n of [0,1,37]){record.results={completedRounds:n};assert.deepEqual(finalResults(record),{completedRounds:n});}
+  for(const n of [0,1,37]){record.results={completedRounds:n};assert.deepEqual(finalResults(record),{completedRounds:n,partialReps:0});}
   for(const n of [-1,1.5,NaN,Infinity,'2',null,undefined,Number.MAX_SAFE_INTEGER+1]){record.results={completedRounds:n};assert.throws(()=>finalResults(record),/non-negative whole/);}
   record.results={completedRounds:0};const analysis=analyzeProgress([{...record,status:'completed'}],{year:2026,month:11},()=>true);assert.equal(analysis.month.workouts,1);assert.equal(analysis.month.activeDurationMs,1200000);assert.deepEqual(analysis.strength,[]);
 });
 test('new completed-only controller has one final write and no draft, weight, automatic interval or recovery persistence',()=>{
   const source=fs.readFileSync(new URL('../src/ui/round-amrap-training.js',import.meta.url),'utf8');assert.doesNotMatch(source,/putDraft|getSession|restorePaused|localStorage|createWeightField/);assert.equal((source.match(/await completeSession\(record\)/g)||[]).length,1);assert.match(source,/record.ownerId !== currentUserId/);
-  const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');assert.match(worker,/kb2-static-v34/);
+  const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');assert.match(worker,/kb2-static-v35/);
   for(const file of ['src/data/classic-iron.js','src/domain/round-amrap-timer.js','src/domain/classic-iron-results.js','src/ui/round-amrap-training.js','src/ui/round-amrap-presentation.js','styles/hm-round-amrap.css'])assert.ok(worker.includes(`'./${file}'`),file);
 });
 test('all legacy workout data, timer/controllers, result logic, audio, storage, cloud, branding and existing styles remain exact to merged main',()=>{
   const hashes=JSON.parse(fs.readFileSync(new URL('./fixtures/classic-iron-main-protected.json',import.meta.url)));
   assert.ok(Object.keys(hashes).length>80);
+  for(const [file,hash]of Object.entries(hashes))assert.equal(createHash('sha256').update(fs.readFileSync(new URL('../'+file,import.meta.url))).digest('hex'),hash,file);
+});
+test('Classic Iron additional repetitions accept every whole count 0–69 and reject malformed, signed, fractional and out-of-range entries',()=>{
+  const record=createDraft(w,null,'partial-session','2026-11-13T12:00:00Z');record.activeDurationMs=1200000;record.completedAt='2026-11-13T12:20:03Z';
+  for(let n=0;n<=69;n++){
+    assert.equal(parseClassicIronPartialReps(String(n)),n);
+    record.results={completedRounds:8,partialReps:n};assert.deepEqual(finalResults(record),{completedRounds:8,partialReps:n});assert.equal(record.results.completedRounds,8);
+  }
+  for(const raw of ['', ' ', '-1', '-0', '+1', '1.5', '1.0', '70', '999999999999999999999999', '1e1', '0x10', 'NaN', 'Infinity', 'twenty', '20 reps', ' 20', '20 ', null, undefined, 20])assert.throws(()=>parseClassicIronPartialReps(raw),/whole number from 0 to 69/,String(raw));
+  for(const partialReps of [-1,70,1.5,'20','',null,NaN,Infinity]){record.results={completedRounds:8,partialReps};assert.throws(()=>finalResults(record),/whole number from 0 to 69/);}
+});
+test('legacy Classic Iron result compatibility defaults missing partial reps without rewriting the record or converting rounds',()=>{
+  const record=createDraft(w,null,'legacy-rounds','2026-11-13T12:00:00Z');record.activeDurationMs=1200000;record.completedAt='2026-11-13T12:20:03Z';record.results={completedRounds:8};
+  const before=structuredClone(record);assert.deepEqual(finalResults(record),{completedRounds:8,partialReps:0});assert.deepEqual(record,before);
+  record.results={completedRounds:8,partialReps:69};assert.deepEqual(finalResults(record),{completedRounds:8,partialReps:69});record.activeDurationMs--;assert.throws(()=>finalResults(record),/whole workout/);
+});
+
+test('partial-repetition extension leaves the Classic Iron definition, timer/cues and Focus Mode presentation byte-identical to main',()=>{
+  const hashes={
+  "src/data/classic-iron.js": "f796559622e2253a0e4c2f445ee7528633e55612710e6b704ff428c958fcbac1",
+  "src/domain/round-amrap-timer.js": "b97df40fa956956d688be4e68cc08e6f47c732e696ab204549712f86dcd81c7e",
+  "src/ui/round-amrap-presentation.js": "f38dba20eb22bc5a93b303a45bae2d8c4adbfd04afd10f2833e5d85f4b283a25",
+  "styles/hm-round-amrap.css": "289f98e0a14b5a4ab4bcf54e2c2dd4eba0659dcd9d41540dcc8f9aa12a1627af"
+};
   for(const [file,hash]of Object.entries(hashes))assert.equal(createHash('sha256').update(fs.readFileSync(new URL('../'+file,import.meta.url))).digest('hex'),hash,file);
 });

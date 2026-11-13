@@ -1,5 +1,7 @@
 # Classic Iron v1 — round-controlled AMRAP
 
+This document records the original release. The backward-compatible [additional-repetitions extension](CLASSIC_IRON_PARTIAL_REPS.md) now adds `partialReps` to new results; historical rounds-only sessions remain unchanged.
+
 Branch: `feature/classic-iron-amrap`, based on merged main `0e3903e` (PR #32).
 
 Classic Iron is appended as the eighth public Library card, with identity `classic-iron` / version 1. The seven existing public workouts retain their pinned versions and order. All 22 previous internal definitions remain registered; the registry now has 23 definitions, including 20 real workouts. Weekly assignments still require an explicit planning action.

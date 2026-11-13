@@ -12,6 +12,14 @@ export async function mockCloud(page,db={sessions:new Map(),plans:new Map(),call
   if(url.pathname==='/auth/v1/user')return send(user);
   if(url.pathname.startsWith('/auth/'))return send({});
   if(db.fail&&req.method()==='POST')return send({message:'Unavailable'},503);
+  db.visibility??=new Map();
+  if(url.pathname.endsWith('/kb_workout_visibility'))return send([...db.visibility.values()].filter(r=>r.user_id===user.id));
+  if(url.pathname.endsWith('/rpc/kb_set_workout_visibility')){
+   const key=`${user.id}:${body.p_workout_id}`,old=db.visibility.get(key);if(old?.operation_id&&old.operation_id===body.p_operation_id)return send([old]);if((old?.revision||0)!==body.p_expected_revision)return send({message:'Library changed on another device'},409);
+   const row={user_id:user.id,workout_id:body.p_workout_id,hidden:body.p_hidden,revision:body.p_expected_revision+1,operation_id:body.p_operation_id};db.visibility.set(key,row);
+   if((row.hidden||body.p_clear_assignments)&&db.plans.has(user.id))db.plans.set(user.id,db.plans.get(user.id).map(p=>p.workout_id===row.workout_id?{...p,workout_id:null,workout_version:null}:p));
+   return send([row]);
+  }
   if(url.pathname.endsWith('/kb_training_sessions')){
    if(req.method()==='POST'){if(body.some(r=>r.user_id!==user.id))return send({},403);for(const r of body)db.sessions.set(`${user.id}:${r.id}`,structuredClone(r));return send(body);}
    return send([...db.sessions.values()].filter(r=>r.user_id===user.id));

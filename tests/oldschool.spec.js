@@ -28,7 +28,7 @@ test('seven public cards append approved Oldschool identities; exact detail slot
   expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('kb2.weekly-plan.v1')))).toEqual(original);
  }
  for(const [i,animal]of animals.entries()){
-  const day=['Tuesday','Wednesday','Saturday'][i],name=`Oldschool ${animal[0].toUpperCase()+animal.slice(1)}`;await page.goto('./#today');await page.getByRole('region',{name:day,exact:true}).getByRole('button',{name:'Add workout',exact:true}).click();await page.getByRole('button',{name:`Assign to ${day}: ${name}`,exact:true}).click();original[day]={workoutId:`oldschool-${animal}`,version:1};await page.reload();expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('kb2.weekly-plan.v1')))).toEqual(original);
+  const day=['Tuesday','Wednesday','Saturday'][i],name=`Oldschool ${animal[0].toUpperCase()+animal.slice(1)}`;await page.goto('./#today');await page.getByRole('region',{name:day,exact:true}).getByRole('button',{name:'Add workout',exact:true}).click();await page.getByRole('button',{name:`Assign to ${day}: ${name}`,exact:true}).click();await expect(page).toHaveURL(/#today$/);original[day]={workoutId:`oldschool-${animal}`,version:1};await page.reload();expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('kb2.weekly-plan.v1')))).toEqual(original);
  }
  expect(await records(page)).toEqual([]);
 });
@@ -59,7 +59,7 @@ test('early End cancels once or discards; refresh/old URLs never recover; failed
 });
 test('all seven cards, Oldschool preparation/WORK/REST/results and offline assets fit four widths and 200% text',async({page,context},info)=>{
  test.setTimeout(120000);await setup(page);page.on('dialog',d=>d.accept());const root='/workspace/artifacts/oldschool-wods-005-007';await fs.mkdir(root,{recursive:true});await page.goto('./#library');await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
- const cached=await page.evaluate(async()=>{const cache=await caches.open('kb2-static-v36'),source=await fetch('./service-worker.js').then(r=>r.text());return Promise.all([...new Set([...source.matchAll(/'(\.\/[^']*)'/g)].map(m=>m[1]))].map(async path=>Boolean(await cache.match(new URL(path,document.baseURI)))));});expect(cached).toHaveLength(100);expect(cached.every(Boolean)).toBe(true);await context.setOffline(true);
+ const cached=await page.evaluate(async()=>{const cache=await caches.open('kb2-static-v37'),source=await fetch('./service-worker.js').then(r=>r.text());return Promise.all([...new Set([...source.matchAll(/'(\.\/[^']*)'/g)].map(m=>m[1]))].map(async path=>Boolean(await cache.match(new URL(path,document.baseURI)))));});expect(cached).toHaveLength(104);expect(cached.every(Boolean)).toBe(true);await context.setOffline(true);
  for(const width of info.project.name==='mobile'?[320,390]:[768,1280])for(const animal of animals){await page.setViewportSize({width,height:844});
   await page.goto('./#library');
   for(const scale of [100,200]){

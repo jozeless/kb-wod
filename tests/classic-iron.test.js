@@ -63,7 +63,7 @@ test('completed-only results accept zero, reject unfinished/malformed counts and
 });
 test('new completed-only controller has one final write and no draft, weight, automatic interval or recovery persistence',()=>{
   const source=fs.readFileSync(new URL('../src/ui/round-amrap-training.js',import.meta.url),'utf8');assert.doesNotMatch(source,/putDraft|getSession|restorePaused|localStorage|createWeightField/);assert.equal((source.match(/await completeSession\(record\)/g)||[]).length,1);assert.match(source,/record.ownerId !== currentUserId/);
-  const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');assert.match(worker,/kb2-static-v36/);
+  const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');assert.match(worker,/kb2-static-v37/);
   for(const file of ['src/data/classic-iron.js','src/domain/round-amrap-timer.js','src/domain/classic-iron-results.js','src/ui/round-amrap-training.js','src/ui/round-amrap-presentation.js','styles/hm-round-amrap.css'])assert.ok(worker.includes(`'./${file}'`),file);
 });
 test('all legacy workout data, timer/controllers, result logic, audio, storage, cloud, branding and existing styles remain exact to merged main',()=>{

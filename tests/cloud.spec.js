@@ -12,6 +12,14 @@ async function mockCloud(page,db={sessions:new Map(),plans:new Map(),calls:[],fa
   if(url.pathname==='/auth/v1/user')return send(user);
   if(url.pathname.startsWith('/auth/'))return send({});
   if(db.fail&&req.method()==='POST')return send({message:'Unavailable'},503);
+  db.visibility??=new Map();
+  if(url.pathname.endsWith('/kb_workout_visibility'))return send([...db.visibility.values()].filter(r=>r.user_id===user.id));
+  if(url.pathname.endsWith('/rpc/kb_set_workout_visibility')){
+   const key=`${user.id}:${body.p_workout_id}`,old=db.visibility.get(key);if(old?.operation_id&&old.operation_id===body.p_operation_id)return send([old]);if((old?.revision||0)!==body.p_expected_revision)return send({message:'Library changed on another device'},409);
+   const row={user_id:user.id,workout_id:body.p_workout_id,hidden:body.p_hidden,revision:body.p_expected_revision+1,operation_id:body.p_operation_id};db.visibility.set(key,row);
+   if((row.hidden||body.p_clear_assignments)&&db.plans.has(user.id))db.plans.set(user.id,db.plans.get(user.id).map(p=>p.workout_id===row.workout_id?{...p,workout_id:null,workout_version:null}:p));
+   return send([row]);
+  }
   if(url.pathname.endsWith('/kb_training_sessions')){
    if(req.method()==='POST'){if(body.some(r=>r.user_id!==user.id))return send({},403);for(const r of body)db.sessions.set(`${user.id}:${r.id}`,structuredClone(r));return send(body);}
    return send([...db.sessions.values()].filter(r=>r.user_id===user.id));
@@ -40,8 +48,8 @@ test('explicit legacy import is idempotent, account switching hides owned histor
 });
 test('weekly cloud conflict choices, replacement/removal and restore on another device',async({page,browser})=>{
  const db=await mockCloud(page);db.plans.set(A.id,[{user_id:A.id,weekday:'Friday',workout_id:'hybrid-002-full-body-engine',workout_version:1}]);await page.goto('./');await page.evaluate(()=>localStorage.setItem('kb2.weekly-plan.v1',JSON.stringify({Thursday:{workoutId:'focus-002-lower-abs',version:1}})));await login(page);await expect(page.getByRole('region',{name:'Weekly plan conflict'})).toBeVisible();expect((await metadata(page)).plan.confirmed).toBe(false);await page.getByRole('button',{name:'Use cloud plan',exact:true}).click();await page.goto('./#today');await expect(page.getByRole('region',{name:'Friday',exact:true}).getByText('Full Body Engine',{exact:true})).toBeVisible();
- const friday=page.getByRole('region',{name:'Friday',exact:true});await friday.getByRole('button',{name:'Change workout'}).click();await page.getByRole('button',{name:'Assign to Friday: Thursday Bells',exact:true}).click();await expect.poll(()=>db.plans.get(A.id).find(r=>r.weekday==='Friday')?.workout_id).toBe('thursday-bells');await friday.getByRole('button',{name:'Remove',exact:true}).click();await expect.poll(()=>db.plans.get(A.id).find(r=>r.weekday==='Friday')?.workout_id).toBe(null);
- await page.getByRole('region',{name:'Monday',exact:true}).getByRole('button',{name:'Add workout'}).click();await page.getByRole('button',{name:'Assign to Monday: Friday To Black',exact:true}).click();await expect.poll(()=>db.plans.get(A.id).find(r=>r.weekday==='Monday')?.workout_id).toBe('friday-to-black');
+ const friday=page.getByRole('region',{name:'Friday',exact:true});await friday.getByRole('button',{name:'Change workout'}).click();await page.getByRole('button',{name:'Assign to Friday: Thursday Bells',exact:true}).click();await expect(page).toHaveURL(/#today$/);await expect.poll(()=>db.plans.get(A.id).find(r=>r.weekday==='Friday')?.workout_id).toBe('thursday-bells');await friday.getByRole('button',{name:'Remove',exact:true}).click();await expect.poll(()=>db.plans.get(A.id).find(r=>r.weekday==='Friday')?.workout_id).toBe(null);
+ await page.getByRole('region',{name:'Monday',exact:true}).getByRole('button',{name:'Add workout'}).click();await page.getByRole('button',{name:'Assign to Monday: Friday To Black',exact:true}).click();await expect(page).toHaveURL(/#today$/);await expect.poll(()=>db.plans.get(A.id).find(r=>r.weekday==='Monday')?.workout_id).toBe('friday-to-black');
  const second=await browser.newContext({baseURL:'http://127.0.0.1:8102/kb-wod/'});const other=await second.newPage();const remote=await mockCloud(other);remote.plans.set(A.id,structuredClone(db.plans.get(A.id)));await login(other);await expect(other.getByRole('region',{name:'Weekly plan conflict'})).toBeVisible();await other.getByRole('button',{name:'Use cloud plan'}).click();await other.goto('http://127.0.0.1:8102/kb-wod/#today');await expect(other.getByRole('region',{name:'Monday',exact:true}).getByText('Friday To Black',{exact:true})).toBeVisible();await second.close();
 });
 test('offline completion stays local and pending, then retries without duplicate sessions',async({page,context})=>{

@@ -9,7 +9,7 @@ async function start(page, pausedClock = false) {
  await expect(page.locator('.phase-clock')).toHaveText('3');
 }
 test('countdown, automatic blocks, final rest and completion without saving',async({page})=>{
- await start(page);
+ await start(page,true);
  await page.clock.runFor(1000);await expect(page.locator('.phase-clock')).toHaveText('2');
  await page.clock.runFor(1000);await expect(page.locator('.phase-clock')).toHaveText('1');
  await page.clock.runFor(1000);await expect(page.locator('.phase-clock')).toHaveText('GO');

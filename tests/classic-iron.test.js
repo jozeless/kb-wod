@@ -23,11 +23,11 @@ test('Classic Iron is an eighth, separate v1 identity with exactly seven ordered
 });
 test('pre-start countdown is outside activity; rounds are explicit, never automatic, and immediate double taps count once',()=>{
   const c=clock();assert.equal(c.at(0).countdown,3);assert.equal(c.timer.completeRound(),false);assert.equal(c.at(2999).elapsedMs,0);
-  assert.equal(c.at(3000).totalRemainingMs,1200000);assert.equal(c.timer.completeRound(),true);assert.equal(c.timer.completeRound(),false);
+  assert.equal(c.at(3000).totalRemainingMs,1200000);assert.equal(c.timer.completeRound(),false);c.advance(1);assert.equal(c.timer.completeRound(),true);assert.equal(c.timer.completeRound(),false);
   let s=c.timer.snapshot();assert.equal(s.completedRounds,1);assert.equal(s.state,'REST');assert.equal(s.restRemainingMs,20000);
   s=c.advance(19999);assert.equal(s.restRemainingMs,1);assert.equal(c.timer.completeRound(),false);
-  s=c.advance(1);assert.equal(s.state,'TRAINING');assert.equal(s.totalRemainingMs,1180000);assert.equal(s.completedRounds,1);
-  assert.equal(c.timer.completeRound(),true);assert.equal(c.timer.snapshot().completedRounds,2);
+  s=c.advance(1);assert.equal(s.state,'TRAINING');assert.equal(s.totalRemainingMs,1179999);assert.equal(s.completedRounds,1);
+  c.advance(1);assert.equal(c.timer.completeRound(),true);assert.equal(c.timer.snapshot().completedRounds,2);
   c.at(603000);assert.equal(c.timer.snapshot().completedRounds,2);assert.equal(c.timer.snapshot().stage,'exercise');
 });
 test('pause freezes the pre-start countdown, normal training and simultaneous rest/main clocks',()=>{
@@ -63,7 +63,7 @@ test('completed-only results accept zero, reject unfinished/malformed counts and
 });
 test('new completed-only controller has one final write and no draft, weight, automatic interval or recovery persistence',()=>{
   const source=fs.readFileSync(new URL('../src/ui/round-amrap-training.js',import.meta.url),'utf8');assert.doesNotMatch(source,/putDraft|getSession|restorePaused|localStorage|createWeightField/);assert.equal((source.match(/await completeSession\(record\)/g)||[]).length,1);assert.match(source,/record.ownerId !== currentUserId/);
-  const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');assert.match(worker,/kb2-static-v35/);
+  const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');assert.match(worker,/kb2-static-v36/);
   for(const file of ['src/data/classic-iron.js','src/domain/round-amrap-timer.js','src/domain/classic-iron-results.js','src/ui/round-amrap-training.js','src/ui/round-amrap-presentation.js','styles/hm-round-amrap.css'])assert.ok(worker.includes(`'./${file}'`),file);
 });
 test('all legacy workout data, timer/controllers, result logic, audio, storage, cloud, branding and existing styles remain exact to merged main',()=>{
@@ -86,10 +86,9 @@ test('legacy Classic Iron result compatibility defaults missing partial reps wit
   record.results={completedRounds:8,partialReps:69};assert.deepEqual(finalResults(record),{completedRounds:8,partialReps:69});record.activeDurationMs--;assert.throws(()=>finalResults(record),/whole workout/);
 });
 
-test('partial-repetition extension leaves the Classic Iron definition, timer/cues and Focus Mode presentation byte-identical to main',()=>{
+test('round-times extension leaves the Classic Iron definition and Focus Mode presentation byte-identical to main',()=>{
   const hashes={
   "src/data/classic-iron.js": "f796559622e2253a0e4c2f445ee7528633e55612710e6b704ff428c958fcbac1",
-  "src/domain/round-amrap-timer.js": "b97df40fa956956d688be4e68cc08e6f47c732e696ab204549712f86dcd81c7e",
   "src/ui/round-amrap-presentation.js": "f38dba20eb22bc5a93b303a45bae2d8c4adbfd04afd10f2833e5d85f4b283a25",
   "styles/hm-round-amrap.css": "289f98e0a14b5a4ab4bcf54e2c2dd4eba0659dcd9d41540dcc8f9aa12a1627af"
 };

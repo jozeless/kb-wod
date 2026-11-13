@@ -6,6 +6,7 @@ export class RoundAmrapTimer {
     this.timer = new WorkoutTimer(workout, now);
     this.restMs = workout.execution.restSeconds * 1000;
     this.completedRounds = 0;
+    this.roundTimesMs = [];
     this.restUntilMs = 0;
   }
   start() { this.timer.start(); }
@@ -15,6 +16,10 @@ export class RoundAmrapTimer {
   completeRound() {
     const s = this.snapshot();
     if (s.status !== 'running' || s.stage !== 'exercise' || s.restRemainingMs > 0) return false;
+    // The previous rest deadline is the exact next-round start, even without ticks.
+    const durationMs = s.elapsedMs - this.restUntilMs;
+    if (durationMs <= 0) return false;
+    this.roundTimesMs.push(durationMs);
     this.completedRounds++;
     this.restUntilMs = s.elapsedMs + this.restMs;
     return true;
@@ -22,7 +27,7 @@ export class RoundAmrapTimer {
   snapshot() {
     const s = this.timer.snapshot();
     const restRemainingMs = s.stage === 'exercise' ? Math.max(0, this.restUntilMs - s.elapsedMs) : 0;
-    return {...s, completedRounds: this.completedRounds, restUntilMs: this.restUntilMs, restRemainingMs,
+    return {...s, completedRounds: this.completedRounds, roundTimesMs: [...this.roundTimesMs], restUntilMs: this.restUntilMs, restRemainingMs,
       state: s.status === 'paused' ? 'PAUSED' : s.stage === 'countdown' ? 'GET READY' : s.stage === 'complete' ? 'COMPLETE' : restRemainingMs > 0 ? 'REST' : 'TRAINING'};
   }
 }

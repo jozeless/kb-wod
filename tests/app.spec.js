@@ -13,12 +13,12 @@ test('navigation and simplified approved Library', async ({page}) => {
 test('assign, reuse, change, remove and persist without touching prototype data', async ({page}) => {
  await page.goto('./'); await page.evaluate(()=>localStorage.setItem('kbwod_history','prototype-sentinel'));
  const monday=page.getByRole('region',{name:'Monday',exact:true});const tuesday=page.getByRole('region',{name:'Tuesday',exact:true});
- await monday.getByRole('button',{name:'Add workout'}).click(); await page.getByRole('button',{name:'Assign to Monday: Tuesday of Spades'}).click();
- await tuesday.getByRole('button',{name:'Add workout'}).click(); await page.getByRole('button',{name:'Assign to Tuesday: Tuesday of Spades'}).click();
- await page.reload(); await expect(monday.getByText('Tuesday of Spades')).toBeVisible();await expect(tuesday.getByText('Tuesday of Spades')).toBeVisible();
- await monday.getByRole('button',{name:'Change workout'}).click();await page.getByRole('button',{name:'Assign to Monday: Friday To Black'}).click();
+ await monday.getByRole('button',{name:'Add workout'}).click(); await page.getByRole('button',{name:'Assign to Monday: Tuesday of Spades'}).click();await expect(page).toHaveURL(/#today$/);
+ await tuesday.getByRole('button',{name:'Add workout'}).click(); await page.getByRole('button',{name:'Assign to Tuesday: Tuesday of Spades'}).click();await expect(page).toHaveURL(/#today$/);
+ await expect(page).toHaveURL(/#today$/);await page.reload(); await expect(monday.getByText('Tuesday of Spades')).toBeVisible();await expect(tuesday.getByText('Tuesday of Spades')).toBeVisible();
+ await monday.getByRole('button',{name:'Change workout'}).click();await page.getByRole('button',{name:'Assign to Monday: Friday To Black'}).click();await expect(page).toHaveURL(/#today$/);
  await expect(monday.getByText('Friday To Black')).toBeVisible();await expect(tuesday.getByText('Tuesday of Spades')).toBeVisible();
- await monday.getByRole('button',{name:'Remove',exact:true}).click();await page.reload();await expect(monday.getByText('No workout assigned.')).toBeVisible();
+ await monday.getByRole('button',{name:'Remove',exact:true}).click();await expect(monday.getByText('No workout assigned.')).toBeVisible();await page.reload();await expect(monday.getByText('No workout assigned.')).toBeVisible();
  expect(await page.evaluate(()=>localStorage.getItem('kbwod_history'))).toBe('prototype-sentinel');
 });
 test('historical demo direct links retain their explicit scaffolding', async ({page}) => {
@@ -72,8 +72,8 @@ test('historical Focus prescription and assignment remain usable before explicit
  await expect(page.getByRole('button',{name:'Start Workout'})).toBeVisible();
  await page.getByRole('link',{name:'Today',exact:true}).click();
  await tuesday.getByRole('button',{name:'Change workout'}).click();await expect(page.getByRole('button',{name:'Assign to Tuesday: Upper Body + ABS'})).toHaveCount(0);await expect(page.locator('.workout-card')).toHaveCount(8);
- await page.getByRole('button',{name:'Assign to Tuesday: Tuesday of Spades'}).click();
- await page.reload();await expect(tuesday.getByText('Tuesday of Spades',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Assign to Tuesday: Tuesday of Spades'}).click();await expect(page).toHaveURL(/#today$/);
+ await expect(page).toHaveURL(/#today$/);await page.reload();await expect(tuesday.getByText('Tuesday of Spades',{exact:true})).toBeVisible();
  await expect(monday.getByText('Hybrid Foundation')).toBeVisible();
  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('kb2.weekly-plan.v1')).Tuesday)).toEqual({workoutId:'tuesday-of-spades',version:2});
  expect(await page.evaluate(()=>localStorage.getItem('kb2.sessions.v1'))).toBeNull();

@@ -68,9 +68,9 @@ test('all four Today cards keep detail navigation, keyboard focus, phase data an
  await page.getByRole('region',{name:'Monday',exact:true}).getByRole('button',{name:'Change workout'}).click();
  await page.getByRole('button',{name:'Cancel assignment',exact:true}).click();expect(await page.evaluate(()=>localStorage.getItem('kb2.weekly-plan.v1'))).toBe(original);
  await page.getByRole('region',{name:'Wednesday',exact:true}).getByRole('button',{name:'Add workout'}).click();
- await page.getByRole('button',{name:'Assign to Wednesday: Tuesday of Spades',exact:true}).click();await page.reload();
+ await page.getByRole('button',{name:'Assign to Wednesday: Tuesday of Spades',exact:true}).click();await expect(page).toHaveURL(/#today$/);await page.reload();
  await expect(page.getByRole('region',{name:'Wednesday',exact:true}).getByRole('button',{name:'View workout: Tuesday of Spades',exact:true})).toBeVisible();
- await page.getByRole('region',{name:'Wednesday',exact:true}).getByRole('button',{name:'Remove',exact:true}).click();await page.reload();
+ await page.getByRole('region',{name:'Wednesday',exact:true}).getByRole('button',{name:'Remove',exact:true}).click();await expect(page.getByRole('region',{name:'Wednesday',exact:true})).toContainText('No workout assigned.');await page.reload();
  await expect(page.getByRole('region',{name:'Wednesday',exact:true}).getByText('No workout assigned.',{exact:true})).toBeVisible();
  expect(JSON.parse(await page.evaluate(()=>localStorage.getItem('kb2.weekly-plan.v1')))).toEqual({...assignments,Wednesday:null});
 });
@@ -84,7 +84,7 @@ test('Today styling and real detail CTA work offline, with preserved legacy and 
  });
  await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
  const original=await page.evaluate(()=>localStorage.getItem('kb2.weekly-plan.v1'));
- expect(await page.evaluate(async()=>Boolean(await (await caches.open('kb2-static-v36')).match(new URL('./styles/hm-today.css',location.href))))).toBe(true);
+ expect(await page.evaluate(async()=>Boolean(await (await caches.open('kb2-static-v37')).match(new URL('./styles/hm-today.css',location.href))))).toBe(true);
  await context.setOffline(true);await page.reload();
  await expect(page.locator('.day-slot')).toHaveCount(7);await expect(page.locator('.week-grid .workout-card')).toHaveCount(5);
  const legacy=page.getByRole('region',{name:'Saturday',exact:true});

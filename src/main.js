@@ -1,18 +1,13 @@
 import { createRoundAmrapTraining } from './ui/round-amrap-training.js';
-import { isClassicIron } from './domain/classic-iron-results.js';
 import { progressView } from './ui/progress.js';
 import { authKey } from './cloud/auth.js';
 import { workspaceKey } from './cloud/sync.js';
-import { auth, sync, libraryVisibility } from './cloud/runtime.js';
+import { auth, sync } from './cloud/runtime.js';
 import { withWorkspaceLock } from './platform/workspace-lock.js';
-import { visibilityKey } from './storage/library-visibility.js';
-import { libraryWorkouts } from './data/catalog.js';
+import { findWorkout } from './data/catalog.js';
 import { accountView } from './ui/account.js';
-import { createBlockTraining } from './ui/block-training.js';
-import { supportsResults } from './domain/result-schemas.js';
 import { historyView, savedSessionView } from './ui/session-history.js';
-import { createActiveWorkout } from './ui/active-workout.js';
-import { days, assignWorkout } from './domain/planning.js';
+import { days, assignWorkout, cleanWeeklyPlan } from './domain/planning.js';
 import { loadPlan, savePlan, planKey } from './storage/weekly-plan.js';
 import { todayView, libraryView, workoutView } from './ui/views.js';
 import { heading, emptyState, el } from './ui/components.js';
@@ -34,17 +29,16 @@ function allowExit() {
 function startWorkout(workout) {
   if (session && !allowExit()) return;
   activeHash = `#active/${workout.id}/${workout.version}`;
-  if (supportsResults(workout)) {
-    session = resultSession(workout);
-  } else session = createActiveWorkout(workout, () => { if (allowExit()) go('#today'); }, () => { stopSession(); go('#today'); });
+  if (!findWorkout(workout.id, workout.version)) return;
+  session = resultSession(workout);
   if (location.hash === activeHash) render(); else go(activeHash);
 }
 
 function resultSession(workout) {
-  return (isClassicIron(workout) ? createRoundAmrapTraining : createBlockTraining)(workout, { onExit: () => { if (allowExit()) go('#today'); }, onHistory: id => { stopSession(); go(`#session/${id}`); } });
+  return createRoundAmrapTraining(workout, { onExit: () => { if (allowExit()) go('#today'); }, onHistory: id => { stopSession(); go(`#session/${id}`); } });
 }
 
-function reloadPlan() { state = loadPlan(window.localStorage); const settings=libraryVisibility.state;status.textContent = state.error ?? (settings.blocked ? settings.error : ''); }
+function reloadPlan() { state = loadPlan(window.localStorage); state.plan = cleanWeeklyPlan(state.plan); status.textContent = state.error ?? ''; }
 // Access to localStorage itself may throw in restricted browser contexts.
 try { reloadPlan(); } catch { state = { plan: {}, error: 'Local storage is unavailable. Planning changes are disabled.' }; status.textContent = state.error; }
 function go(hash) { location.hash = hash; }
@@ -53,14 +47,14 @@ async function assign(day, workout, owner = auth.user?.id || null) {
   try {
     status.textContent = 'Saving weekly plan…';
     await withWorkspaceLock(() => {
-    libraryVisibility.assertContext(owner); libraryVisibility.recover(owner);
-    if (workout && libraryVisibility.state.hiddenIds.includes(workout.id)) throw new Error('Hidden workout');
+    if ((auth.user?.id || null) !== owner) throw new Error('Account changed.');
+    if (workout && !findWorkout(workout.id, workout.version)) throw new Error('Workout unavailable.');
     // Never write the shared plan from a tab whose signed-in account is stale.
     if(auth.configured && ((JSON.parse(localStorage.getItem(authKey)||'null')?.user?.id||null)!==(auth.user?.id||null) || (localStorage.getItem(workspaceKey)||null)!==(auth.user?.id||null)))throw new Error('Account changed.');
     // Read latest storage before changing one day, preserving other tab updates.
     const latest = loadPlan(window.localStorage);
     if (latest.error) throw new Error(latest.error);
-    const next = assignWorkout(libraryVisibility.cleanPlan(latest.plan), day, workout);
+    const next = assignWorkout(cleanWeeklyPlan(latest.plan), day, workout);
     savePlan(window.localStorage, next);
     state.plan = next;
     sync.planChanged();
@@ -68,16 +62,6 @@ async function assign(day, workout, owner = auth.user?.id || null) {
     status.textContent = workout ? `Workout assigned to ${day}.` : `Assignment removed from ${day}.`;
     if (location.hash === '#today' || !location.hash) render(false); else go('#today');
   } catch { status.textContent = 'The change could not be saved. Your previous plan has been preserved.'; }
-}
-let libraryBusy = false;
-async function changeLibrary(workout, hidden, owner) {
-  if (libraryBusy || !libraryWorkouts.some(w => w.id === workout.id)) return;
-  if (hidden && !confirm(`Hide ${workout.name}? It will disappear from your Library and weekly plan. Your saved workout history will remain available.`)) return;
-  libraryBusy = true;
-  try {
-    const changed = await libraryVisibility.change(workout.id, hidden, owner);
-    if (changed) { reloadPlan(); render(false); void sync.sync(); }
-  } finally { libraryBusy = false; }
 }
 function render(focus = true) {
   disposeProgress(); disposeProgress = () => {};
@@ -92,15 +76,13 @@ function render(focus = true) {
   else if (page === 'account') view = accountView();
   else if (page === 'today') {
     const owner = auth.user?.id || null;
-    try { libraryVisibility.assertContext(owner); view = todayView(libraryVisibility.cleanPlan(state.plan), go, d => assign(d, null, owner), Boolean(state.error || libraryVisibility.state.blocked)); }
-    catch { view = todayView({}, go, () => {}, true); }
+    let sameOwner = false;
+    try { sameOwner = (localStorage.getItem(workspaceKey) || null) === owner && (!auth.configured || (JSON.parse(localStorage.getItem(authKey)||'null')?.user?.id || null) === owner); } catch { /* Read-only planning when storage is blocked. */ }
+    view = todayView(sameOwner ? cleanWeeklyPlan(state.plan) : {}, go, d => assign(d, null, owner), Boolean(state.error || !sameOwner));
   }
   else if (page === 'library') {
-    const owner = auth.user?.id || null, settings = libraryVisibility.state;
-    view = libraryView(day, go, (d, workout) => assign(d, workout, owner), {hiddenIds: settings.hiddenIds, visibilityState: settings,
-      onVisibilityChange: (workout, hidden) => void changeLibrary(workout, hidden, owner),
-      retry: () => void libraryVisibility.synchronize().then(() => sync.sync()),
-      resolve: (id, local) => void libraryVisibility.resolve(id, local, owner).then(() => sync.sync())});
+    const owner = auth.user?.id || null;
+    view = libraryView(day, go, (d, workout) => assign(d, workout, owner));
   }
   else if (['workout', 'active', 'result'].includes(page)) view = workoutView(id, version, page, go, startWorkout);
   else if (page === 'progress') { const progress = progressView(); view = progress.root; disposeProgress = progress.dispose; }
@@ -147,13 +129,15 @@ window.addEventListener('pageshow', event => { if (event.persisted) render(false
 window.addEventListener('beforeunload', event => {
   if (session?.inProgress) { event.preventDefault(); event.returnValue = ''; }
 });
-window.addEventListener('storage', e => { if (e.key === planKey || e.key === visibilityKey(auth.user?.id || null) || e.key === workspaceKey || e.key === null) { try { reloadPlan(); render(false); } catch { /* Keep current state if storage becomes unavailable. */ } } });
-libraryVisibility.subscribe(() => { if (location.hash.startsWith('#library') || location.hash === '#today' || !location.hash) { try { reloadPlan(); render(false); } catch { /* Preserve the previous view on storage failure. */ } } });
+window.addEventListener('storage', e => { if (e.key === planKey || e.key === workspaceKey || e.key === null) { try { reloadPlan(); render(false); if (e.key === planKey) void sync.accountChanged(); } catch { /* Keep current state if storage becomes unavailable. */ } } });
 const accountControl=el('a',{href:'#account',className:'account-control'},'Account');
 const cloudIndicator=el('span',{className:'cloud-indicator','aria-live':'polite'},'Saved locally');
 document.querySelector('.app-header .header-account').append(accountControl,cloudIndicator);
 let previousAccount=null;
+let displayedCloudError='';
 function cloudUpdate(){
+  if(sync.state.error && (!auth.configured || location.hash!=='#account')){displayedCloudError=sync.state.error;status.textContent=displayedCloudError;}
+  else if(displayedCloudError){if(status.textContent===displayedCloudError)status.textContent=state?.error??'';displayedCloudError='';}
   accountControl.textContent=auth.user?'Account':'Log in';
   cloudIndicator.textContent=auth.configured?sync.state.message:'Local mode';
   if(location.hash==='#account')render(false);
@@ -167,8 +151,8 @@ auth.subscribe(()=>{
 });
 window.addEventListener('kb-plan-restored',()=>{try{reloadPlan();render(false);}catch{/* Preserve disabled state. */}});
 window.addEventListener('kb-session-change',()=>void sync.sync());
-window.addEventListener('online',()=>{libraryVisibility.refreshStatus();void auth.initialize().then(()=>sync.accountChanged());});
-window.addEventListener('offline',()=>{libraryVisibility.refreshStatus();void sync.sync();});
+window.addEventListener('online',()=>{void auth.initialize().then(()=>sync.accountChanged());});
+window.addEventListener('offline',()=>{void sync.sync();});
 window.addEventListener('focus',()=>void sync.sync());
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)void sync.sync();});
 window.addEventListener('storage',event=>{

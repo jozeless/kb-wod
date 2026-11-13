@@ -1,0 +1,2224 @@
+[
+  {
+    "schemaVersion": 1,
+    "id": "retired-0",
+    "workoutId": "monday-paranoid",
+    "workoutVersion": 4,
+    "workoutSnapshot": {
+      "id": "monday-paranoid",
+      "version": 4,
+      "code": "KB Monday Paranoid",
+      "name": "Monday Paranoid",
+      "type": "hybrid",
+      "suggestedDay": "Monday",
+      "category": "Strength and core",
+      "durationSeconds": 1270,
+      "demo": false,
+      "archived": false,
+      "image": null,
+      "execution": {
+        "mode": "continuous-results",
+        "schema": "weights-finisher-v1"
+      },
+      "purpose": "Upper, ABS and Legs with two short transitions, then one minute of technically correct KB Thruster repetitions.",
+      "warmup": {
+        "included": false,
+        "note": "Warm-up and the initial countdown are separate from the 21-minute 10-second workout."
+      },
+      "equipment": {
+        "name": "Kettlebell",
+        "availableMinKg": 4,
+        "availableMaxKg": 24,
+        "requiredWeightKg": null
+      },
+      "presentation": {
+        "cardStyle": "hm-kb",
+        "subtitle": "Strength · Sweat · Chaos"
+      },
+      "exercises": [
+        {
+          "id": "push-press",
+          "name": "KB Push Press",
+          "target": {
+            "min": 4,
+            "max": 6,
+            "unit": "reps per side"
+          },
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "offset-push-up",
+          "name": "KB Offset Push-Up",
+          "target": {
+            "min": 6,
+            "max": 8,
+            "unit": "reps"
+          },
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "staggered-stance-row",
+          "name": "KB Staggered-Stance Row",
+          "target": {
+            "min": 7,
+            "max": 8,
+            "unit": "reps per side"
+          },
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "overhead-triceps-extension",
+          "name": "KB Overhead Triceps Extension",
+          "target": {
+            "min": 7,
+            "max": 8,
+            "unit": "reps"
+          },
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "dead-bug-chest-press",
+          "name": "KB Dead Bug + Chest Press",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "standing-wood-chop",
+          "name": "KB Standing Wood Chop",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "kick-through",
+          "name": "KB Kick-Through",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "front-rack-squat",
+          "name": "KB Front Rack Squat",
+          "target": {
+            "min": 6,
+            "max": 8,
+            "unit": "reps"
+          },
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "swing",
+          "name": "KB Swing",
+          "target": {
+            "min": 12,
+            "max": 15,
+            "unit": "reps"
+          },
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "step-up",
+          "name": "KB Step-Up",
+          "target": {
+            "min": 5,
+            "max": 5,
+            "unit": "reps per side"
+          },
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "thruster",
+          "name": "KB Thruster",
+          "equipment": "kettlebell",
+          "note": "Count each technically correct, complete Thruster as one repetition."
+        }
+      ],
+      "phases": [
+        {
+          "id": "upper",
+          "name": "Upper",
+          "durationSeconds": 480,
+          "format": "intervals",
+          "rounds": 2,
+          "timer": {
+            "workSeconds": 40,
+            "restSeconds": 20,
+            "intervals": 8
+          },
+          "exerciseIds": [
+            "push-press",
+            "offset-push-up",
+            "staggered-stance-row",
+            "overhead-triceps-extension"
+          ],
+          "instructions": "Follow the existing exercise order for 2 rounds: 40 seconds of controlled work, then 20 seconds of rest after every exercise, including the final interval. Work both sides safely within the work period where applicable. Repetition ranges are optional references, not a requirement to advance. The next phase starts automatically.",
+          "objectives": [
+            "Complete up to 8 full 40/20 intervals with good technique. No repetitions are inferred from time.",
+            "Record actual working weights and the existing final result fields only; repetition ranges are optional guidance."
+          ],
+          "timeBasedPrescription": true
+        },
+        {
+          "id": "transition-to-abs",
+          "name": "Transition to ABS",
+          "durationSeconds": 5,
+          "format": "transition",
+          "timer": {
+            "durationSeconds": 5
+          },
+          "exerciseIds": [],
+          "instructions": "Rest and prepare. The next block begins automatically after five seconds.",
+          "objectives": []
+        },
+        {
+          "id": "abs",
+          "name": "ABS",
+          "durationSeconds": 360,
+          "format": "intervals",
+          "rounds": 2,
+          "timer": {
+            "workSeconds": 40,
+            "restSeconds": 20,
+            "intervals": 6
+          },
+          "exerciseIds": [
+            "dead-bug-chest-press",
+            "standing-wood-chop",
+            "kick-through"
+          ],
+          "instructions": "Follow the existing exercise order for 2 rounds: 40 seconds of controlled work, then 20 seconds of rest after every exercise, including the final interval. Work both sides safely within the work period where applicable. Repetition ranges are optional references, not a requirement to advance. The next phase starts automatically.",
+          "objectives": [
+            "Complete up to 6 full 40/20 intervals with good technique. No repetitions are inferred from time.",
+            "Record actual working weights and the existing final result fields only; repetition ranges are optional guidance."
+          ],
+          "timeBasedPrescription": true
+        },
+        {
+          "id": "transition-to-legs",
+          "name": "Transition to Legs",
+          "durationSeconds": 5,
+          "format": "transition",
+          "timer": {
+            "durationSeconds": 5
+          },
+          "exerciseIds": [],
+          "instructions": "Rest and prepare. The next block begins automatically after five seconds.",
+          "objectives": []
+        },
+        {
+          "id": "legs",
+          "name": "Legs",
+          "durationSeconds": 360,
+          "format": "intervals",
+          "rounds": 2,
+          "timer": {
+            "workSeconds": 40,
+            "restSeconds": 20,
+            "intervals": 6
+          },
+          "exerciseIds": [
+            "front-rack-squat",
+            "swing",
+            "step-up"
+          ],
+          "instructions": "Follow the existing exercise order for 2 rounds: 40 seconds of controlled work, then 20 seconds of rest after every exercise, including the final interval. Work both sides safely within the work period where applicable. Repetition ranges are optional references, not a requirement to advance. The next phase starts automatically.",
+          "objectives": [
+            "Complete up to 6 full 40/20 intervals with good technique. No repetitions are inferred from time.",
+            "Record actual working weights and the existing final result fields only; repetition ranges are optional guidance."
+          ],
+          "timeBasedPrescription": true
+        },
+        {
+          "id": "finisher",
+          "name": "Final Finisher",
+          "durationSeconds": 60,
+          "format": "amrap-reps",
+          "timer": {
+            "durationSeconds": 60
+          },
+          "exerciseIds": [
+            "thruster"
+          ],
+          "instructions": "Perform as many technically correct full KB Thruster repetitions as possible in 60 seconds. Count each complete Thruster as one repetition. No automatic exercise changes or extra rest.",
+          "objectives": [
+            "Record the working weight and actual complete repetitions after the timer finishes."
+          ]
+        }
+      ],
+      "resultFields": [
+        {
+          "id": "exerciseWeights",
+          "type": "exercise-weight-map",
+          "exerciseIds": [
+            "push-press",
+            "offset-push-up",
+            "staggered-stance-row",
+            "overhead-triceps-extension",
+            "dead-bug-chest-press",
+            "standing-wood-chop",
+            "kick-through",
+            "front-rack-squat",
+            "swing",
+            "step-up",
+            "thruster"
+          ],
+          "unit": "kg",
+          "required": false
+        },
+        {
+          "id": "finisherReps",
+          "type": "integer",
+          "min": 0,
+          "required": false
+        },
+        {
+          "id": "perceivedEffort",
+          "type": "integer",
+          "min": 1,
+          "max": 10,
+          "required": false
+        },
+        {
+          "id": "notes",
+          "type": "text",
+          "required": false
+        }
+      ],
+      "weightPreferenceSource": {
+        "version": 3,
+        "execution": {
+          "mode": "continuous-results",
+          "schema": "weights-finisher-v1"
+        },
+        "exerciseIds": [
+          "push-press",
+          "offset-push-up",
+          "staggered-stance-row",
+          "overhead-triceps-extension",
+          "dead-bug-chest-press",
+          "standing-wood-chop",
+          "kick-through",
+          "front-rack-squat",
+          "swing",
+          "step-up",
+          "thruster"
+        ]
+      },
+      "audioProfile": "clear-loud-v1"
+    },
+    "startedAt": "2026-11-13T10:00:00Z",
+    "completedAt": "2026-11-13T10:00:00Z",
+    "activeDurationMs": 1270000,
+    "status": "completed",
+    "stage": "finisher-results",
+    "blockIndex": 5,
+    "checkpointMs": 0,
+    "completedBlocks": [
+      "upper",
+      "transition-to-abs",
+      "abs",
+      "transition-to-legs",
+      "legs",
+      "finisher"
+    ],
+    "hasStarted": false,
+    "soundEnabled": true,
+    "form": {
+      "weights": {
+        "push-press": "12",
+        "offset-push-up": "12",
+        "staggered-stance-row": "12",
+        "overhead-triceps-extension": "12",
+        "dead-bug-chest-press": "12",
+        "standing-wood-chop": "12",
+        "kick-through": "12",
+        "front-rack-squat": "12",
+        "swing": "12",
+        "step-up": "12",
+        "thruster": "12"
+      },
+      "finisherReps": "17",
+      "perceivedEffort": "",
+      "notes": "",
+      "invalid": {}
+    },
+    "results": {
+      "exerciseWeights": {
+        "push-press": 12,
+        "offset-push-up": 12,
+        "staggered-stance-row": 12,
+        "overhead-triceps-extension": 12,
+        "dead-bug-chest-press": 12,
+        "standing-wood-chop": 12,
+        "kick-through": 12,
+        "front-rack-squat": 12,
+        "swing": 12,
+        "step-up": 12,
+        "thruster": 12
+      },
+      "finisher": {
+        "exerciseId": "thruster",
+        "reps": 17
+      },
+      "perceivedEffort": null,
+      "notes": ""
+    },
+    "ownerId": null
+  },
+  {
+    "schemaVersion": 1,
+    "id": "retired-1",
+    "workoutId": "tuesday-of-spades",
+    "workoutVersion": 2,
+    "workoutSnapshot": {
+      "id": "tuesday-of-spades",
+      "version": 2,
+      "code": "HM/KB Tuesday",
+      "name": "Tuesday of Spades",
+      "suggestedDay": "Tuesday",
+      "type": "hybrid",
+      "category": "Full Body · Cardio Priority",
+      "durationSeconds": 1200,
+      "demo": false,
+      "archived": false,
+      "image": null,
+      "execution": {
+        "mode": "continuous-results",
+        "schema": "tuesday-weights-rounds-v1"
+      },
+      "purpose": "Strength, conditioning and a four-minute cardio circuit. Automatic block changes; record weights and complete finisher rounds only.",
+      "warmup": {
+        "included": false,
+        "note": "Warm-up, cooldown and initial 3-2-1 countdown are separate from the 20-minute workout."
+      },
+      "equipment": {
+        "name": "Kettlebell",
+        "availableMinKg": 4,
+        "availableMaxKg": 24,
+        "requiredWeightKg": null
+      },
+      "exercises": [
+        {
+          "id": "renegade-row",
+          "name": "KB Renegade Row",
+          "equipment": "kettlebell",
+          "target": {
+            "min": 4,
+            "max": 6,
+            "unit": "repetitions per side"
+          }
+        },
+        {
+          "id": "swing",
+          "name": "KB Swing",
+          "equipment": "kettlebell",
+          "target": {
+            "min": 12,
+            "max": 15,
+            "unit": "repetitions"
+          }
+        },
+        {
+          "id": "step-up-knee-drive",
+          "name": "KB Step-Up + Knee Drive",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "reverse-lunge-curl",
+          "name": "KB Reverse Lunge + Biceps Curl",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "plank-drag",
+          "name": "KB Plank Drag",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "atw-front-raise",
+          "name": "KB Around the World + Front Raise",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "thrusters",
+          "name": "KB Thrusters",
+          "equipment": "kettlebell",
+          "target": {
+            "min": 8,
+            "max": 8,
+            "unit": "complete repetitions"
+          },
+          "note": "Use ONE kettlebell."
+        },
+        {
+          "id": "hollow-ups",
+          "name": "Hollow-Ups",
+          "equipment": "bodyweight",
+          "target": {
+            "min": 8,
+            "max": 8,
+            "unit": "repetitions"
+          }
+        },
+        {
+          "id": "jump-squats",
+          "name": "Jump Squats",
+          "equipment": "bodyweight",
+          "target": {
+            "min": 10,
+            "max": 10,
+            "unit": "repetitions"
+          }
+        }
+      ],
+      "phases": [
+        {
+          "id": "strength",
+          "name": "Strength",
+          "format": "intervals",
+          "durationSeconds": 480,
+          "rounds": 4,
+          "timer": {
+            "workSeconds": 40,
+            "restSeconds": 20,
+            "intervals": 8
+          },
+          "exerciseIds": [
+            "renegade-row",
+            "swing"
+          ],
+          "instructions": "Follow the existing exercise order for 4 rounds: 40 seconds of controlled work, then 20 seconds of rest after every exercise, including the final interval. Work both sides safely within the work period where applicable. Repetition ranges are optional references, not a requirement to advance. The next phase starts automatically.",
+          "objectives": [
+            "Complete up to 8 full 40/20 intervals with good technique. No repetitions are inferred from time.",
+            "Record actual working weights and the existing final result fields only; repetition ranges are optional guidance."
+          ],
+          "timeBasedPrescription": true
+        },
+        {
+          "id": "conditioning",
+          "name": "Conditioning",
+          "format": "intervals",
+          "durationSeconds": 480,
+          "rounds": 2,
+          "timer": {
+            "workSeconds": 40,
+            "restSeconds": 20,
+            "intervals": 8
+          },
+          "exerciseIds": [
+            "step-up-knee-drive",
+            "reverse-lunge-curl",
+            "plank-drag",
+            "atw-front-raise"
+          ],
+          "instructions": "Follow the existing exercise order for 2 rounds: 40 seconds of controlled work, then 20 seconds of rest after every exercise, including the final interval. Work both sides safely within the work period where applicable. Repetition ranges are optional references, not a requirement to advance. The next phase starts automatically.",
+          "objectives": [
+            "Complete up to 8 full 40/20 intervals with good technique. No repetitions are inferred from time.",
+            "Record actual working weights and the existing final result fields only; repetition ranges are optional guidance."
+          ],
+          "timeBasedPrescription": true
+        },
+        {
+          "id": "cardio-sweat",
+          "name": "Cardio & Sweat",
+          "format": "amrap",
+          "durationSeconds": 240,
+          "timer": {
+            "durationSeconds": 240
+          },
+          "exerciseIds": [
+            "thrusters",
+            "hollow-ups",
+            "jump-squats"
+          ],
+          "audioCue": "finisher",
+          "instructions": "Repeat 8 KB Thrusters (ONE kettlebell), 8 Hollow-Ups and 10 Jump Squats. Count complete circuits manually. No automatic rests or exercise changes.",
+          "objectives": [
+            "Record complete rounds achieved in four minutes; zero is valid."
+          ]
+        }
+      ],
+      "resultFields": [
+        {
+          "id": "exerciseWeights",
+          "label": "Pesos utilizados",
+          "description": "7 ejercicios con KB, incluyendo Thrusters. Hollow-Ups y Jump Squats sin peso.",
+          "type": "exercise-weight-map",
+          "exerciseIds": [
+            "renegade-row",
+            "swing",
+            "step-up-knee-drive",
+            "reverse-lunge-curl",
+            "plank-drag",
+            "atw-front-raise",
+            "thrusters"
+          ],
+          "unit": "kg",
+          "required": false
+        },
+        {
+          "id": "fullRounds",
+          "label": "Finisher · Rondas completas",
+          "type": "integer",
+          "min": 0,
+          "required": false
+        }
+      ],
+      "audioProfile": "clear-loud-v1",
+      "weightPreferenceSource": {
+        "version": 1,
+        "execution": {
+          "mode": "continuous-results",
+          "schema": "tuesday-weights-rounds-v1"
+        },
+        "exerciseIds": [
+          "renegade-row",
+          "swing",
+          "step-up-knee-drive",
+          "reverse-lunge-curl",
+          "plank-drag",
+          "atw-front-raise",
+          "thrusters"
+        ]
+      }
+    },
+    "startedAt": "2026-11-13T10:00:00Z",
+    "completedAt": "2026-11-13T10:00:00Z",
+    "activeDurationMs": 1200000,
+    "status": "completed",
+    "stage": "cardio-sweat-results",
+    "blockIndex": 2,
+    "checkpointMs": 0,
+    "completedBlocks": [
+      "strength",
+      "conditioning",
+      "cardio-sweat"
+    ],
+    "hasStarted": false,
+    "soundEnabled": true,
+    "form": {
+      "weights": {
+        "renegade-row": "12",
+        "swing": "12",
+        "step-up-knee-drive": "12",
+        "reverse-lunge-curl": "12",
+        "plank-drag": "12",
+        "atw-front-raise": "12",
+        "thrusters": "12"
+      },
+      "fullRounds": "3",
+      "invalid": {}
+    },
+    "results": {
+      "exerciseWeights": {
+        "renegade-row": 12,
+        "swing": 12,
+        "step-up-knee-drive": 12,
+        "reverse-lunge-curl": 12,
+        "plank-drag": 12,
+        "atw-front-raise": 12,
+        "thrusters": 12
+      },
+      "finisher": {
+        "phaseId": "cardio-sweat",
+        "fullRounds": 3
+      }
+    },
+    "ownerId": null
+  },
+  {
+    "schemaVersion": 1,
+    "id": "retired-2",
+    "workoutId": "thursday-bells",
+    "workoutVersion": 2,
+    "workoutSnapshot": {
+      "id": "thursday-bells",
+      "version": 2,
+      "code": "HM/KB Thursday",
+      "name": "Thursday Bells",
+      "suggestedDay": "Thursday",
+      "type": "hybrid",
+      "category": "Full Body · Lower Priority",
+      "demo": false,
+      "archived": false,
+      "image": null,
+      "durationSeconds": 1270,
+      "execution": {
+        "mode": "continuous-results",
+        "schema": "thursday-weights-steps-v1"
+      },
+      "purpose": "Lower-body-priority full-body training, preserving Upper and ABS. Record working weights and total controlled finisher steps only.",
+      "warmup": {
+        "included": false,
+        "note": "Warm-up, cooldown and the initial 3-2-1 countdown are separate from the 21:10 workout."
+      },
+      "equipment": {
+        "name": "Kettlebell",
+        "availableMinKg": 4,
+        "availableMaxKg": 24,
+        "requiredWeightKg": null
+      },
+      "exercises": [
+        {
+          "id": "crush-press",
+          "name": "KB Crush Press",
+          "equipment": "kettlebell",
+          "target": {
+            "min": 6,
+            "max": 8,
+            "unit": "repetitions"
+          }
+        },
+        {
+          "id": "staggered-stance-row",
+          "name": "KB Staggered-Stance Row",
+          "equipment": "kettlebell",
+          "target": {
+            "min": 6,
+            "max": 8,
+            "unit": "repetitions per side"
+          }
+        },
+        {
+          "id": "halo",
+          "name": "KB Halo",
+          "equipment": "kettlebell",
+          "target": {
+            "min": 4,
+            "max": 6,
+            "unit": "repetitions per direction"
+          }
+        },
+        {
+          "id": "tall-kneeling-press-out",
+          "name": "KB Tall-Kneeling Press-Out",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "half-kneeling-diagonal-chop",
+          "name": "KB Half-Kneeling Diagonal Chop",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "sit-up-press-out",
+          "name": "KB Sit-Up + Press-Out",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "goblet-squat",
+          "name": "KB Goblet Squat",
+          "equipment": "kettlebell",
+          "target": {
+            "min": 8,
+            "max": 10,
+            "unit": "repetitions"
+          }
+        },
+        {
+          "id": "swing",
+          "name": "KB Swing",
+          "equipment": "kettlebell",
+          "target": {
+            "min": 12,
+            "max": 15,
+            "unit": "repetitions"
+          }
+        },
+        {
+          "id": "lateral-lunge",
+          "name": "KB Lateral Lunge",
+          "equipment": "kettlebell",
+          "target": {
+            "min": 5,
+            "max": 5,
+            "unit": "repetitions per side"
+          }
+        },
+        {
+          "id": "standing-calf-raise",
+          "name": "KB Standing Calf Raise",
+          "equipment": "kettlebell",
+          "target": {
+            "min": 12,
+            "max": 15,
+            "unit": "repetitions"
+          }
+        },
+        {
+          "id": "suitcase-high-knee-march",
+          "name": "KB Suitcase High-Knee March",
+          "equipment": "kettlebell",
+          "note": "March with deliberate, controlled high knees. One controlled knee lift counts as one step. Count total steps across both holding sides. Choose your own load; no weight is prescribed."
+        }
+      ],
+      "phases": [
+        {
+          "id": "upper",
+          "name": "Upper",
+          "format": "intervals",
+          "durationSeconds": 360,
+          "rounds": 2,
+          "timer": {
+            "workSeconds": 40,
+            "restSeconds": 20,
+            "intervals": 6
+          },
+          "exerciseIds": [
+            "crush-press",
+            "staggered-stance-row",
+            "halo"
+          ],
+          "instructions": "Follow the existing exercise order for 2 rounds: 40 seconds of controlled work, then 20 seconds of rest after every exercise, including the final interval. Work both sides safely within the work period where applicable. Repetition ranges are optional references, not a requirement to advance. The next phase starts automatically.",
+          "objectives": [
+            "Complete up to 6 full 40/20 intervals with good technique. No repetitions are inferred from time.",
+            "Record actual working weights and the existing final result fields only; repetition ranges are optional guidance."
+          ],
+          "timeBasedPrescription": true
+        },
+        {
+          "id": "transition-to-abs",
+          "name": "Transition to ABS",
+          "durationSeconds": 5,
+          "format": "transition",
+          "timer": {
+            "durationSeconds": 5
+          },
+          "exerciseIds": [],
+          "instructions": "Rest and prepare. The next block begins automatically after five seconds.",
+          "objectives": []
+        },
+        {
+          "id": "abs",
+          "name": "ABS",
+          "format": "intervals",
+          "durationSeconds": 360,
+          "rounds": 2,
+          "timer": {
+            "workSeconds": 40,
+            "restSeconds": 20,
+            "intervals": 6
+          },
+          "exerciseIds": [
+            "tall-kneeling-press-out",
+            "half-kneeling-diagonal-chop",
+            "sit-up-press-out"
+          ],
+          "instructions": "Follow the existing exercise order for 2 rounds: 40 seconds of controlled work, then 20 seconds of rest after every exercise, including the final interval. Work both sides safely within the work period where applicable. Repetition ranges are optional references, not a requirement to advance. The next phase starts automatically.",
+          "objectives": [
+            "Complete up to 6 full 40/20 intervals with good technique. No repetitions are inferred from time.",
+            "Record actual working weights and the existing final result fields only; repetition ranges are optional guidance."
+          ],
+          "timeBasedPrescription": true
+        },
+        {
+          "id": "transition-to-legs",
+          "name": "Transition to Legs",
+          "durationSeconds": 5,
+          "format": "transition",
+          "timer": {
+            "durationSeconds": 5
+          },
+          "exerciseIds": [],
+          "instructions": "Rest and prepare. The next block begins automatically after five seconds.",
+          "objectives": []
+        },
+        {
+          "id": "legs",
+          "name": "Legs",
+          "format": "intervals",
+          "durationSeconds": 480,
+          "rounds": 2,
+          "timer": {
+            "workSeconds": 40,
+            "restSeconds": 20,
+            "intervals": 8
+          },
+          "exerciseIds": [
+            "goblet-squat",
+            "swing",
+            "lateral-lunge",
+            "standing-calf-raise"
+          ],
+          "instructions": "Follow the existing exercise order for 2 rounds: 40 seconds of controlled work, then 20 seconds of rest after every exercise, including the final interval. Work both sides safely within the work period where applicable. Repetition ranges are optional references, not a requirement to advance. The next phase starts automatically.",
+          "objectives": [
+            "Complete up to 8 full 40/20 intervals with good technique. No repetitions are inferred from time.",
+            "Record actual working weights and the existing final result fields only; repetition ranges are optional guidance."
+          ],
+          "timeBasedPrescription": true
+        },
+        {
+          "id": "finisher",
+          "name": "Hell's Finisher",
+          "format": "timed-sides",
+          "durationSeconds": 60,
+          "audioCue": "finisher",
+          "timer": {
+            "durationSeconds": 60,
+            "holds": [
+              {
+                "side": "right",
+                "durationSeconds": 30
+              },
+              {
+                "side": "left",
+                "durationSeconds": 30
+              }
+            ]
+          },
+          "exerciseIds": [
+            "suitcase-high-knee-march"
+          ],
+          "instructions": "Hold the kettlebell in your RIGHT hand for the first 30 seconds, then LEFT hand for the last 30 seconds. Switch automatically when the instruction and change beep occur. March with controlled high knees; one knee lift = one step. Count the total across both halves. No rounds or automatic rests.",
+          "objectives": [
+            "Record the working weight and one total of controlled steps across the whole 60 seconds."
+          ]
+        }
+      ],
+      "resultFields": [
+        {
+          "id": "exerciseWeights",
+          "type": "exercise-weight-map",
+          "label": "Pesos utilizados",
+          "description": "11 pesos de kettlebell (kg), registrados durante esta sesión.",
+          "exerciseIds": [
+            "crush-press",
+            "staggered-stance-row",
+            "halo",
+            "tall-kneeling-press-out",
+            "half-kneeling-diagonal-chop",
+            "sit-up-press-out",
+            "goblet-squat",
+            "swing",
+            "lateral-lunge",
+            "standing-calf-raise",
+            "suitcase-high-knee-march"
+          ],
+          "unit": "kg",
+          "required": false
+        },
+        {
+          "id": "totalSteps",
+          "type": "integer",
+          "label": "Hell's Finisher · Pasos totales",
+          "description": "Una elevación controlada de rodilla = un paso. Sumar ambas mitades en un único total.",
+          "min": 0,
+          "required": false
+        }
+      ],
+      "audioProfile": "clear-loud-v1",
+      "weightPreferenceSource": {
+        "version": 1,
+        "execution": {
+          "mode": "continuous-results",
+          "schema": "thursday-weights-steps-v1"
+        },
+        "exerciseIds": [
+          "crush-press",
+          "staggered-stance-row",
+          "halo",
+          "tall-kneeling-press-out",
+          "half-kneeling-diagonal-chop",
+          "sit-up-press-out",
+          "goblet-squat",
+          "swing",
+          "lateral-lunge",
+          "standing-calf-raise",
+          "suitcase-high-knee-march"
+        ]
+      }
+    },
+    "startedAt": "2026-11-13T10:00:00Z",
+    "completedAt": "2026-11-13T10:00:00Z",
+    "activeDurationMs": 1270000,
+    "status": "completed",
+    "stage": "finisher-results",
+    "blockIndex": 5,
+    "checkpointMs": 0,
+    "completedBlocks": [
+      "upper",
+      "transition-to-abs",
+      "abs",
+      "transition-to-legs",
+      "legs",
+      "finisher"
+    ],
+    "hasStarted": false,
+    "soundEnabled": true,
+    "form": {
+      "weights": {
+        "crush-press": "12",
+        "staggered-stance-row": "12",
+        "halo": "12",
+        "tall-kneeling-press-out": "12",
+        "half-kneeling-diagonal-chop": "12",
+        "sit-up-press-out": "12",
+        "goblet-squat": "12",
+        "swing": "12",
+        "lateral-lunge": "12",
+        "standing-calf-raise": "12",
+        "suitcase-high-knee-march": "12"
+      },
+      "totalSteps": "",
+      "invalid": {}
+    },
+    "results": {
+      "exerciseWeights": {
+        "crush-press": 12,
+        "staggered-stance-row": 12,
+        "halo": 12,
+        "tall-kneeling-press-out": 12,
+        "half-kneeling-diagonal-chop": 12,
+        "sit-up-press-out": 12,
+        "goblet-squat": 12,
+        "swing": 12,
+        "lateral-lunge": 12,
+        "standing-calf-raise": 12,
+        "suitcase-high-knee-march": 12
+      },
+      "finisher": {
+        "exerciseId": "suitcase-high-knee-march",
+        "totalSteps": null
+      }
+    },
+    "ownerId": null
+  },
+  {
+    "schemaVersion": 1,
+    "id": "retired-3",
+    "workoutId": "friday-to-black",
+    "workoutVersion": 2,
+    "workoutSnapshot": {
+      "id": "friday-to-black",
+      "version": 2,
+      "code": "HM/KB Friday",
+      "name": "Friday To Black",
+      "suggestedDay": "Friday",
+      "type": "hybrid",
+      "category": "Full Body · Strength & Conditioning",
+      "durationSeconds": 1200,
+      "demo": false,
+      "archived": false,
+      "image": null,
+      "execution": {
+        "mode": "continuous-results",
+        "schema": "friday-weights-floorpress-rounds-v1"
+      },
+      "purpose": "Strength and conditioning followed by a four-minute circuit. Record seven working weights, final Floor Press set repetitions per arm and complete finisher rounds only.",
+      "warmup": {
+        "included": false,
+        "note": "Warm-up, cooldown and initial 3-2-1 countdown are outside the 20-minute workout."
+      },
+      "equipment": {
+        "name": "Kettlebell",
+        "availableMinKg": 4,
+        "availableMaxKg": 24,
+        "requiredWeightKg": null
+      },
+      "exercises": [
+        {
+          "id": "alternating-floor-press",
+          "name": "KB Alternating Floor Press",
+          "equipment": "kettlebell",
+          "target": {
+            "min": 5,
+            "max": 6,
+            "unit": "repetitions per arm"
+          },
+          "note": "Use ONE kettlebell. Alternate arms with controlled technique within the 40-second work period. Fourth Floor Press working set: 06:00–06:40, followed by rest until 07:00 (full slot 06:00–07:00). Count actual repetitions for each arm separately, not totals across all four sets."
+        },
+        {
+          "id": "sumo-deadlift",
+          "name": "KB Sumo Deadlift",
+          "equipment": "kettlebell",
+          "target": {
+            "min": 8,
+            "max": 10,
+            "unit": "repetitions"
+          },
+          "note": "Move with controlled technique for 40 seconds, then rest for the full 20 seconds. Repetition ranges are optional guidance."
+        },
+        {
+          "id": "staggered-stance-row",
+          "name": "KB Staggered-Stance Row",
+          "equipment": "kettlebell",
+          "note": "Work both sides evenly within 40 seconds; 20 seconds per side is guidance, not an extra timer segment."
+        },
+        {
+          "id": "sit-up-twist",
+          "name": "KB Sit-Up + Twist",
+          "equipment": "kettlebell",
+          "note": "Alternate twist directions evenly during the 40-second work interval."
+        },
+        {
+          "id": "front-rack-march",
+          "name": "KB Front Rack March",
+          "equipment": "kettlebell",
+          "note": "Work both holding sides evenly within 40 seconds; 20 seconds per side is guidance. Switch manually without adding time."
+        },
+        {
+          "id": "chest-level-crossover",
+          "name": "KB Chest-Level Crossover",
+          "equipment": "kettlebell",
+          "note": "Work both sides evenly within the 40-second interval."
+        },
+        {
+          "id": "goblet-squat-curl",
+          "name": "KB Goblet Squat + Curl",
+          "equipment": "kettlebell",
+          "target": {
+            "min": 6,
+            "max": 6,
+            "unit": "complete combinations"
+          },
+          "note": "Use ONE kettlebell. One complete squat-plus-curl combination counts as one repetition."
+        },
+        {
+          "id": "mountain-climbers",
+          "name": "Mountain Climbers",
+          "equipment": "bodyweight",
+          "target": {
+            "min": 20,
+            "max": 20,
+            "unit": "repetitions total"
+          },
+          "note": "One knee drive counts as one repetition. Alternate legs."
+        },
+        {
+          "id": "burpees",
+          "name": "Burpees",
+          "equipment": "bodyweight",
+          "target": {
+            "min": 6,
+            "max": 6,
+            "unit": "repetitions"
+          },
+          "note": "Each fully completed burpee counts as one repetition."
+        }
+      ],
+      "phases": [
+        {
+          "id": "strength",
+          "name": "Strength",
+          "format": "intervals",
+          "durationSeconds": 480,
+          "rounds": 4,
+          "timer": {
+            "workSeconds": 40,
+            "restSeconds": 20,
+            "intervals": 8
+          },
+          "exerciseIds": [
+            "alternating-floor-press",
+            "sumo-deadlift"
+          ],
+          "instructions": "Follow the existing exercise order for 4 rounds: 40 seconds of controlled work, then 20 seconds of rest after every exercise, including the final interval. Work both sides safely within the work period where applicable. Repetition ranges are optional references, not a requirement to advance. The next phase starts automatically. Fourth Floor Press working set: 06:00–06:40, followed by rest until 07:00 (full slot 06:00–07:00). Count actual repetitions for each arm separately, not totals across all four sets.",
+          "objectives": [
+            "Complete up to 8 full 40/20 intervals with good technique. No repetitions are inferred from time.",
+            "Record actual working weights and the existing final result fields only; repetition ranges are optional guidance.",
+            "Fourth Floor Press working set: 06:00–06:40, followed by rest until 07:00 (full slot 06:00–07:00). Count actual repetitions for each arm separately, not totals across all four sets."
+          ],
+          "timeBasedPrescription": true
+        },
+        {
+          "id": "conditioning",
+          "name": "Conditioning",
+          "format": "intervals",
+          "durationSeconds": 480,
+          "rounds": 2,
+          "timer": {
+            "workSeconds": 40,
+            "restSeconds": 20,
+            "intervals": 8
+          },
+          "exerciseIds": [
+            "staggered-stance-row",
+            "sit-up-twist",
+            "front-rack-march",
+            "chest-level-crossover"
+          ],
+          "instructions": "Follow the existing exercise order for 2 rounds: 40 seconds of controlled work, then 20 seconds of rest after every exercise, including the final interval. Work both sides safely within the work period where applicable. Repetition ranges are optional references, not a requirement to advance. The next phase starts automatically.",
+          "objectives": [
+            "Complete up to 8 full 40/20 intervals with good technique. No repetitions are inferred from time.",
+            "Record actual working weights and the existing final result fields only; repetition ranges are optional guidance."
+          ],
+          "timeBasedPrescription": true
+        },
+        {
+          "id": "finisher",
+          "name": "Finisher",
+          "format": "amrap",
+          "durationSeconds": 240,
+          "audioCue": "finisher",
+          "timer": {
+            "durationSeconds": 240
+          },
+          "exerciseIds": [
+            "goblet-squat-curl",
+            "mountain-climbers",
+            "burpees"
+          ],
+          "instructions": "Repeat 6 KB Goblet Squat + Curl combinations, 20 Mountain Climbers total and 6 Burpees for four minutes. Manage your own pace and sequence. No automatic exercise changes or programmed rest. Count complete 6 / 20 / 6 circuits manually; no partial rounds.",
+          "objectives": [
+            "Record complete rounds only, plus the kettlebell working weight."
+          ]
+        }
+      ],
+      "resultFields": [
+        {
+          "id": "exerciseWeights",
+          "type": "exercise-weight-map",
+          "label": "Pesos utilizados · 7 ejercicios KB",
+          "description": "Mountain Climbers y Burpees sin campos de peso.",
+          "exerciseIds": [
+            "alternating-floor-press",
+            "sumo-deadlift",
+            "staggered-stance-row",
+            "sit-up-twist",
+            "front-rack-march",
+            "chest-level-crossover",
+            "goblet-squat-curl"
+          ],
+          "unit": "kg",
+          "required": false
+        },
+        {
+          "id": "keyExercise",
+          "type": "per-arm-repetitions",
+          "label": "Alternating Floor Press · repeticiones por brazo",
+          "description": "Fourth Floor Press working set: 06:00–06:40, followed by rest until 07:00 (full slot 06:00–07:00). Count actual repetitions for each arm separately, not totals across all four sets.",
+          "exerciseId": "alternating-floor-press",
+          "referenceSet": "final",
+          "fields": [
+            "leftReps",
+            "rightReps"
+          ],
+          "min": 0,
+          "required": false
+        },
+        {
+          "id": "fullRounds",
+          "type": "integer",
+          "label": "Finisher · rondas completas",
+          "description": "Solo circuitos completos de 6 / 20 / 6 durante cuatro minutos.",
+          "min": 0,
+          "required": false
+        }
+      ],
+      "audioProfile": "clear-loud-v1",
+      "weightPreferenceSource": {
+        "version": 1,
+        "execution": {
+          "mode": "continuous-results",
+          "schema": "friday-weights-floorpress-rounds-v1"
+        },
+        "exerciseIds": [
+          "alternating-floor-press",
+          "sumo-deadlift",
+          "staggered-stance-row",
+          "sit-up-twist",
+          "front-rack-march",
+          "chest-level-crossover",
+          "goblet-squat-curl"
+        ]
+      }
+    },
+    "startedAt": "2026-11-13T10:00:00Z",
+    "completedAt": "2026-11-13T10:00:00Z",
+    "activeDurationMs": 1200000,
+    "status": "completed",
+    "stage": "finisher-results",
+    "blockIndex": 2,
+    "checkpointMs": 0,
+    "completedBlocks": [
+      "strength",
+      "conditioning",
+      "finisher"
+    ],
+    "hasStarted": false,
+    "soundEnabled": true,
+    "form": {
+      "weights": {
+        "alternating-floor-press": "12",
+        "sumo-deadlift": "12",
+        "staggered-stance-row": "12",
+        "sit-up-twist": "12",
+        "front-rack-march": "12",
+        "chest-level-crossover": "12",
+        "goblet-squat-curl": "12"
+      },
+      "fullRounds": "3",
+      "invalid": {},
+      "leftReps": "",
+      "rightReps": ""
+    },
+    "results": {
+      "exerciseWeights": {
+        "alternating-floor-press": 12,
+        "sumo-deadlift": 12,
+        "staggered-stance-row": 12,
+        "sit-up-twist": 12,
+        "front-rack-march": 12,
+        "chest-level-crossover": 12,
+        "goblet-squat-curl": 12
+      },
+      "keyExercise": {
+        "exerciseId": "alternating-floor-press",
+        "referenceSet": "final",
+        "leftReps": null,
+        "rightReps": null
+      },
+      "finisher": {
+        "phaseId": "finisher",
+        "fullRounds": 3
+      }
+    },
+    "ownerId": null
+  },
+  {
+    "schemaVersion": 1,
+    "id": "retired-4",
+    "workoutId": "oldschool-sailor",
+    "workoutVersion": 1,
+    "workoutSnapshot": {
+      "id": "oldschool-sailor",
+      "version": 1,
+      "code": "HM/KB WOD 005",
+      "name": "Oldschool Sailor",
+      "category": "Full Body / Oldschool Strength",
+      "type": "hybrid",
+      "demo": false,
+      "archived": false,
+      "image": null,
+      "purpose": "Four consecutive blocks of controlled full-body strength work, with one pass per block and no prescribed repetition counts.",
+      "durationSeconds": 1200,
+      "audioProfile": "clear-loud-v1",
+      "execution": {
+        "mode": "continuous-results",
+        "schema": "oldschool-weights-v1"
+      },
+      "presentation": {
+        "subtitle": "Full Body / Oldschool Strength",
+        "timing": "45/15",
+        "showCode": true,
+        "durationFormat": "clock",
+        "sharedWeightPreferences": true
+      },
+      "warmup": {
+        "included": false,
+        "note": "Warm-up, cooldown and the initial 3-second countdown are outside the 20:00 workout."
+      },
+      "equipment": {
+        "name": "Kettlebell",
+        "availableMinKg": 4,
+        "availableMaxKg": 24,
+        "requiredWeightKg": null
+      },
+      "exercises": [
+        {
+          "id": "floor-press",
+          "name": "KB Floor Press",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "bent-over-row",
+          "name": "KB Bent-Over Row",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "strict-shoulder-press",
+          "name": "KB Strict Shoulder Press",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "biceps-curl",
+          "name": "KB Biceps Curl",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "lying-triceps-extension",
+          "name": "KB Lying Triceps Extension",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "crunch",
+          "name": "KB Crunch",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "russian-twist",
+          "name": "KB Russian Twist",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "plank",
+          "name": "Plank",
+          "equipment": "bodyweight"
+        },
+        {
+          "id": "reverse-crunch",
+          "name": "Reverse Crunch",
+          "equipment": "bodyweight"
+        },
+        {
+          "id": "dead-bug",
+          "name": "KB Dead Bug",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "goblet-squat",
+          "name": "KB Goblet Squat",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "conventional-deadlift",
+          "name": "KB Conventional Deadlift",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "reverse-lunge",
+          "name": "KB Reverse Lunge",
+          "equipment": "kettlebell",
+          "note": "Distribute the 45-second WORK period between both sides; switch manually within the interval."
+        },
+        {
+          "id": "glute-bridge",
+          "name": "KB Glute Bridge",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "standing-calf-raise",
+          "name": "KB Standing Calf Raise",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "swing",
+          "name": "KB Swing",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "burpees",
+          "name": "Burpees",
+          "equipment": "bodyweight"
+        }
+      ],
+      "phases": [
+        {
+          "id": "upper",
+          "name": "Upper",
+          "durationSeconds": 300,
+          "format": "intervals",
+          "rounds": 1,
+          "timeBasedPrescription": true,
+          "timer": {
+            "workSeconds": 45,
+            "restSeconds": 15,
+            "intervals": 5
+          },
+          "exerciseIds": [
+            "floor-press",
+            "bent-over-row",
+            "strict-shoulder-press",
+            "biceps-curl",
+            "lying-triceps-extension"
+          ],
+          "instructions": "Follow the five movements once in order: 45 seconds of controlled work, then 15 seconds of rest, including the final rest. Distribute work between both sides where applicable, switching manually within the work period. The next block begins automatically.",
+          "objectives": [
+            "Five complete 45/15 slots with controlled technique. No repetitions are prescribed or inferred from time."
+          ]
+        },
+        {
+          "id": "abs",
+          "name": "ABS",
+          "durationSeconds": 300,
+          "format": "intervals",
+          "rounds": 1,
+          "timeBasedPrescription": true,
+          "timer": {
+            "workSeconds": 45,
+            "restSeconds": 15,
+            "intervals": 5
+          },
+          "exerciseIds": [
+            "crunch",
+            "russian-twist",
+            "plank",
+            "reverse-crunch",
+            "dead-bug"
+          ],
+          "instructions": "Follow the five movements once in order: 45 seconds of controlled work, then 15 seconds of rest, including the final rest. Distribute work between both sides where applicable, switching manually within the work period. The next block begins automatically.",
+          "objectives": [
+            "Five complete 45/15 slots with controlled technique. No repetitions are prescribed or inferred from time."
+          ]
+        },
+        {
+          "id": "legs",
+          "name": "Legs",
+          "durationSeconds": 300,
+          "format": "intervals",
+          "rounds": 1,
+          "timeBasedPrescription": true,
+          "timer": {
+            "workSeconds": 45,
+            "restSeconds": 15,
+            "intervals": 5
+          },
+          "exerciseIds": [
+            "goblet-squat",
+            "conventional-deadlift",
+            "reverse-lunge",
+            "glute-bridge",
+            "standing-calf-raise"
+          ],
+          "instructions": "Follow the five movements once in order: 45 seconds of controlled work, then 15 seconds of rest, including the final rest. Distribute work between both sides where applicable, switching manually within the work period. The next block begins automatically.",
+          "objectives": [
+            "Five complete 45/15 slots with controlled technique. No repetitions are prescribed or inferred from time."
+          ]
+        },
+        {
+          "id": "muscle-finisher",
+          "name": "Muscle Finisher",
+          "durationSeconds": 300,
+          "format": "intervals",
+          "rounds": 1,
+          "timeBasedPrescription": true,
+          "timer": {
+            "workSeconds": 45,
+            "restSeconds": 15,
+            "intervals": 5
+          },
+          "exerciseIds": [
+            "floor-press",
+            "bent-over-row",
+            "goblet-squat",
+            "swing",
+            "burpees"
+          ],
+          "instructions": "Follow the five movements once in order: 45 seconds of controlled work, then 15 seconds of rest, including the final rest. Distribute work between both sides where applicable, switching manually within the work period. The next block begins automatically.",
+          "objectives": [
+            "Five complete 45/15 slots with controlled technique. No repetitions are prescribed or inferred from time."
+          ]
+        }
+      ],
+      "resultFields": [
+        {
+          "id": "exerciseWeights",
+          "type": "exercise-weight-map",
+          "label": "Exercise weights (kg)",
+          "required": false,
+          "unit": "kg",
+          "exerciseIds": [
+            "floor-press",
+            "bent-over-row",
+            "strict-shoulder-press",
+            "biceps-curl",
+            "lying-triceps-extension",
+            "crunch",
+            "russian-twist",
+            "dead-bug",
+            "goblet-squat",
+            "conventional-deadlift",
+            "reverse-lunge",
+            "glute-bridge",
+            "standing-calf-raise",
+            "swing"
+          ]
+        }
+      ]
+    },
+    "startedAt": "2026-11-13T10:00:00Z",
+    "completedAt": "2026-11-13T10:00:00Z",
+    "activeDurationMs": 1200000,
+    "status": "completed",
+    "stage": "muscle-finisher-results",
+    "blockIndex": 3,
+    "checkpointMs": 0,
+    "completedBlocks": [
+      "upper",
+      "abs",
+      "legs",
+      "muscle-finisher"
+    ],
+    "hasStarted": false,
+    "soundEnabled": true,
+    "form": {
+      "weights": {
+        "floor-press": "12",
+        "bent-over-row": "12",
+        "strict-shoulder-press": "12",
+        "biceps-curl": "12",
+        "lying-triceps-extension": "12",
+        "crunch": "12",
+        "russian-twist": "12",
+        "dead-bug": "12",
+        "goblet-squat": "12",
+        "conventional-deadlift": "12",
+        "reverse-lunge": "12",
+        "glute-bridge": "12",
+        "standing-calf-raise": "12",
+        "swing": "12"
+      },
+      "invalid": {}
+    },
+    "results": {
+      "exerciseWeights": {
+        "floor-press": 12,
+        "bent-over-row": 12,
+        "strict-shoulder-press": 12,
+        "biceps-curl": 12,
+        "lying-triceps-extension": 12,
+        "crunch": 12,
+        "russian-twist": 12,
+        "dead-bug": 12,
+        "goblet-squat": 12,
+        "conventional-deadlift": 12,
+        "reverse-lunge": 12,
+        "glute-bridge": 12,
+        "standing-calf-raise": 12,
+        "swing": 12
+      }
+    },
+    "ownerId": null
+  },
+  {
+    "schemaVersion": 1,
+    "id": "retired-5",
+    "workoutId": "oldschool-tiger",
+    "workoutVersion": 1,
+    "workoutSnapshot": {
+      "id": "oldschool-tiger",
+      "version": 1,
+      "code": "HM/KB WOD 006",
+      "name": "Oldschool Tiger",
+      "category": "Full Body / Oldschool Strength",
+      "type": "hybrid",
+      "demo": false,
+      "archived": false,
+      "image": null,
+      "purpose": "Four consecutive blocks of controlled full-body strength work, with one pass per block and no prescribed repetition counts.",
+      "durationSeconds": 1200,
+      "audioProfile": "clear-loud-v1",
+      "execution": {
+        "mode": "continuous-results",
+        "schema": "oldschool-weights-v1"
+      },
+      "presentation": {
+        "subtitle": "Full Body / Oldschool Strength",
+        "timing": "45/15",
+        "showCode": true,
+        "durationFormat": "clock",
+        "sharedWeightPreferences": true
+      },
+      "warmup": {
+        "included": false,
+        "note": "Warm-up, cooldown and the initial 3-second countdown are outside the 20:00 workout."
+      },
+      "equipment": {
+        "name": "Kettlebell",
+        "availableMinKg": 4,
+        "availableMaxKg": 24,
+        "requiredWeightKg": null
+      },
+      "exercises": [
+        {
+          "id": "crush-press",
+          "name": "KB Crush Press",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "staggered-stance-row",
+          "name": "KB Staggered-Stance Row",
+          "equipment": "kettlebell",
+          "note": "Distribute the 45-second WORK period between both sides; switch manually within the interval."
+        },
+        {
+          "id": "half-kneeling-press",
+          "name": "KB Half-Kneeling Press",
+          "equipment": "kettlebell",
+          "note": "Distribute the 45-second WORK period between both sides; switch manually within the interval."
+        },
+        {
+          "id": "hammer-curl",
+          "name": "KB Hammer Curl",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "overhead-triceps-extension",
+          "name": "KB Overhead Triceps Extension",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "weighted-sit-up",
+          "name": "KB Weighted Sit-Up",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "standing-wood-chop",
+          "name": "KB Standing Wood Chop",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "side-plank",
+          "name": "Side Plank",
+          "equipment": "bodyweight",
+          "note": "Distribute the 45-second WORK period between both sides; switch manually within the interval."
+        },
+        {
+          "id": "hollow-hold",
+          "name": "Hollow Hold",
+          "equipment": "bodyweight"
+        },
+        {
+          "id": "tall-kneeling-press-out",
+          "name": "KB Tall-Kneeling Press-Out",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "front-rack-squat",
+          "name": "KB Front Rack Squat",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "sumo-deadlift",
+          "name": "KB Sumo Deadlift",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "lateral-lunge",
+          "name": "KB Lateral Lunge",
+          "equipment": "kettlebell",
+          "note": "Distribute the 45-second WORK period between both sides; switch manually within the interval."
+        },
+        {
+          "id": "hip-thrust",
+          "name": "KB Hip Thrust",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "seated-calf-raise",
+          "name": "KB Seated Calf Raise",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "farmers-march",
+          "name": "KB Farmer's March",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "mountain-climbers",
+          "name": "Mountain Climbers",
+          "equipment": "bodyweight"
+        }
+      ],
+      "phases": [
+        {
+          "id": "upper",
+          "name": "Upper",
+          "durationSeconds": 300,
+          "format": "intervals",
+          "rounds": 1,
+          "timeBasedPrescription": true,
+          "timer": {
+            "workSeconds": 45,
+            "restSeconds": 15,
+            "intervals": 5
+          },
+          "exerciseIds": [
+            "crush-press",
+            "staggered-stance-row",
+            "half-kneeling-press",
+            "hammer-curl",
+            "overhead-triceps-extension"
+          ],
+          "instructions": "Follow the five movements once in order: 45 seconds of controlled work, then 15 seconds of rest, including the final rest. Distribute work between both sides where applicable, switching manually within the work period. The next block begins automatically.",
+          "objectives": [
+            "Five complete 45/15 slots with controlled technique. No repetitions are prescribed or inferred from time."
+          ]
+        },
+        {
+          "id": "abs",
+          "name": "ABS",
+          "durationSeconds": 300,
+          "format": "intervals",
+          "rounds": 1,
+          "timeBasedPrescription": true,
+          "timer": {
+            "workSeconds": 45,
+            "restSeconds": 15,
+            "intervals": 5
+          },
+          "exerciseIds": [
+            "weighted-sit-up",
+            "standing-wood-chop",
+            "side-plank",
+            "hollow-hold",
+            "tall-kneeling-press-out"
+          ],
+          "instructions": "Follow the five movements once in order: 45 seconds of controlled work, then 15 seconds of rest, including the final rest. Distribute work between both sides where applicable, switching manually within the work period. The next block begins automatically.",
+          "objectives": [
+            "Five complete 45/15 slots with controlled technique. No repetitions are prescribed or inferred from time."
+          ]
+        },
+        {
+          "id": "legs",
+          "name": "Legs",
+          "durationSeconds": 300,
+          "format": "intervals",
+          "rounds": 1,
+          "timeBasedPrescription": true,
+          "timer": {
+            "workSeconds": 45,
+            "restSeconds": 15,
+            "intervals": 5
+          },
+          "exerciseIds": [
+            "front-rack-squat",
+            "sumo-deadlift",
+            "lateral-lunge",
+            "hip-thrust",
+            "seated-calf-raise"
+          ],
+          "instructions": "Follow the five movements once in order: 45 seconds of controlled work, then 15 seconds of rest, including the final rest. Distribute work between both sides where applicable, switching manually within the work period. The next block begins automatically.",
+          "objectives": [
+            "Five complete 45/15 slots with controlled technique. No repetitions are prescribed or inferred from time."
+          ]
+        },
+        {
+          "id": "muscle-finisher",
+          "name": "Muscle Finisher",
+          "durationSeconds": 300,
+          "format": "intervals",
+          "rounds": 1,
+          "timeBasedPrescription": true,
+          "timer": {
+            "workSeconds": 45,
+            "restSeconds": 15,
+            "intervals": 5
+          },
+          "exerciseIds": [
+            "crush-press",
+            "staggered-stance-row",
+            "front-rack-squat",
+            "farmers-march",
+            "mountain-climbers"
+          ],
+          "instructions": "Follow the five movements once in order: 45 seconds of controlled work, then 15 seconds of rest, including the final rest. Distribute work between both sides where applicable, switching manually within the work period. The next block begins automatically.",
+          "objectives": [
+            "Five complete 45/15 slots with controlled technique. No repetitions are prescribed or inferred from time."
+          ]
+        }
+      ],
+      "resultFields": [
+        {
+          "id": "exerciseWeights",
+          "type": "exercise-weight-map",
+          "label": "Exercise weights (kg)",
+          "required": false,
+          "unit": "kg",
+          "exerciseIds": [
+            "crush-press",
+            "staggered-stance-row",
+            "half-kneeling-press",
+            "hammer-curl",
+            "overhead-triceps-extension",
+            "weighted-sit-up",
+            "standing-wood-chop",
+            "tall-kneeling-press-out",
+            "front-rack-squat",
+            "sumo-deadlift",
+            "lateral-lunge",
+            "hip-thrust",
+            "seated-calf-raise",
+            "farmers-march"
+          ]
+        }
+      ]
+    },
+    "startedAt": "2026-11-13T10:00:00Z",
+    "completedAt": "2026-11-13T10:00:00Z",
+    "activeDurationMs": 1200000,
+    "status": "completed",
+    "stage": "muscle-finisher-results",
+    "blockIndex": 3,
+    "checkpointMs": 0,
+    "completedBlocks": [
+      "upper",
+      "abs",
+      "legs",
+      "muscle-finisher"
+    ],
+    "hasStarted": false,
+    "soundEnabled": true,
+    "form": {
+      "weights": {
+        "crush-press": "12",
+        "staggered-stance-row": "12",
+        "half-kneeling-press": "12",
+        "hammer-curl": "12",
+        "overhead-triceps-extension": "12",
+        "weighted-sit-up": "12",
+        "standing-wood-chop": "12",
+        "tall-kneeling-press-out": "12",
+        "front-rack-squat": "12",
+        "sumo-deadlift": "12",
+        "lateral-lunge": "12",
+        "hip-thrust": "12",
+        "seated-calf-raise": "12",
+        "farmers-march": "12"
+      },
+      "invalid": {}
+    },
+    "results": {
+      "exerciseWeights": {
+        "crush-press": 12,
+        "staggered-stance-row": 12,
+        "half-kneeling-press": 12,
+        "hammer-curl": 12,
+        "overhead-triceps-extension": 12,
+        "weighted-sit-up": 12,
+        "standing-wood-chop": 12,
+        "tall-kneeling-press-out": 12,
+        "front-rack-squat": 12,
+        "sumo-deadlift": 12,
+        "lateral-lunge": 12,
+        "hip-thrust": 12,
+        "seated-calf-raise": 12,
+        "farmers-march": 12
+      }
+    },
+    "ownerId": null
+  },
+  {
+    "schemaVersion": 1,
+    "id": "retired-6",
+    "workoutId": "oldschool-eagle",
+    "workoutVersion": 1,
+    "workoutSnapshot": {
+      "id": "oldschool-eagle",
+      "version": 1,
+      "code": "HM/KB WOD 007",
+      "name": "Oldschool Eagle",
+      "category": "Full Body / Oldschool Unilateral Strength",
+      "type": "hybrid",
+      "demo": false,
+      "archived": false,
+      "image": null,
+      "purpose": "Four consecutive blocks of controlled full-body strength work, with one pass per block and no prescribed repetition counts.",
+      "durationSeconds": 1200,
+      "audioProfile": "clear-loud-v1",
+      "execution": {
+        "mode": "continuous-results",
+        "schema": "oldschool-weights-v1"
+      },
+      "presentation": {
+        "subtitle": "Full Body / Oldschool Unilateral Strength",
+        "timing": "45/15",
+        "showCode": true,
+        "durationFormat": "clock",
+        "sharedWeightPreferences": true
+      },
+      "warmup": {
+        "included": false,
+        "note": "Warm-up, cooldown and the initial 3-second countdown are outside the 20:00 workout."
+      },
+      "equipment": {
+        "name": "Kettlebell",
+        "availableMinKg": 4,
+        "availableMaxKg": 24,
+        "requiredWeightKg": null
+      },
+      "exercises": [
+        {
+          "id": "single-arm-floor-press",
+          "name": "KB Single-Arm Floor Press",
+          "equipment": "kettlebell",
+          "note": "Distribute the 45-second WORK period between both sides; switch manually within the interval."
+        },
+        {
+          "id": "one-arm-row",
+          "name": "KB One-Arm Row",
+          "equipment": "kettlebell",
+          "note": "Distribute the 45-second WORK period between both sides; switch manually within the interval."
+        },
+        {
+          "id": "single-arm-push-press",
+          "name": "KB Single-Arm Push Press",
+          "equipment": "kettlebell",
+          "note": "Distribute the 45-second WORK period between both sides; switch manually within the interval."
+        },
+        {
+          "id": "concentration-curl",
+          "name": "KB Concentration Curl",
+          "equipment": "kettlebell",
+          "note": "Distribute the 45-second WORK period between both sides; switch manually within the interval."
+        },
+        {
+          "id": "single-arm-overhead-triceps-extension",
+          "name": "KB Single-Arm Overhead Triceps Extension",
+          "equipment": "kettlebell",
+          "note": "Distribute the 45-second WORK period between both sides; switch manually within the interval."
+        },
+        {
+          "id": "v-up",
+          "name": "KB V-Up",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "seated-russian-twist",
+          "name": "KB Seated Russian Twist",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "plank-shoulder-tap",
+          "name": "Plank Shoulder Tap",
+          "equipment": "bodyweight"
+        },
+        {
+          "id": "side-plank-reach-through",
+          "name": "Side Plank Reach-Through",
+          "equipment": "bodyweight",
+          "note": "Distribute the 45-second WORK period between both sides; switch manually within the interval."
+        },
+        {
+          "id": "dead-bug-pullover",
+          "name": "KB Dead Bug Pullover",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "front-rack-reverse-lunge",
+          "name": "KB Front-Rack Reverse Lunge",
+          "equipment": "kettlebell",
+          "note": "Distribute the 45-second WORK period between both sides; switch manually within the interval."
+        },
+        {
+          "id": "stiff-leg-deadlift",
+          "name": "KB Stiff-Leg Deadlift",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "step-up",
+          "name": "KB Step-Up",
+          "equipment": "kettlebell",
+          "note": "Distribute the 45-second WORK period between both sides; switch manually within the interval."
+        },
+        {
+          "id": "single-leg-glute-bridge",
+          "name": "KB Single-Leg Glute Bridge",
+          "equipment": "kettlebell",
+          "note": "Distribute the 45-second WORK period between both sides; switch manually within the interval."
+        },
+        {
+          "id": "seated-calf-raise",
+          "name": "KB Seated Calf Raise",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "floor-press",
+          "name": "KB Floor Press",
+          "equipment": "kettlebell"
+        },
+        {
+          "id": "single-arm-row",
+          "name": "KB Single-Arm Row",
+          "equipment": "kettlebell",
+          "note": "Distribute the 45-second WORK period between both sides; switch manually within the interval."
+        },
+        {
+          "id": "split-squat",
+          "name": "KB Split Squat",
+          "equipment": "kettlebell",
+          "note": "Distribute the 45-second WORK period between both sides; switch manually within the interval."
+        },
+        {
+          "id": "clean-press",
+          "name": "KB Clean & Press",
+          "equipment": "kettlebell",
+          "note": "Distribute the 45-second WORK period between both sides; switch manually within the interval."
+        },
+        {
+          "id": "high-knees",
+          "name": "High Knees",
+          "equipment": "bodyweight"
+        }
+      ],
+      "phases": [
+        {
+          "id": "upper",
+          "name": "Upper",
+          "durationSeconds": 300,
+          "format": "intervals",
+          "rounds": 1,
+          "timeBasedPrescription": true,
+          "timer": {
+            "workSeconds": 45,
+            "restSeconds": 15,
+            "intervals": 5
+          },
+          "exerciseIds": [
+            "single-arm-floor-press",
+            "one-arm-row",
+            "single-arm-push-press",
+            "concentration-curl",
+            "single-arm-overhead-triceps-extension"
+          ],
+          "instructions": "Follow the five movements once in order: 45 seconds of controlled work, then 15 seconds of rest, including the final rest. Distribute work between both sides where applicable, switching manually within the work period. The next block begins automatically.",
+          "objectives": [
+            "Five complete 45/15 slots with controlled technique. No repetitions are prescribed or inferred from time."
+          ]
+        },
+        {
+          "id": "abs",
+          "name": "ABS",
+          "durationSeconds": 300,
+          "format": "intervals",
+          "rounds": 1,
+          "timeBasedPrescription": true,
+          "timer": {
+            "workSeconds": 45,
+            "restSeconds": 15,
+            "intervals": 5
+          },
+          "exerciseIds": [
+            "v-up",
+            "seated-russian-twist",
+            "plank-shoulder-tap",
+            "side-plank-reach-through",
+            "dead-bug-pullover"
+          ],
+          "instructions": "Follow the five movements once in order: 45 seconds of controlled work, then 15 seconds of rest, including the final rest. Distribute work between both sides where applicable, switching manually within the work period. The next block begins automatically.",
+          "objectives": [
+            "Five complete 45/15 slots with controlled technique. No repetitions are prescribed or inferred from time."
+          ]
+        },
+        {
+          "id": "legs",
+          "name": "Legs",
+          "durationSeconds": 300,
+          "format": "intervals",
+          "rounds": 1,
+          "timeBasedPrescription": true,
+          "timer": {
+            "workSeconds": 45,
+            "restSeconds": 15,
+            "intervals": 5
+          },
+          "exerciseIds": [
+            "front-rack-reverse-lunge",
+            "stiff-leg-deadlift",
+            "step-up",
+            "single-leg-glute-bridge",
+            "seated-calf-raise"
+          ],
+          "instructions": "Follow the five movements once in order: 45 seconds of controlled work, then 15 seconds of rest, including the final rest. Distribute work between both sides where applicable, switching manually within the work period. The next block begins automatically.",
+          "objectives": [
+            "Five complete 45/15 slots with controlled technique. No repetitions are prescribed or inferred from time."
+          ]
+        },
+        {
+          "id": "muscle-finisher",
+          "name": "Muscle Finisher",
+          "durationSeconds": 300,
+          "format": "intervals",
+          "rounds": 1,
+          "timeBasedPrescription": true,
+          "timer": {
+            "workSeconds": 45,
+            "restSeconds": 15,
+            "intervals": 5
+          },
+          "exerciseIds": [
+            "floor-press",
+            "single-arm-row",
+            "split-squat",
+            "clean-press",
+            "high-knees"
+          ],
+          "instructions": "Follow the five movements once in order: 45 seconds of controlled work, then 15 seconds of rest, including the final rest. Distribute work between both sides where applicable, switching manually within the work period. The next block begins automatically.",
+          "objectives": [
+            "Five complete 45/15 slots with controlled technique. No repetitions are prescribed or inferred from time."
+          ]
+        }
+      ],
+      "resultFields": [
+        {
+          "id": "exerciseWeights",
+          "type": "exercise-weight-map",
+          "label": "Exercise weights (kg)",
+          "required": false,
+          "unit": "kg",
+          "exerciseIds": [
+            "single-arm-floor-press",
+            "one-arm-row",
+            "single-arm-push-press",
+            "concentration-curl",
+            "single-arm-overhead-triceps-extension",
+            "v-up",
+            "seated-russian-twist",
+            "dead-bug-pullover",
+            "front-rack-reverse-lunge",
+            "stiff-leg-deadlift",
+            "step-up",
+            "single-leg-glute-bridge",
+            "seated-calf-raise",
+            "floor-press",
+            "single-arm-row",
+            "split-squat",
+            "clean-press"
+          ]
+        }
+      ]
+    },
+    "startedAt": "2026-11-13T10:00:00Z",
+    "completedAt": "2026-11-13T10:00:00Z",
+    "activeDurationMs": 1200000,
+    "status": "completed",
+    "stage": "muscle-finisher-results",
+    "blockIndex": 3,
+    "checkpointMs": 0,
+    "completedBlocks": [
+      "upper",
+      "abs",
+      "legs",
+      "muscle-finisher"
+    ],
+    "hasStarted": false,
+    "soundEnabled": true,
+    "form": {
+      "weights": {
+        "single-arm-floor-press": "12",
+        "one-arm-row": "12",
+        "single-arm-push-press": "12",
+        "concentration-curl": "12",
+        "single-arm-overhead-triceps-extension": "12",
+        "v-up": "12",
+        "seated-russian-twist": "12",
+        "dead-bug-pullover": "12",
+        "front-rack-reverse-lunge": "12",
+        "stiff-leg-deadlift": "12",
+        "step-up": "12",
+        "single-leg-glute-bridge": "12",
+        "seated-calf-raise": "12",
+        "floor-press": "12",
+        "single-arm-row": "12",
+        "split-squat": "12",
+        "clean-press": "12"
+      },
+      "invalid": {}
+    },
+    "results": {
+      "exerciseWeights": {
+        "single-arm-floor-press": 12,
+        "one-arm-row": 12,
+        "single-arm-push-press": 12,
+        "concentration-curl": 12,
+        "single-arm-overhead-triceps-extension": 12,
+        "v-up": 12,
+        "seated-russian-twist": 12,
+        "dead-bug-pullover": 12,
+        "front-rack-reverse-lunge": 12,
+        "stiff-leg-deadlift": 12,
+        "step-up": 12,
+        "single-leg-glute-bridge": 12,
+        "seated-calf-raise": 12,
+        "floor-press": 12,
+        "single-arm-row": 12,
+        "split-squat": 12,
+        "clean-press": 12
+      }
+    },
+    "ownerId": null
+  }
+]

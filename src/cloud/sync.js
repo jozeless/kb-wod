@@ -1,5 +1,6 @@
+import { findWorkout, isAvailableSession } from '../data/catalog.js';
 import { authKey } from './auth.js';
-import { days, validatePlan } from '../domain/planning.js';
+import { days, validatePlan, cleanWeeklyPlan } from '../domain/planning.js';
 import { loadPlan, savePlan } from '../storage/weekly-plan.js';
 import * as sessions from '../storage/session-store.js';
 import { withWorkspaceLock } from '../platform/workspace-lock.js';
@@ -13,7 +14,7 @@ export function rowsToPlan(rows) {
   const plan={};for(const row of rows){if(!days.includes(row.weekday))throw new Error('Invalid cloud weekday.');plan[row.weekday]=row.workout_id===null?null:{workoutId:row.workout_id,version:row.workout_version};}
   return validatePlan(plan);
 }
-export function createSync(auth,api,{storage=globalThis.localStorage,store=sessions,online=()=>globalThis.navigator.onLine,visibility}={}) {
+export function createSync(auth,api,{storage=globalThis.localStorage,store=sessions,online=()=>globalThis.navigator.onLine}={}) {
   let account=null,epoch=0,running=false,rerun=false,conflict=null,importable=[],message='Saved locally',error='',pending=0;
   let retryTimer=null;
   const listeners=new Set();
@@ -21,14 +22,22 @@ export function createSync(auth,api,{storage=globalThis.localStorage,store=sessi
   const read=(key,fallback)=>{const raw=storage.getItem(key);return raw===null?fallback:JSON.parse(raw);};
   const meta=id=>read(accountKey(id),{acks:{},plan:null});
   const write=(id,value)=>storage.setItem(accountKey(id),JSON.stringify(value));
-  const plan=()=>{const value=loadPlan(storage);if(value.error)throw new Error(value.error);return visibility?visibility.cleanPlan(value.plan,storage.getItem(workspaceKey)||null):value.plan;};
-  const mutate=change=>visibility||globalThis.navigator?.locks?withWorkspaceLock(change):Promise.resolve().then(change);
-  const cleanPlan=value=>visibility?visibility.cleanPlan(value,account):value;
+  const plan=()=>{const value=loadPlan(storage);if(value.error)throw new Error(value.error);return cleanWeeklyPlan(value.plan);};
+  const mutate=change=>typeof window==='undefined'?Promise.resolve().then(change):withWorkspaceLock(change);
+  const cleanPlan=cleanWeeklyPlan;
   function setPlan(value){savePlan(storage,validatePlan(cleanPlan(value)));globalThis.dispatchEvent?.(new Event('kb-plan-restored'));}
+  function cleanWorkspace() {
+    const loaded=loadPlan(storage);if(loaded.error)throw new Error(loaded.error);
+    const cleaned=cleanPlan(loaded.plan),changed=!samePlan(loaded.plan,cleaned);
+    if(changed)savePlan(storage,cleaned);
+    if(account){const state=meta(account);if(state.plan){const value=changed?cleaned:cleanPlan(state.plan.value),base=state.plan.base?cleanPlan(state.plan.base):null;
+      const removed=!samePlan(state.plan.value,value);if(removed || changed)state.plan.dirty=true;
+      state.plan.value=value;state.plan.base=base;write(account,state);
+    }}else storage.setItem(guestKey,JSON.stringify(cleaned));
+  }
   function switchAccount(){
     if(auth.configured && (read(authKey,null)?.user?.id||null)!==(auth.user?.id||null))return;
-    visibility?.recover(storage.getItem(workspaceKey)||null);
-    const next=auth.user?.id||null;if(next===account && storage.getItem(workspaceKey)===(next||'')){visibility?.workspaceChanged();return;}
+    const next=auth.user?.id||null;if(next===account && storage.getItem(workspaceKey)===(next||'')){cleanWorkspace();return;}
     epoch++;clearTimeout(retryTimer);conflict=null;importable=[];pending=0;error='';
     const previous=storage.getItem(workspaceKey)||null,current=plan();
     if(previous){const old=meta(previous);if(old.plan)old.plan.value=current;write(previous,old);}
@@ -38,7 +47,9 @@ export function createSync(auth,api,{storage=globalThis.localStorage,store=sessi
       if(!nextMeta.plan)nextMeta.plan={value:previous?{}:current,base:null,confirmed:false,dirty:false};
       write(next,nextMeta);setPlan(nextMeta.plan.value);
     }else setPlan(read(guestKey,{}));
-    storage.setItem(workspaceKey,next||'');visibility?.recover(next);visibility?.workspaceChanged();message='Saved locally';emit();
+    storage.setItem(workspaceKey,next||'');cleanWorkspace();
+    // Refresh only after the restored plan and its owner are both installed.
+    globalThis.dispatchEvent?.(new Event('kb-plan-restored'));message='Saved locally';emit();
   }
   async function sync(){
     if(running){rerun=true;return;}clearTimeout(retryTimer);running=true;
@@ -47,35 +58,32 @@ export function createSync(auth,api,{storage=globalThis.localStorage,store=sessi
     try {
       error='';if(!valid()){message='Saved locally';return;}
       message=pending?'Sync pending':'Saved locally';emit();
-      // Library settings do not depend on History storage/upload availability.
-      if(visibility)await visibility.synchronize(valid);if(!valid())return;
       const local=await store.listSessions();if(!valid())return;
-      importable=local.filter(r=>r.status==='completed'&&!r.ownerId);
+      importable=local.filter(r=>r.status==='completed'&&!r.ownerId&&isAvailableSession(r));
       let state=meta(owner);
-      const queued=local.filter(r=>r.status==='completed'&&r.ownerId===owner&&!state.acks[r.id]);
+      const queued=local.filter(r=>r.status==='completed'&&r.ownerId===owner&&!state.acks[r.id]&&isAvailableSession(r));
       pending=queued.length+(state.plan?.dirty?1:0);message=pending?'Sync pending':'Saved locally';emit();
       if(!online()){message=pending?'Sync pending · Offline':'Offline · Saved locally';return;}
-      for(const record of queued){await api.uploadSession(record);if(!valid())return;await mutate(()=>{if(!valid())return;visibility?.recover(owner);state=meta(owner);state.acks[record.id]=true;write(owner,state);});if(!valid())return;pending=Math.max(0,pending-1);}
+      for(const record of queued){await api.uploadSession(record);if(!valid())return;await mutate(()=>{if(!valid())return;state=meta(owner);state.acks[record.id]=true;write(owner,state);});if(!valid())return;pending=Math.max(0,pending-1);}
       const remote=await api.sessions();if(!valid())return;
       for(const row of remote){
+        if(row.user_id!==owner)throw new Error('Cloud response ownership could not be verified.');
+        if(!findWorkout(row.workout_id,row.workout_version))continue;
         const record=row.session_data;
-        if(row.user_id!==owner || !record || record.id!==row.id || record.workoutId!==row.workout_id || record.workoutVersion!==row.workout_version || record.status!=='completed' || stable(record.workoutSnapshot)!==stable(row.workout_snapshot) || stable(record.results)!==stable(row.results))throw new Error('Invalid cloud session. Local records were preserved.');
+        if(!isAvailableSession(record) || record.id!==row.id || record.workoutId!==row.workout_id || record.workoutVersion!==row.workout_version || record.status!=='completed' || stable(record.workoutSnapshot)!==stable(row.workout_snapshot) || stable(record.results)!==stable(row.results))throw new Error('Invalid cloud session. Local records were preserved.');
         if(!valid())return;const inserted=await store.receiveSession(record,owner);if(!valid())return;
-        if(inserted){await mutate(()=>{if(!valid())return;visibility?.recover(owner);state=meta(owner);state.acks[record.id]=true;write(owner,state);});if(!valid())return;}
+        if(inserted){await mutate(()=>{if(!valid())return;state=meta(owner);state.acks[record.id]=true;write(owner,state);});if(!valid())return;}
       }
-      // Do not resurrect a restored WOD's old assignment while its atomic
-      // preference/plan cleanup is still unacknowledged. Session sync continues.
-      if(visibility?.hasPendingCleanup(owner)){message='Weekly plan sync pending · Library cleanup';return;}
-      const cloudRows=await api.plan();if(!valid())return;const cloud=cleanPlan(rowsToPlan(cloudRows));
+      const cloudRows=await api.plan();if(!valid())return;const rawCloud=rowsToPlan(cloudRows),cloud=cleanPlan(rawCloud),retiredCloud=!samePlan(rawCloud,cloud);
       state=meta(owner);const p=state.plan,current=cleanPlan(p.value);p.value=current;if(p.base)p.base=cleanPlan(p.base);
       if((!p.confirmed && !samePlan(current,cloud)) || (p.confirmed && p.dirty && !samePlan(cloud,p.base) && !samePlan(current,cloud))){conflict={local:current,cloud};message='Weekly plan needs your choice';return;}
       conflict=null;
-      if(p.dirty){const sent=canonicalPlan(current);await api.uploadPlan(days.map(weekday=>({user_id:owner,weekday,workout_id:sent[weekday]?.workoutId||null,workout_version:sent[weekday]?.version||null})));if(!valid())return;
-        await mutate(()=>{if(!valid())return;visibility?.recover(owner);state=meta(owner);state.plan.base=sent;state.plan.confirmed=true;if(samePlan(cleanPlan(state.plan.value),sent))state.plan.dirty=false;write(owner,state);});
+      if(p.dirty || retiredCloud){const sent=canonicalPlan(p.dirty?current:cloud);await api.uploadPlan(days.map(weekday=>({user_id:owner,weekday,workout_id:sent[weekday]?.workoutId||null,workout_version:sent[weekday]?.version||null})));if(!valid())return;
+        await mutate(()=>{if(!valid())return;state=meta(owner);state.plan.base=sent;state.plan.confirmed=true;if(!state.plan.dirty && samePlan(cleanPlan(state.plan.value),current)){state.plan.value=sent;setPlan(sent);}if(samePlan(cleanPlan(state.plan.value),sent))state.plan.dirty=false;write(owner,state);});
       }else {
         // Never replace an edit made while the cloud read was in flight.
         if(!samePlan(cleanPlan(meta(owner).plan.value),current)) {rerun=true;return;}
-        await mutate(()=>{if(!valid())return;visibility?.recover(owner);state=meta(owner);if(!samePlan(cleanPlan(state.plan.value),current)){rerun=true;return;}const latestCloud=cleanPlan(cloud);state.plan={value:latestCloud,base:latestCloud,confirmed:true,dirty:false};write(owner,state);setPlan(latestCloud);});
+        await mutate(()=>{if(!valid())return;state=meta(owner);if(!samePlan(cleanPlan(state.plan.value),current)){rerun=true;return;}const latestCloud=cleanPlan(cloud);state.plan={value:latestCloud,base:latestCloud,confirmed:true,dirty:false};write(owner,state);setPlan(latestCloud);});
       }
       if(!valid())return;state=meta(owner);pending=state.plan.dirty?1:0;message=pending?'Sync pending':'Synced';
     }catch(e){error=e.message;message=account?'Sync pending':'Saved locally';if(valid()&&online()){retryTimer=setTimeout(()=>void sync(),15000);retryTimer.unref?.();}}
@@ -85,10 +93,10 @@ export function createSync(auth,api,{storage=globalThis.localStorage,store=sessi
     sessionStatus(id){try{return account&&meta(account).acks[id]?'Synced':'Sync pending';}catch{return 'Saved locally';}},
     subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},get state(){return {account,message,error,pending,conflict,importCount:importable.length};},
     async accountChanged(){try{if(auth.configured && (read(authKey,null)?.user?.id||null)!==(auth.user?.id||null))return;
-      if(visibility || globalThis.navigator?.locks)await withWorkspaceLock(()=>switchAccount());else switchAccount();await sync();}catch(e){error=e.message;emit();}},sync,
+      await mutate(()=>switchAccount());await sync();}catch(e){error=e.message;emit();}},sync,
     planChanged(){try{if(storage.getItem(workspaceKey)!==(account||'') || (auth.configured && (read(authKey,null)?.user?.id||null)!==account))return;if(account){const state=meta(account);state.plan.value=plan();state.plan.dirty=true;write(account,state);}else storage.setItem(guestKey,JSON.stringify(plan()));void sync();}catch(e){error=e.message;emit();}},
     async importSessions(){const owner=account,version=epoch;if(!owner)return;const ids=importable.map(r=>r.id);try{await store.claimSessions(ids,owner);if(version!==epoch)return;await sync();}catch(e){error=e.message;emit();}},
-    async choosePlan(choice){if(!account||!conflict)return;try{await mutate(()=>{if(!account||!conflict)return;visibility?.assertContext(account);visibility?.recover(account);const state=meta(account),selected=cleanPlan(choice==='local'?conflict.local:conflict.cloud);
+    async choosePlan(choice){if(!account||!conflict)return;try{await mutate(()=>{if(!account||!conflict)return;if(storage.getItem(workspaceKey)!==account || auth.user?.id!==account)throw new Error('Account changed.');const state=meta(account),selected=cleanPlan(choice==='local'?conflict.local:conflict.cloud);
       state.plan={value:selected,base:cleanPlan(conflict.cloud),confirmed:true,dirty:choice==='local'};write(account,state);conflict=null;setPlan(selected);});await sync();
     }catch(e){error=e.message;emit();}},
   };

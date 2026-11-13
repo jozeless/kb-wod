@@ -5,6 +5,7 @@ import { completeSession } from '../storage/session-store.js';
 import { createWorkoutAudio } from '../platform/workout-audio.js';
 import { syncStatus } from './account.js';
 import { roundAmrapPresentation } from './round-amrap-presentation.js';
+import { roundTimesView } from './round-times.js';
 import { el, button, heading } from './components.js';
 
 /** Completed-only lifecycle: the round counter and rest deadline never leave memory. */
@@ -21,7 +22,7 @@ export function createRoundAmrapTraining(workout, {onExit, onHistory}) {
     finished = true; stopTicker();
     record.completedAt = new Date().toISOString();
     record.activeDurationMs = s.elapsedMs;
-    record.results = {completedRounds: s.completedRounds, partialReps: 0};
+    record.results = {completedRounds: s.completedRounds, partialReps: 0, roundTimesMs: s.roundTimesMs};
     const message = el('p', {className: 'result-message', role: 'status'});
     const saveButton = button('Save Workout', save);
     const inputId = `partial-reps-${id}`;
@@ -43,7 +44,8 @@ export function createRoundAmrapTraining(workout, {onExit, onHistory}) {
     partialRepsInput.addEventListener('input', () => { message.textContent = ''; try { readPartialReps(); } catch { /* Keep the entry and its inline error. */ } });
     form = {message, saveButton, partialRepsInput, readPartialReps};
     root.replaceChildren(heading('CLASSIC IRON', 'Workout Results', 'All 20 minutes are complete. Only complete seven-exercise rounds count.'),
-      el('p', {}, `Completed rounds: ${s.completedRounds}`), el('label', {for: inputId}, el('span', {}, 'Additional repetitions'), partialRepsInput), hint, error,
+      el('p', {}, `Completed rounds: ${s.completedRounds}`), roundTimesView(record.results, workout.durationSeconds * 1000),
+      el('label', {for: inputId}, el('span', {}, 'Additional repetitions'), partialRepsInput), hint, error,
       saveButton, message, button('Return to Today', onExit, true));
   }
   async function save() {

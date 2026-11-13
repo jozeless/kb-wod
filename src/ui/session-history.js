@@ -1,4 +1,5 @@
 import { isClassicIron } from '../domain/classic-iron-results.js';
+import { roundTimesView } from './round-times.js';
 import { isOldschoolResults } from '../domain/oldschool-results.js';
 import { floorPressReference } from '../domain/friday-benchmark.js';
 import { isFridayResults } from '../domain/friday-results.js';
@@ -29,7 +30,8 @@ export function savedSessionView(id, go) {
     root.replaceChildren(heading('SAVED WORKOUT', record.workoutSnapshot.name, `Version ${record.workoutVersion} · ${new Date(record.startedAt).toLocaleString()}`),
       syncStatus(record), el('p', {}, `Active duration: ${formatTime(record.activeDurationMs)}`), el('p', {}, `Finished: ${new Date(record.completedAt).toLocaleString()}`));
     if(isClassicIron(record.workoutSnapshot)) {
-      root.append(el('p', {}, `Completed rounds: ${value(record.results.completedRounds)}`), el('p', {}, `Additional repetitions: ${value(record.results.partialReps === undefined ? 0 : record.results.partialReps)}`), button('← Saved workouts', () => go(`#history/${record.workoutId}`), true));
+      root.append(el('p', {}, `Completed rounds: ${value(record.results.completedRounds)}`), el('p', {}, `Additional repetitions: ${value(record.results.partialReps === undefined ? 0 : record.results.partialReps)}`),
+        roundTimesView(record.results, record.workoutSnapshot.durationSeconds * 1000), button('← Saved workouts', () => go(`#history/${record.workoutId}`), true));
       return;
     }
     if(usesSessionWeights(record.workoutSnapshot)) {

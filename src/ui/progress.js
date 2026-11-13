@@ -1,4 +1,6 @@
 import { analyzeProgress, shiftMonth } from '../domain/progress-analytics.js';
+import { fastestClassicIronRound } from '../domain/classic-iron-progress.js';
+import { formatRoundTime } from '../domain/classic-iron-results.js';
 import { listSessions } from '../storage/session-store.js';
 import { canReadLocal, currentUserId } from '../cloud/identity.js';
 import { auth, sync } from '../cloud/runtime.js';
@@ -62,7 +64,7 @@ function performance(metrics) {
 }
 export function progressView() {
   const now = new Date(); let month = {year: now.getFullYear(), month: now.getMonth() + 1}, selected = null, analysis = null;
-  let disposed = false, generation = 0, owner = currentUserId();
+  let disposed = false, generation = 0, owner = currentUserId(), fastest = null;
   const root = el('div', {className: 'hm-progress'}), content = el('div', {className: 'progress-content', 'aria-live': 'polite'});
   const monthTitle = el('h2', {id: 'progress-month'});
   const previous = button('← Previous month', () => changeMonth(-1), true), next = button('Next month →', () => changeMonth(1), true);
@@ -76,17 +78,21 @@ export function progressView() {
       metric('Active duration', overview.workouts ? duration(overview.activeDurationMs) : 'No sessions'), metric('Active days', overview.activeDays), metric('Active weeks', overview.activeWeeks)));
     if (!overview.workouts) monthly.append(emptyState('No completed workouts this month', 'Only saved completed sessions count. Your weekly plan and unfinished drafts do not add training days.'));
     if (overview.missingDurations) monthly.append(el('p', {className: 'progress-notice'}, `Active duration is recorded for ${overview.durationSessions} of ${overview.workouts} sessions. ${overview.missingDurations} missing or invalid duration ${overview.missingDurations === 1 ? 'entry is' : 'entries are'} excluded.`));
+    const classic = section('Classic Iron · Fastest Round — All Time');
+    if (fastest) classic.append(el('dl', {className: 'progress-overview'}, metric('Best round', formatRoundTime(fastest.durationMs)),
+      metric('Workout date', new Date(fastest.startedAt).toLocaleDateString()), metric('Round number', fastest.roundNumber)));
+    else classic.append(el('p', {}, 'Round times not recorded'));
     content.replaceChildren(monthly, calendar(overview.weeks), strength(analysis.strength, selected, value => {
       selected = value; render(); content.querySelector('select')?.focus();
-    }), performance(analysis.performance));
+    }), performance(analysis.performance), classic);
   }
   async function load() {
     const ticket = ++generation, identity = currentUserId(); owner = identity;
-    analysis = null; content.replaceChildren(el('p', {role: 'status'}, 'Loading saved sessions…')); content.setAttribute('aria-busy', 'true'); render();
+    analysis = null; fastest = null; content.replaceChildren(el('p', {role: 'status'}, 'Loading saved sessions…')); content.setAttribute('aria-busy', 'true'); render();
     try {
       const records = await listSessions();
       if (disposed || ticket !== generation || identity !== currentUserId()) return;
-      analysis = analyzeProgress(records, month, canReadLocal); render();
+      analysis = analyzeProgress(records, month, canReadLocal); fastest = fastestClassicIronRound(records, canReadLocal); render();
     } catch {
       if (disposed || ticket !== generation || identity !== currentUserId()) return;
       content.replaceChildren(emptyState('Progress unavailable', 'Saved session storage could not be read. Your data has not been changed.'), button('Retry loading sessions', () => void load(), true));
@@ -102,5 +108,5 @@ export function progressView() {
   window.addEventListener('kb-session-change', refresh);
   window.addEventListener('storage', storageChanged);
   void load();
-  return {root, dispose() { disposed = true; generation++; offAuth(); offSync(); window.removeEventListener('kb-session-change', refresh); window.removeEventListener('storage', storageChanged); content.replaceChildren(); analysis = null; }};
+  return {root, dispose() { disposed = true; generation++; offAuth(); offSync(); window.removeEventListener('kb-session-change', refresh); window.removeEventListener('storage', storageChanged); content.replaceChildren(); analysis = null; fastest = null; }};
 }

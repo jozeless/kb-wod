@@ -1,5 +1,7 @@
 # Classic Iron — additional repetitions
 
+This document records the partial-repetition release. The [automatic round-times extension](CLASSIC_IRON_ROUND_TIMES.md) additionally records `roundTimesMs` in new results while retaining older payloads unchanged.
+
 Branch: `feature/classic-iron-partial-reps`, based on merged main `95c3c97` (PR #33).
 
 This extends Classic Iron v1 results without changing its definition, identity, version, timer, round button, rest periods, audio or active Focus Mode. Progress charts, other workout schemas, storage and cloud implementations remain unchanged.

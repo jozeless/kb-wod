@@ -7,7 +7,8 @@ export function roundAmrapPresentation(workout, {completeRound, togglePause, end
   const clock = el('div', {className: 'phase-clock', role: 'timer'});
   const pause = button('Pause', togglePause);
   const progress = el('progress', {max: 1, value: 0, 'aria-label': 'Workout progress'});
-  const circuit = el('ol', {className: 'prescriptions active-circuit', 'aria-label': 'Seven-exercise circuit'},
+  const circuitLabel = `${workout.exercises.length}-exercise circuit`;
+  const circuit = el('ol', {className: 'prescriptions active-circuit', 'aria-label': circuitLabel},
     ...workout.exercises.map(ex => el('li', {}, el('strong', {}, ex.name), el('span', {className: 'circuit-target'}, prescription(ex, workout.phases[0])), ex.note ? el('span', {className: 'circuit-target'}, ex.note) : null)));
   const presentation = activePresentation({
     initialPhase: workout.phases[0], phase: el('h1'), clock, exercise: el('h2'), side: el('span'),
@@ -15,6 +16,7 @@ export function roundAmrapPresentation(workout, {completeRound, togglePause, end
     controls: el('div', {className: 'active-controls'}, pause, button('End Workout', end, true)),
   });
   presentation.root.classList.add('hm-round-amrap');
+  if (workout.prescribedWeightKg) presentation.root.prepend(el('p', {}, `Prescribed kettlebell: ${workout.prescribedWeightKg} kg`));
   const rounds = el('output', {'aria-label': 'Completed rounds', 'aria-live': 'polite'}, '0');
   const counter = el('p', {className: 'round-counter'}, 'Completed rounds ', rounds);
   const rest = el('p', {className: 'round-rest', role: 'timer', 'aria-label': 'Rest remaining'});
@@ -23,7 +25,7 @@ export function roundAmrapPresentation(workout, {completeRound, togglePause, end
   presentation.panel.querySelector('.session-timing').replaceWith(counter, rest, round);
   const card = presentation.panel.querySelector('.current-exercise-card');
   card.setAttribute('aria-label', 'Workout circuit');
-  card.replaceChildren(el('h2', {}, 'Seven-exercise circuit'), circuit);
+  card.replaceChildren(el('h2', {}, circuitLabel), circuit);
   const text = (node, value) => { if (node.textContent !== value) node.textContent = value; };
   return {
     root: presentation.root,

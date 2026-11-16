@@ -1,6 +1,7 @@
 import { classicIron } from './classic-iron.js';
+import { coreBlast, ironTwist, saturdayMorningBeef } from './mini-amraps.js';
 // Register future released definitions here; Library and planning derive from this list.
-export const workouts = [classicIron];
+export const workouts = [classicIron, coreBlast, ironTwist, saturdayMorningBeef];
 export const currentWorkouts = workouts.filter(w => !w.archived && !workouts.some(other => other.id === w.id && !other.archived && other.version > w.version));
 export const libraryWorkouts = currentWorkouts.filter(w => !w.demo);
 export const workoutTypes = [{id: 'hybrid', label: 'Hybrid'}, {id: 'focus', label: 'Focus'}];

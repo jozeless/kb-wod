@@ -1,6 +1,7 @@
+import { libraryWorkouts } from '../data/catalog.js';
 import { analyzeProgress, shiftMonth } from '../domain/progress-analytics.js';
-import { fastestClassicIronRound } from '../domain/classic-iron-progress.js';
-import { formatRoundTime } from '../domain/classic-iron-results.js';
+import { fastestWorkoutRound } from '../domain/round-amrap-progress.js';
+import { formatRoundTime } from '../domain/round-amrap-results.js';
 import { listSessions } from '../storage/session-store.js';
 import { canReadLocal, currentUserId } from '../cloud/identity.js';
 import { auth, sync } from '../cloud/runtime.js';
@@ -44,11 +45,15 @@ export function progressView() {
       metric('Active duration', overview.workouts ? duration(overview.activeDurationMs) : 'No sessions'), metric('Active days', overview.activeDays), metric('Active weeks', overview.activeWeeks)));
     if (!overview.workouts) monthly.append(emptyState('No completed workouts this month', 'Only saved completed sessions count. Your weekly plan and unfinished drafts do not add training days.'));
     if (overview.missingDurations) monthly.append(el('p', {className: 'progress-notice'}, `Active duration is recorded for ${overview.durationSessions} of ${overview.workouts} sessions. ${overview.missingDurations} missing or invalid duration ${overview.missingDurations === 1 ? 'entry is' : 'entries are'} excluded.`));
-    const classic = section('Classic Iron · Fastest Round — All Time');
-    if (fastest) classic.append(el('dl', {className: 'progress-overview'}, metric('Best round', formatRoundTime(fastest.durationMs)),
-      metric('Workout date', new Date(fastest.startedAt).toLocaleDateString()), metric('Round number', fastest.roundNumber)));
-    else classic.append(el('p', {}, 'Round times not recorded'));
-    content.replaceChildren(monthly, calendar(overview.weeks), classic);
+    const personalRecords = libraryWorkouts.map(workout => {
+      const best = fastest?.[workout.id];
+      const record = section(`${workout.name} · Fastest Round — All Time`);
+      if (best) record.append(el('dl', {className: 'progress-overview'}, metric('Best round', formatRoundTime(best.durationMs)),
+        metric('Workout date', new Date(best.startedAt).toLocaleDateString()), metric('Round number', best.roundNumber)));
+      else record.append(el('p', {}, 'Round times not recorded'));
+      return record;
+    });
+    content.replaceChildren(monthly, calendar(overview.weeks), ...personalRecords);
   }
   async function load() {
     const ticket = ++generation, identity = currentUserId(); owner = identity;
@@ -56,7 +61,7 @@ export function progressView() {
     try {
       const records = await listSessions();
       if (disposed || ticket !== generation || identity !== currentUserId()) return;
-      analysis = analyzeProgress(records, month, canReadLocal); fastest = fastestClassicIronRound(records, canReadLocal); render();
+      analysis = analyzeProgress(records, month, canReadLocal); fastest = Object.fromEntries(libraryWorkouts.map(workout => [workout.id, fastestWorkoutRound(records, canReadLocal, workout.id)])); render();
     } catch {
       if (disposed || ticket !== generation || identity !== currentUserId()) return;
       content.replaceChildren(emptyState('Progress unavailable', 'Saved session storage could not be read. Your data has not been changed.'), button('Retry loading sessions', () => void load(), true));

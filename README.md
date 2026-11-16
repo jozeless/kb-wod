@@ -2,9 +2,20 @@
 
 A mobile-first static PWA built with native JavaScript ES modules, HTML and CSS. No framework, CDN or runtime build step is required.
 
-## Available workout
+## Available workouts
 
-**Classic Iron v1** is the only available workout: a continuous 20-minute AMRAP, seven exercises of ten repetitions, manually counted full rounds and an automatic 20-second rest included in the main countdown. Pause/Resume freezes both clocks. Results retain completed rounds, additional repetitions (0–69) and precise full-round times. History and Progress show completed sessions and the all-time fastest Classic Iron round.
+The Library and weekly assignment picker contain exactly four released AMRAP WODs:
+
+| Workout | Duration | Focus | Prescribed kettlebell |
+| --- | --- | --- | --- |
+| Classic Iron v1 | 20 minutes | Full Body | None |
+| Core Blast v1 | 5 minutes | Core | None |
+| Iron Twist v1 | 5 minutes | Full Body | 8 kg |
+| Saturday Morning Beef v1 | 5 minutes | Power & Conditioning | 8 kg |
+
+All four share one round-based timer, Focus Mode, Results and explicit-save workflow. Classic Iron retains its seven-exercise circuit and saved-record format. The mini WODs have five exercises, ten total repetitions each (five per side when applicable); Deadlift + Halo is one combined exercise. A 3-2-1 countdown precedes the continuous AMRAP. Press **Ronda completa** only after a full circuit; an automatic 20-second rest stays inside the workout countdown. Pause/Resume freezes both clocks.
+
+Results retain completed rounds, additional repetitions (0–69 for Classic Iron, 0–49 for each mini), and precise full-round times excluding countdown, rest and paused time. History shows all round times and highlights the fastest. Progress keeps an independent all-time fastest round for each WOD, alongside the existing monthly statistics and calendar. Performance records never compare different WODs. The PWA cache is `kb2-static-v39`.
 
 The pre-start countdown is outside the workout. Sessions stay in memory until the full workout finishes and the user explicitly presses **Save Workout**. There are no draft saves or recovery actions. Early End, refresh or leaving discards the unsaved workout. A failed final save retains the result for retry. Audio and training work without an account.
 
@@ -16,7 +27,7 @@ Today keeps seven Monday–Sunday slots. Assignments remain manual and may reuse
 
 ## Stored data and cloud
 
-The IndexedDB database `kb2.training.sessions` and original session/weekly-plan tables remain in use. Classic Iron completed-session synchronization, ownership checks, explicit guest import, retries and duplicate protection are preserved. Removed WOD sessions are excluded from current History/Progress and the sync queue; their original IndexedDB/Supabase records are **not deleted or rewritten**. Old drafts and unused preference keys are left untouched. Actual record deletion belongs to a separate future cleanup.
+The IndexedDB database `kb2.training.sessions` and original session/weekly-plan tables remain in use. Completed-session synchronization, ownership checks, explicit guest import, retries and duplicate protection are preserved. Removed WOD sessions are excluded from current History/Progress and the sync queue; their original IndexedDB/Supabase records are **not deleted or rewritten**. Old drafts and unused preference keys are left untouched. Actual record deletion belongs to a separate future cleanup.
 
 Supabase is optional. See [existing Auth and cloud setup](docs/SUPABASE.md). This change requires no new production migration and executes no production SQL. If PR #36's visibility migration was applied previously, its database objects remain deployed until separately reviewed; see the [deployment caveat](docs/LIBRARY_DEFINITIVE_CLEANUP.md#existing-pr-36-database-objects).
 
@@ -31,7 +42,7 @@ Python 3, Node 22+ and Chromium are required. Set `CHROMIUM_PATH` if Chromium is
 
 ## Structure
 
-- `src/data`: reusable released-workout catalog and Classic Iron definition.
+- `src/data`: released-workout catalog, unchanged Classic Iron definition and three mini AMRAP definitions.
 - `src/domain`: planning, monotonic timer, AMRAP round timing, result validation and read-only progress projections.
 - `src/storage`: weekly plan and unchanged transactional session storage.
 - `src/ui`: Library, Today, details, Focus Mode, results, History, Progress and Account.

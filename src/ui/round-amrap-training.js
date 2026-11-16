@@ -1,5 +1,5 @@
 import { RoundAmrapTimer, createRoundAmrapCues } from '../domain/round-amrap-timer.js';
-import { createClassicIronSession, classicIronFinalResults, parseClassicIronPartialReps } from '../domain/classic-iron-results.js';
+import { createRoundAmrapSession, roundAmrapFinalResults, parseRoundAmrapPartialReps, partialRepMaximum } from '../domain/round-amrap-results.js';
 import { currentUserId } from '../cloud/identity.js';
 import { completeSession } from '../storage/session-store.js';
 import { createWorkoutAudio } from '../platform/workout-audio.js';
@@ -11,7 +11,7 @@ import { el, button, heading } from './components.js';
 /** Completed-only lifecycle: the round counter and rest deadline never leave memory. */
 export function createRoundAmrapTraining(workout, {onExit, onHistory}) {
   const id = crypto.randomUUID();
-  let record = {...createClassicIronSession(workout, null, id), ownerId: currentUserId()};
+  let record = {...createRoundAmrapSession(workout, null, id), ownerId: currentUserId()};
   const root = el('div', {className: 'active-workout'});
   const engine = new RoundAmrapTimer(workout);
   const cues = createRoundAmrapCues();
@@ -26,14 +26,14 @@ export function createRoundAmrapTraining(workout, {onExit, onHistory}) {
     const message = el('p', {className: 'result-message', role: 'status'});
     const saveButton = button('Save Workout', save);
     const inputId = `partial-reps-${id}`;
-    const partialRepsInput = el('input', {id: inputId, type: 'number', min: '0', max: '69', step: '1', inputmode: 'numeric', style: 'font-size:1rem;font-weight:400', 'aria-describedby': `${inputId}-hint ${inputId}-error`});
+    const partialRepsInput = el('input', {id: inputId, type: 'number', min: '0', max: String(partialRepMaximum(workout)), step: '1', inputmode: 'numeric', style: 'font-size:1rem;font-weight:400', 'aria-describedby': `${inputId}-hint ${inputId}-error`});
     partialRepsInput.value = '0';
     const hint = el('p', {id: `${inputId}-hint`, className: 'muted'}, 'Repetitions completed in your final unfinished round.');
     const error = el('p', {id: `${inputId}-error`, className: 'result-message', role: 'status'});
     function readPartialReps() {
       partialRepsInput.setCustomValidity('');
       try {
-        const value = parseClassicIronPartialReps(partialRepsInput.value);
+        const value = parseRoundAmrapPartialReps(partialRepsInput.value, workout);
         error.textContent = ''; partialRepsInput.setAttribute('aria-invalid', 'false');
         return value;
       } catch (invalid) {
@@ -43,7 +43,7 @@ export function createRoundAmrapTraining(workout, {onExit, onHistory}) {
     }
     partialRepsInput.addEventListener('input', () => { message.textContent = ''; try { readPartialReps(); } catch { /* Keep the entry and its inline error. */ } });
     form = {message, saveButton, partialRepsInput, readPartialReps};
-    root.replaceChildren(heading('CLASSIC IRON', 'Workout Results', 'All 20 minutes are complete. Only complete seven-exercise rounds count.'),
+    root.replaceChildren(heading(workout.name.toUpperCase(), 'Workout Results', `All ${workout.durationSeconds / 60} minutes are complete. Only complete ${workout.exercises.length}-exercise rounds count.`),
       el('p', {}, `Completed rounds: ${s.completedRounds}`), roundTimesView(record.results, workout.durationSeconds * 1000),
       el('label', {for: inputId}, el('span', {}, 'Additional repetitions'), partialRepsInput), hint, error,
       saveButton, message, button('Return to Today', onExit, true));
@@ -54,7 +54,7 @@ export function createRoundAmrapTraining(workout, {onExit, onHistory}) {
     let partialReps;
     try { partialReps = form.readPartialReps(); }
     catch { form.partialRepsInput.focus(); return; }
-    try { record.results = classicIronFinalResults({...record, results: {...record.results, partialReps}}); }
+    try { record.results = roundAmrapFinalResults({...record, results: {...record.results, partialReps}}); }
     catch (error) { form.message.textContent = error.message; return; }
     busy = true; form.saveButton.disabled = true; form.partialRepsInput.disabled = true; form.message.textContent = 'Saving workout…';
     try {

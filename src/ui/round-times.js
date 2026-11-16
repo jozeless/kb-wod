@@ -1,4 +1,4 @@
-import { recordedRoundTimes, fastestRound, formatRoundTime } from '../domain/classic-iron-results.js';
+import { recordedRoundTimes, fastestRound, formatRoundTime } from '../domain/round-amrap-results.js';
 import { el } from './components.js';
 
 export function roundTimesView(results, durationMs) {

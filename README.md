@@ -13,9 +13,11 @@ The Library and weekly assignment picker contain exactly four released AMRAP WOD
 | Iron Twist v1 | 5 minutes | Full Body | 8 kg |
 | Saturday Morning Beef v1 | 5 minutes | Power & Conditioning | 8 kg |
 
+Iron Twist and Saturday Morning Beef detail pages offer optional **Watch reference video** links that open YouTube in a separate tab. Videos are not embedded or displayed during training.
+
 All four share one round-based timer, Focus Mode, Results and explicit-save workflow. Classic Iron retains its seven-exercise circuit and saved-record format. The mini WODs have five exercises, ten total repetitions each (five per side when applicable); Deadlift + Halo is one combined exercise. A 3-2-1 countdown precedes the continuous AMRAP. Press **Ronda completa** only after a full circuit; an automatic 20-second rest stays inside the workout countdown. Pause/Resume freezes both clocks.
 
-Results retain completed rounds, additional repetitions (0–69 for Classic Iron, 0–49 for each mini), and precise full-round times excluding countdown, rest and paused time. History shows all round times and highlights the fastest. Progress keeps an independent all-time fastest round for each WOD, alongside the existing monthly statistics and calendar. Performance records never compare different WODs. The PWA cache is `kb2-static-v39`.
+Results retain completed rounds, additional repetitions (0–69 for Classic Iron, 0–49 for each mini), and precise full-round times excluding countdown, rest and paused time. History shows all round times and highlights the fastest. Progress keeps an independent all-time fastest round for each WOD, alongside the existing monthly statistics and calendar. Performance records never compare different WODs. The PWA cache is `kb2-static-v40`.
 
 The pre-start countdown is outside the workout. Sessions stay in memory until the full workout finishes and the user explicitly presses **Save Workout**. There are no draft saves or recovery actions. Early End, refresh or leaving discards the unsaved workout. A failed final save retains the result for retry. Audio and training work without an account.
 

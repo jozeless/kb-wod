@@ -7,6 +7,7 @@ export function workoutDetails(workout) {
     el('span', {className: 'badge'}, `APROBADO · ${workout.code} · VERSION ${workout.version}`),
     el('h1', {className: 'overview-title'}, workout.name),
     el('p', {className: 'overview-subtitle'}, `${workout.category} · ${formatTime(workout.durationSeconds * 1000)}`), phaseBar(workout));
+  if (workout.referenceVideoUrl) details.append(el('p', {}, el('a', {href: workout.referenceVideoUrl, target: '_blank', rel: 'noopener noreferrer', referrerpolicy: 'no-referrer'}, 'Watch reference video')));
   if (workout.prescribedWeightKg) details.append(el('p', {className: 'exercise-target'}, `Prescribed kettlebell: ${workout.prescribedWeightKg} kg`));
   for (const [index, phase] of workout.phases.entries()) {
     const duration = phase.durationSeconds < 60 ? `${phase.durationSeconds} seconds` : `${phase.durationSeconds / 60} min`;

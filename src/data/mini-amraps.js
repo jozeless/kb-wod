@@ -1,5 +1,5 @@
 // All released mini WODs use the same completed-only round AMRAP engine.
-function miniAmrap(id, name, focus, movements, weightKg = null) {
+function miniAmrap(id, name, focus, movements, weightKg = null, referenceVideoUrl = null) {
   const exercises = movements.map(([name, splitSides = false]) => ({
     id: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-$/, ''), name,
     equipment: 'kettlebell', target: {min: 10, max: 10, unit: 'repetitions total'},
@@ -9,6 +9,7 @@ function miniAmrap(id, name, focus, movements, weightKg = null) {
     id, version: 1, code: `HM/KB ${name}`, name, type: focus === 'Core' ? 'focus' : 'hybrid',
     demo: false, archived: false, durationSeconds: 300, category: `${focus} · AMRAP`, focus,
     ...(weightKg === null ? {} : {prescribedWeightKg: weightKg}),
+    ...(referenceVideoUrl ? {referenceVideoUrl} : {}),
     audioProfile: 'clear-loud-v1', purpose: 'Complete full five-exercise circuits at your own pace.',
     warmup: {note: 'Warm up separately, outside the five-minute workout.'},
     resultFields: [{id: 'completedRounds', type: 'integer', min: 0}],
@@ -27,7 +28,7 @@ export const coreBlast = miniAmrap('core-blast', 'Core Blast', 'Core', [
 ]);
 export const ironTwist = miniAmrap('iron-twist', 'Iron Twist', 'Full Body', [
   ['Rotational Thruster', true], ['Deadlift + Halo'], ['Lunge to Press-Out', true], ['Pullover to Rotation', true], ['Cross-Body Lunges', true],
-], 8);
+], 8, 'https://youtube.com/shorts/BlKoQLB955k?si=8kQGAIttJyFuu8Q0');
 export const saturdayMorningBeef = miniAmrap('saturday-morning-beef', 'Saturday Morning Beef', 'Power & Conditioning', [
   ['Snatch', true], ['Squat Halo'], ['Ballistic Row', true], ['Lunge Knee Drive', true], ['Alternating Swing', true],
-], 8);
+], 8, 'https://youtube.com/shorts/w-ZRqmfBmrQ?si=I-FJN83Plpq2Azr0');

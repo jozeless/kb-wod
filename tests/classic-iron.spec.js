@@ -21,10 +21,10 @@ const rounds=page=>page.getByLabel('Completed rounds',{exact:true});
 async function completeRound(page){await page.clock.runFor(1);await roundButton(page).click();}
 async function boundary(page,ms){if(ms>100)await page.clock.fastForward(ms-100);await page.clock.runFor(Math.min(ms,100));}
 
-test('four-WOD Library and unchanged Classic Iron circuit, weekly cleanup, manual plan and weight-free preparation',async({page})=>{
+test('five-WOD Library and unchanged Classic Iron circuit, weekly cleanup, manual plan and weight-free preparation',async({page})=>{
   await setup(page);await page.goto('./#today');const plan={Monday:{workoutId:'monday-paranoid',version:4},Tuesday:{workoutId:'oldschool-sailor',version:1}};
   await page.evaluate(plan=>localStorage.setItem('kb2.weekly-plan.v1',JSON.stringify(plan)),plan);await page.reload();await page.goto('./#library');
-  await expect(page.locator('.workout-card')).toHaveCount(4);expect(await page.locator('.workout-card strong').allTextContents()).toEqual(['Classic Iron','Core Blast','Iron Twist','Saturday Morning Beef']);
+  await expect(page.locator('.workout-card')).toHaveCount(5);expect(await page.locator('.workout-card strong').allTextContents()).toEqual(['Classic Iron','Core Blast','Iron Twist','Saturday Morning Beef','Iron Arms']);
   const card=page.getByRole('button',{name:'View workout: Classic Iron',exact:true});await expect(card).toContainText('20:00');await expect(card).toContainText('AMRAP');await card.click();await expect(page).toHaveURL(/classic-iron\/1$/);
   await expect(page.locator('.prescriptions > li')).toHaveCount(7);await expect(page.getByRole('spinbutton')).toHaveCount(0);await expect(page.locator('.exercise-target')).toHaveText(['10 repetitions','10 repetitions','10 repetitions total','10 repetitions total','10 repetitions','10 repetitions total','10 repetitions']);
   expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('kb2.weekly-plan.v1')))).toEqual({Monday:null,Tuesday:null});
@@ -69,7 +69,7 @@ test('background catch-up never queues missed cues and blocked audio cannot stop
 
 test('new runtime assets, rounds, rest, completion, save and History work offline with responsive Focus Mode',async({page,context},info)=>{
   test.setTimeout(90000);await setup(page);page.on('dialog',d=>d.accept());await page.goto('./#library');await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
-  const cached=await page.evaluate(async()=>{const source=await fetch('./service-worker.js').then(r=>r.text()),cache=await caches.open('kb2-static-v40');return Promise.all([...new Set([...source.matchAll(/'(\.\/[^']*)'/g)].map(m=>m[1]))].map(async path=>({path,available:Boolean(await cache.match(new URL(path,document.baseURI)))})));});expect(cached).toHaveLength(57);expect(cached.filter(r=>!r.available)).toEqual([]);await context.setOffline(true);
+  const cached=await page.evaluate(async()=>{const source=await fetch('./service-worker.js').then(r=>r.text()),cache=await caches.open('kb2-static-v41');return Promise.all([...new Set([...source.matchAll(/'(\.\/[^']*)'/g)].map(m=>m[1]))].map(async path=>({path,available:Boolean(await cache.match(new URL(path,document.baseURI)))})));});expect(cached).toHaveLength(58);expect(cached.filter(r=>!r.available)).toEqual([]);await context.setOffline(true);
   const artifact='/workspace/artifacts/classic-iron-amrap';await fs.mkdir(artifact,{recursive:true});
   for(const width of info.project.name==='mobile'?[320,390]:[768,1280]){
     await page.setViewportSize({width,height:844});await start(page);await page.clock.runFor(3000);

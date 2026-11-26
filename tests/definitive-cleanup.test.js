@@ -24,8 +24,8 @@ function harness(records=[]){
  const login=async(id='A')=>{auth.user=id?{id}:null;auth.revision++;storage.setItem(authKey,JSON.stringify(id?{user:{id}}:null));await sync.accountChanged();};
  return {sync,auth,storage,data,records,cloud,remote,uploaded,login,setOnline:v=>online=v,setFailWrite:v=>failWrite=v,setFailUpload:v=>failUpload=v,setGate:v=>gate=v};
 }
-test('catalog contains four released WODs and no retired/historical/demo route can resolve',()=>{
- assert.equal(workouts.length,4);assert.deepEqual(libraryWorkouts,workouts);assert.equal(workouts[0],classicIron);
+test('catalog contains five released WODs and no retired/historical/demo route can resolve',()=>{
+ assert.equal(workouts.length,5);assert.deepEqual(libraryWorkouts,workouts);assert.equal(workouts[0],classicIron);
  for(const [id,version] of JSON.parse(read('tests/fixtures/retired-routes.json')))assert.equal(findWorkout(id,version),undefined,`${id}/${version}`);
  assert.equal(findWorkout('classic-iron',2),undefined);assert.equal(findWorkout('classic-iron',1),classicIron);
 });
@@ -75,7 +75,7 @@ test('storage restrictions and malformed plans report errors without deleting or
 });
 test('every runtime JS import is reachable and cached in v40, with no removed module, preferences endpoint or SQL migration left in the runtime',()=>{
  const seen=new Set();function visit(file){if(seen.has(file))return;seen.add(file);for(const match of read(file).matchAll(/(?:from\s*|import\s*)['"]([^'"]+)['"]/g)){if(match[1].startsWith('.'))visit(path.posix.normalize(path.posix.join(path.posix.dirname(file),match[1])));}}
- visit('src/main.js');visit('src/domain/classic-iron-results.js');visit('src/domain/classic-iron-progress.js');const worker=read('service-worker.js'),assets=[...new Set([...worker.matchAll(/'(\.\/[^']*)'/g)].map(m=>m[1]))];assert.match(worker,/kb2-static-v40/);assert.equal(assets.length,57);assert.doesNotMatch(worker,/skipWaiting|clients\.claim/);
+ visit('src/main.js');visit('src/domain/classic-iron-results.js');visit('src/domain/classic-iron-progress.js');const worker=read('service-worker.js'),assets=[...new Set([...worker.matchAll(/'(\.\/[^']*)'/g)].map(m=>m[1]))];assert.match(worker,/kb2-static-v41/);assert.equal(assets.length,58);assert.doesNotMatch(worker,/skipWaiting|clients\.claim/);
  for(const file of seen){assert.ok(assets.includes('./'+file),file);assert.doesNotMatch(read(file),/libraryVisibility|kb_workout_visibility|kb_set_workout_visibility|library-visibility/);}
  for(const dir of ['data','cloud','domain','platform','storage','ui'])for(const file of fs.readdirSync(path.join(root,'src',dir)))if(file.endsWith('.js'))assert.ok(seen.has(`src/${dir}/${file}`),file);
  assert.equal(fs.existsSync(path.join(root,'supabase/migrations/202611130001_library_visibility.sql')),false);

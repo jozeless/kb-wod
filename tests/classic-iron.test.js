@@ -13,7 +13,7 @@ import {parseClassicIronPartialReps} from '../src/domain/classic-iron-results.js
 function clock() { let now=0;const timer=new RoundAmrapTimer(w,()=>now);timer.start();return {timer,at(ms){now=ms;return timer.snapshot();},advance(ms){now+=ms;return timer.snapshot();}}; }
 test('Classic Iron retains its v1 identity with exactly seven ordered ten-repetition movements and one 20-minute AMRAP',()=>{
   assert.equal(w.version,1);assert.equal(w.archived,false);assert.equal(w.demo,false);assert.equal(w.durationSeconds,1200);
-  assert.equal(libraryWorkouts.length,4);assert.equal(workouts[0],w);
+  assert.equal(libraryWorkouts.length,5);assert.equal(workouts[0],w);
   assert.deepEqual(w.exercises.map(ex=>ex.name),['KB Swing','KB Thrusters','Single-Arm KB Bent-Over Row','KB Wood Choppers','KB Hollow-Ups','KB Reverse Lunge + Biceps Curl','KB Goblet Squat']);
   assert.equal(w.exercises.length,7);assert.equal(new Set(w.exercises.map(ex=>ex.id)).size,7);
   for(const ex of w.exercises){assert.equal(ex.target.min,10);assert.equal(ex.target.max,10);assert.equal(ex.equipment,'kettlebell');}
@@ -63,12 +63,12 @@ test('completed-only results accept zero, reject unfinished/malformed counts and
 });
 test('new completed-only controller has one final write and no draft, weight, automatic interval or recovery persistence',()=>{
   const source=fs.readFileSync(new URL('../src/ui/round-amrap-training.js',import.meta.url),'utf8');assert.doesNotMatch(source,/putDraft|getSession|restorePaused|localStorage|createWeightField/);assert.equal((source.match(/await completeSession\(record\)/g)||[]).length,1);assert.match(source,/record.ownerId !== currentUserId/);
-  const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');assert.match(worker,/kb2-static-v40/);
+  const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');assert.match(worker,/kb2-static-v41/);
   for(const file of ['src/data/classic-iron.js','src/domain/round-amrap-timer.js','src/domain/classic-iron-results.js','src/ui/round-amrap-training.js','src/ui/round-amrap-presentation.js','styles/hm-round-amrap.css'])assert.ok(worker.includes(`'./${file}'`),file);
 });
 const generalizedModules = new Set(['src/domain/classic-iron-results.js', 'src/domain/classic-iron-progress.js',
   'src/ui/round-amrap-training.js', 'src/ui/round-amrap-presentation.js', 'src/ui/round-times.js']);
-// These modules now serve four WODs; behavioral tests cover their compatibility.
+// These modules now serve all released WODs; behavioral tests cover their compatibility.
 test('Untouched Classic Iron program, timer, audio, session store, auth and styles remain byte-identical to merged main',()=>{
   const hashes=JSON.parse(fs.readFileSync(new URL('./fixtures/classic-iron-preserved.json',import.meta.url)));
   for(const [file,hash] of Object.entries(hashes).filter(([file]) => !generalizedModules.has(file)))assert.equal(createHash('sha256').update(fs.readFileSync(new URL('../'+file,import.meta.url))).digest('hex'),hash,file);

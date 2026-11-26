@@ -7,7 +7,7 @@ const approved = {
   'saturday-morning-beef': 'https://youtube.com/shorts/w-ZRqmfBmrQ?si=I-FJN83Plpq2Azr0',
 };
 test('only approved WODs have exact HTTPS YouTube reference metadata', () => {
-  assert.equal(workouts.length, 4);
+  assert.equal(workouts.length, 5);
   for (const workout of workouts) {
     assert.equal(workout.referenceVideoUrl, approved[workout.id]);
     if (!approved[workout.id]) assert.equal(Object.hasOwn(workout, 'referenceVideoUrl'), false);

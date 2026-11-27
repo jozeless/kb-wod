@@ -60,3 +60,9 @@
   .hm-progress .progress-performance-chart text { fill: CanvasText; }
   .hm-progress .progress-performance-chart .progress-point { fill: CanvasText; }
 }
+.hm-progress .weekly-progress { display: block; width: 100%; height: .75rem; accent-color: var(--hm-highlight, #EEEF58); }
+.hm-progress .weekly-progress::-webkit-progress-bar { border-radius: .375rem; background: var(--hm-bg, #212227); }
+.hm-progress .weekly-progress::-webkit-progress-value { border-radius: .375rem; background: var(--hm-highlight, #EEEF58); }
+.hm-progress .weekly-history { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr)); gap: .5rem; padding: 0; margin: .75rem 0 0; list-style: none; }
+.hm-progress .weekly-history li { display: grid; gap: .25rem; padding: .6rem; border: 1px solid var(--hm-surface-secondary, #4D4A6A); border-radius: 8px; background: var(--hm-bg, #212227); font-size: .8rem; }
+.hm-progress .weekly-history .weekly-goal-met { border-color: var(--hm-highlight, #EEEF58); }

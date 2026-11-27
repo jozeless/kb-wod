@@ -31,13 +31,13 @@ async function sessions(page, data, storeLocally) {
   }, {data, storeLocally});
 }
 
-test('filters comparable workouts, shows accessible chart data, and keeps history offline after v43 activation', async ({page, context}) => {
+test('filters comparable workouts, shows accessible chart data, and keeps history offline after v44 activation', async ({page, context}) => {
   await page.addInitScript(() => { window.KB_SUPABASE_CONFIG = {url: '', publishableKey: ''}; });
   await page.clock.setFixedTime(new Date('2026-11-27T12:00:00Z'));
   await page.goto('./manifest.webmanifest');
   await page.evaluate(async () => {
-    const cache = await caches.open('kb2-static-v42');
-    await cache.put(new URL('./', location.href), new Response('v42 fixture'));
+    const cache = await caches.open('kb2-static-v43');
+    await cache.put(new URL('./', location.href), new Response('v43 fixture'));
   });
   await sessions(page, [
     ['recent', 'core-blast', 600, '2026-11-24', 4, null],
@@ -53,8 +53,8 @@ test('filters comparable workouts, shows accessible chart data, and keeps histor
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => true));
   await page.reload();
   await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
-  expect(await page.evaluate(() => caches.keys())).toContain('kb2-static-v43');
-  expect(await page.evaluate(() => caches.keys())).not.toContain('kb2-static-v42');
+  expect(await page.evaluate(() => caches.keys())).toContain('kb2-static-v44');
+  expect(await page.evaluate(() => caches.keys())).not.toContain('kb2-static-v43');
   await context.setOffline(true);
   await page.reload();
 

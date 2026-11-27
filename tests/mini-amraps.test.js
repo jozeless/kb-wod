@@ -9,7 +9,7 @@ const names=['Classic Iron','Core Blast','Iron Twist','Saturday Morning Beef','I
 test('exact released library, independent identities, approved ordered movements and fixed prescriptions',()=>{
  assert.deepEqual(libraryWorkouts.map(w=>w.name),names);assert.equal(new Set(workouts.map(w=>w.id)).size,5);
  const expected=[['North-South Plank','Plank Pull-Through','Single-Arm Sit-Up','Twist-Ups','Hollow-Ups'],['Rotational Thruster','Deadlift + Halo','Lunge to Press-Out','Pullover to Rotation','Cross-Body Lunges'],['Snatch','Squat Halo','Ballistic Row','Lunge Knee Drive','Alternating Swing']];
- workouts.slice(1,4).forEach((w,i)=>{assert.deepEqual(w.exercises.map(e=>e.name),expected[i]);assert.equal(w.durationSeconds,300);assert.equal(w.execution.restSeconds,20);assert.equal(w.prescribedWeightKg,i===0?undefined:8);assert.equal(w.presentation.weightPreferences,false);assert.equal(w.phases[0].exerciseIds.length,5);for(const e of w.exercises){assert.equal(e.target.min,10);assert.equal(e.target.max,10);if(e.note)assert.match(e.note,/5 per side/);}});
+ workouts.slice(1,4).forEach((w,i)=>{assert.deepEqual(w.exercises.map(e=>e.name),expected[i]);const seconds=[600,300,600][i];assert.equal(w.durationSeconds,seconds);assert.equal(w.phases[0].durationSeconds,seconds);assert.equal(w.phases[0].timer.durationSeconds,seconds);const label=seconds===300?/five-minute/:/10-minute/;assert.match(w.warmup.note,label);assert.match(w.phases[0].instructions,label);assert.equal(w.execution.restSeconds,20);assert.equal(w.prescribedWeightKg,i===0?undefined:8);assert.equal(w.presentation.weightPreferences,false);assert.equal(w.phases[0].exerciseIds.length,5);for(const e of w.exercises){assert.equal(e.target.min,10);assert.equal(e.target.max,10);if(e.note)assert.match(e.note,/5 per side/);}});
 });
 function saved(w,id,times,ownerId='A'){return {...createRoundAmrapSession(w,null,id,'2026-11-13T10:00:00Z'),ownerId,status:'completed',activeDurationMs:w.durationSeconds*1000,completedAt:'2026-11-13T10:20:03Z',results:{completedRounds:times.length,partialReps:20,roundTimesMs:times}};}
 for(const w of workouts){
@@ -38,5 +38,19 @@ for(const w of workouts){
 test('per-WOD records exclude foreign owners, invalid sessions and other durations; monthly calendar still aggregates activity',()=>{
  const records=workouts.flatMap((w,i)=>[saved(w,w.id,[70000+i*1000,80000]),saved(w,`${w.id}-foreign`,[1],'B')]);
  for(const [i,w]of workouts.entries())assert.equal(fastestWorkoutRound(records,r=>r.ownerId==='A',w.id).durationMs,70000+i*1000);
- const analysis=analyzeProgress(records,{year:2026,month:11},r=>r.ownerId==='A');assert.equal(analysis.month.workouts,5);assert.equal(analysis.month.activeDurationMs,3300000);assert.equal(analysis.month.activeDays,1);
+ const analysis=analyzeProgress(records,{year:2026,month:11},r=>r.ownerId==='A');assert.equal(analysis.month.workouts,5);assert.equal(analysis.month.activeDurationMs,3900000);assert.equal(analysis.month.activeDays,1);
+});
+
+test('upgraded mini AMRAPs keep valid five-minute records separate from ten-minute records', () => {
+  for (const workout of [workouts[1], workouts[3]]) {
+    const old = saved({...workout, durationSeconds: 300}, 'old', [30000]);
+    const current = saved(workout, 'current', [80000]);
+    const unknown = saved({...workout, durationSeconds: 400}, 'unknown', [1000]);
+    const invalid = {...old, id: 'invalid', activeDurationMs: 600000};
+    const records = [old, current, unknown, invalid];
+    assert.deepEqual(roundAmrapFinalResults(old), old.results);
+    assert.equal(fastestWorkoutRound(records, () => true, workout.id).sessionId, 'current');
+    assert.equal(fastestWorkoutRound(records, () => true, workout.id, 300).sessionId, 'old');
+    assert.equal(fastestWorkoutRound(records, () => true, workout.id, 400), null);
+  }
 });

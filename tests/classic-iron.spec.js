@@ -69,7 +69,7 @@ test('background catch-up never queues missed cues and blocked audio cannot stop
 
 test('new runtime assets, rounds, rest, completion, save and History work offline with responsive Focus Mode',async({page,context},info)=>{
   test.setTimeout(90000);await setup(page);page.on('dialog',d=>d.accept());await page.goto('./#library');await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.reload();await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
-  const cached=await page.evaluate(async()=>{const source=await fetch('./service-worker.js').then(r=>r.text()),cache=await caches.open('kb2-static-v43');return Promise.all([...new Set([...source.matchAll(/'(\.\/[^']*)'/g)].map(m=>m[1]))].map(async path=>({path,available:Boolean(await cache.match(new URL(path,document.baseURI)))})));});expect(cached).toHaveLength(60);expect(cached.filter(r=>!r.available)).toEqual([]);await context.setOffline(true);
+  const cached=await page.evaluate(async()=>{const source=await fetch('./service-worker.js').then(r=>r.text()),cache=await caches.open('kb2-static-v44');return Promise.all([...new Set([...source.matchAll(/'(\.\/[^']*)'/g)].map(m=>m[1]))].map(async path=>({path,available:Boolean(await cache.match(new URL(path,document.baseURI)))})));});expect(cached).toHaveLength(63);expect(cached.filter(r=>!r.available)).toEqual([]);await context.setOffline(true);
   const artifact='/workspace/artifacts/classic-iron-amrap';await fs.mkdir(artifact,{recursive:true});
   for(const width of info.project.name==='mobile'?[320,390]:[768,1280]){
     await page.setViewportSize({width,height:844});await start(page);await page.clock.runFor(3000);

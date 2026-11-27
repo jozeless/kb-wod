@@ -2,8 +2,8 @@ import { isAvailableSession } from '../data/catalog.js';
 // Read-only projections. Dates and numbers are accepted only from final saved records.
 const number = value => typeof value === 'number' && Number.isFinite(value) && value >= 0;
 const pad = value => String(value).padStart(2, '0');
-export const dateKey = date => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-function civilDate(year, month, day) {
+export const dateKey = date => `${String(date.getFullYear()).padStart(4, '0')}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+export function civilDate(year, month, day) {
   const date = new Date(0); date.setUTCFullYear(year, month - 1, day); date.setUTCHours(12, 0, 0, 0); return date;
 }
 export function trainingDate(value) {
@@ -21,8 +21,8 @@ export function trainingDate(value) {
 export function shiftMonth({year, month}, delta) {
   const date = civilDate(year, month + delta, 1); return {year: date.getUTCFullYear(), month: date.getUTCMonth() + 1};
 }
-const civilKey = date => `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
-function monday(date) {
+export const civilKey = date => `${String(date.getUTCFullYear()).padStart(4, '0')}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+export function monday(date) {
   const result = new Date(date); result.setUTCDate(result.getUTCDate() - (result.getUTCDay() + 6) % 7); return result;
 }
 export function completedSessions(records, canRead = () => false) {

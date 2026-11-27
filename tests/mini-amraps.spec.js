@@ -47,7 +47,7 @@ test('mini WODs and Iron Arms can be assigned independently and survive weekly-p
  await page.reload();expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('kb2.weekly-plan.v1')))).toEqual({Monday:{workoutId:'core-blast',version:1},Wednesday:{workoutId:'iron-twist',version:1},Saturday:{workoutId:'saturday-morning-beef',version:1},Sunday:{workoutId:'iron-arms',version:1}});
 });
 
-test('v43 retains five-minute mini AMRAP history and existing assignments while offline', async ({page, context}) => {
+test('v44 retains five-minute mini AMRAP history and existing assignments while offline', async ({page, context}) => {
   await page.addInitScript(() => {
     window.KB_SUPABASE_CONFIG = {url: '', publishableKey: ''};
   });
@@ -56,8 +56,8 @@ test('v43 retains five-minute mini AMRAP history and existing assignments while 
     const {workouts} = await import('./src/data/catalog.js');
     const {createRoundAmrapSession} = await import('./src/domain/round-amrap-results.js');
     const {completeSession} = await import('./src/storage/session-store.js');
-    const oldCache = await caches.open('kb2-static-v42');
-    await oldCache.put(new URL('./src/data/mini-amraps.js', location.href), new Response('v42 fixture'));
+    const oldCache = await caches.open('kb2-static-v43');
+    await oldCache.put(new URL('./src/data/mini-amraps.js', location.href), new Response('v43 fixture'));
     localStorage.setItem('kb2.weekly-plan.v1', JSON.stringify({
       Monday: {workoutId: 'core-blast', version: 1},
       Saturday: {workoutId: 'saturday-morning-beef', version: 1},
@@ -91,7 +91,7 @@ test('v43 retains five-minute mini AMRAP history and existing assignments while 
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => true));
   await page.reload();
   await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
-  expect(await page.evaluate(() => caches.keys())).not.toContain('kb2-static-v42');
+  expect(await page.evaluate(() => caches.keys())).not.toContain('kb2-static-v43');
   await context.setOffline(true);
   await page.reload();
 

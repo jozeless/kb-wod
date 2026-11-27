@@ -1,6 +1,8 @@
 import { libraryWorkouts } from '../data/catalog.js';
 import { analyzeProgress, shiftMonth } from '../domain/progress-analytics.js';
 import { fastestWorkoutRound } from '../domain/round-amrap-progress.js';
+import { workoutPerformanceSessions } from '../domain/workout-performance.js';
+import { workoutPerformanceView } from './workout-performance.js';
 import { formatRoundTime } from '../domain/round-amrap-results.js';
 import { listSessions } from '../storage/session-store.js';
 import { canReadLocal, currentUserId } from '../cloud/identity.js';
@@ -33,6 +35,7 @@ export function progressView() {
   const now = new Date(); let month = {year: now.getFullYear(), month: now.getMonth() + 1}, analysis = null;
   let disposed = false, generation = 0, owner = currentUserId(), fastest = null;
   const root = el('div', {className: 'hm-progress'}), content = el('div', {className: 'progress-content', 'aria-live': 'polite'});
+  const performance = workoutPerformanceView();
   const monthTitle = el('h2', {id: 'progress-month'});
   const previous = button('← Previous month', () => changeMonth(-1), true), next = button('Next month →', () => changeMonth(1), true);
   const navigation = el('div', {className: 'progress-month-nav', 'aria-label': 'Month navigation'}, previous, monthTitle, next);
@@ -55,7 +58,7 @@ export function progressView() {
       }
       return record;
     });
-    content.replaceChildren(monthly, calendar(overview.weeks), ...personalRecords);
+    content.replaceChildren(monthly, calendar(overview.weeks), performance.root, ...personalRecords);
   }
   async function load() {
     const ticket = ++generation, identity = currentUserId(); owner = identity;
@@ -70,6 +73,7 @@ export function progressView() {
           durationSeconds, fastestWorkoutRound(records, canReadLocal, workout.id, durationSeconds),
         ]),
       ]));
+      performance.update(workoutPerformanceSessions(records, canReadLocal));
       render();
     } catch {
       if (disposed || ticket !== generation || identity !== currentUserId()) return;

@@ -46,3 +46,17 @@
   .hm-progress .progress-line, .hm-progress .progress-axis { stroke: CanvasText; }
   .hm-progress .progress-chart circle { fill: Highlight; stroke: CanvasText; }
 }
+.hm-progress .progress-performance-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: .5rem 1rem; }
+.hm-progress .progress-performance-filters label { margin-top: .5rem; }
+.hm-progress .progress-performance-filters select { margin-top: .25rem; }
+.hm-progress .progress-performance-metrics dd { font-size: 1.1rem; }
+.hm-progress .progress-performance-metrics small { display: block; margin-top: .25rem; color: var(--hm-text-primary, #EDECEE); font-size: .75rem; font-weight: 400; }
+.hm-progress .progress-performance-chart { margin: 1rem 0 0; }
+.hm-progress .progress-performance-chart figcaption { font-size: .875rem; line-height: 1.5; }
+.hm-progress .progress-performance-chart svg { max-inline-size: 44rem; margin-inline: auto; border-radius: 10px; background: var(--hm-bg, #212227); }
+.hm-progress .progress-performance-chart text { font-size: 13px; fill: var(--hm-text-primary, #EDECEE); }
+.hm-progress .progress-performance-chart .progress-point { fill: var(--hm-accent, #B37ACB); }
+@media (forced-colors: active) {
+  .hm-progress .progress-performance-chart text { fill: CanvasText; }
+  .hm-progress .progress-performance-chart .progress-point { fill: CanvasText; }
+}

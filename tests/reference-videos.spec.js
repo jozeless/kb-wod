@@ -1,11 +1,11 @@
 import {test, expect} from '@playwright/test';
 const references = [
-  ['classic-iron', null, 7],
-  ['core-blast', null, 5],
-  ['iron-twist', 'https://youtube.com/shorts/BlKoQLB955k?si=8kQGAIttJyFuu8Q0', 5],
-  ['saturday-morning-beef', 'https://youtube.com/shorts/w-ZRqmfBmrQ?si=I-FJN83Plpq2Azr0', 5],
+  ['classic-iron', null, 7, '20:00'],
+  ['core-blast', null, 5, '10:00'],
+  ['iron-twist', 'https://youtube.com/shorts/BlKoQLB955k?si=8kQGAIttJyFuu8Q0', 5, '05:00'],
+  ['saturday-morning-beef', 'https://youtube.com/shorts/w-ZRqmfBmrQ?si=I-FJN83Plpq2Azr0', 5, '10:00'],
 ];
-for (const [id, url, count] of references) {
+for (const [id, url, count, clock] of references) {
   test(`${id}: optional secure external reference appears only on details and preserves Start and circuit`, async ({page, context}) => {
     await page.addInitScript(() => { window.KB_SUPABASE_CONFIG = {url:'', publishableKey:''}; });
     await page.clock.install({time: new Date('2026-11-16T12:00:00Z')});
@@ -37,7 +37,7 @@ for (const [id, url, count] of references) {
     await expect(page.locator('.phase-clock')).toHaveText('3');
     await expect(link).toHaveCount(0);
     await page.clock.runFor(3000);
-    await expect(page.locator('.phase-clock')).toHaveText(id === 'classic-iron' ? '20:00' : '05:00');
+    await expect(page.locator('.phase-clock')).toHaveText(clock);
     await expect(page.locator('.active-circuit li')).toHaveCount(count);
     await expect(link).toHaveCount(0); await expect(page.locator('iframe')).toHaveCount(0);
     expect(await page.evaluate(async () => (await import('./src/storage/session-store.js')).listSessions())).toEqual([]);

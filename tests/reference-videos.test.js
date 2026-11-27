@@ -20,7 +20,7 @@ test('only approved WODs have exact HTTPS YouTube reference metadata', () => {
 test('reference metadata remains optional for legacy snapshots and does not change completed results', () => {
   for (const id of Object.keys(approved)) {
     const workout = findWorkout(id, 1);
-    const record = {...createRoundAmrapSession(workout, null, `video-${id}`), activeDurationMs: 300000,
+    const record = {...createRoundAmrapSession(workout, null, `video-${id}`), activeDurationMs: workout.durationSeconds * 1000,
       completedAt: '2026-11-16T12:05:03Z', results: {completedRounds: 3, partialReps: 20, roundTimesMs: [70000,80000,75000]}};
     assert.equal(record.workoutSnapshot.referenceVideoUrl, approved[id]);
     assert.deepEqual(roundAmrapFinalResults(record), record.results);

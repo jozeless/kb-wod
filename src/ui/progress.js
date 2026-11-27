@@ -46,11 +46,13 @@ export function progressView() {
     if (!overview.workouts) monthly.append(emptyState('No completed workouts this month', 'Only saved completed sessions count. Your weekly plan and unfinished drafts do not add training days.'));
     if (overview.missingDurations) monthly.append(el('p', {className: 'progress-notice'}, `Active duration is recorded for ${overview.durationSessions} of ${overview.workouts} sessions. ${overview.missingDurations} missing or invalid duration ${overview.missingDurations === 1 ? 'entry is' : 'entries are'} excluded.`));
     const personalRecords = libraryWorkouts.map(workout => {
-      const best = fastest?.[workout.id];
       const record = section(`${workout.name} · Fastest Round — All Time`);
-      if (best) record.append(el('dl', {className: 'progress-overview'}, metric('Best round', formatRoundTime(best.durationMs)),
-        metric('Workout date', new Date(best.startedAt).toLocaleDateString()), metric('Round number', best.roundNumber)));
-      else record.append(el('p', {}, 'Round times not recorded'));
+      for (const [durationSeconds, best] of fastest[workout.id]) {
+        if (workout.historicalDurations) record.append(el('h3', {}, `${durationSeconds / 60}-minute sessions`));
+        if (best) record.append(el('dl', {className: 'progress-overview'}, metric('Best round', formatRoundTime(best.durationMs)),
+          metric('Workout date', new Date(best.startedAt).toLocaleDateString()), metric('Round number', best.roundNumber)));
+        else record.append(el('p', {}, 'Round times not recorded'));
+      }
       return record;
     });
     content.replaceChildren(monthly, calendar(overview.weeks), ...personalRecords);
@@ -61,7 +63,14 @@ export function progressView() {
     try {
       const records = await listSessions();
       if (disposed || ticket !== generation || identity !== currentUserId()) return;
-      analysis = analyzeProgress(records, month, canReadLocal); fastest = Object.fromEntries(libraryWorkouts.map(workout => [workout.id, fastestWorkoutRound(records, canReadLocal, workout.id)])); render();
+      analysis = analyzeProgress(records, month, canReadLocal);
+      fastest = Object.fromEntries(libraryWorkouts.map(workout => [
+        workout.id,
+        [workout.durationSeconds, ...(workout.historicalDurations ?? [])].map(durationSeconds => [
+          durationSeconds, fastestWorkoutRound(records, canReadLocal, workout.id, durationSeconds),
+        ]),
+      ]));
+      render();
     } catch {
       if (disposed || ticket !== generation || identity !== currentUserId()) return;
       content.replaceChildren(emptyState('Progress unavailable', 'Saved session storage could not be read. Your data has not been changed.'), button('Retry loading sessions', () => void load(), true));

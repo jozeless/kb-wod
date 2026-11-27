@@ -63,12 +63,12 @@ test('completed-only results accept zero, reject unfinished/malformed counts and
 });
 test('new completed-only controller has one final write and no draft, weight, automatic interval or recovery persistence',()=>{
   const source=fs.readFileSync(new URL('../src/ui/round-amrap-training.js',import.meta.url),'utf8');assert.doesNotMatch(source,/putDraft|getSession|restorePaused|localStorage|createWeightField/);assert.equal((source.match(/await completeSession\(record\)/g)||[]).length,1);assert.match(source,/record.ownerId !== currentUserId/);
-  const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');assert.match(worker,/kb2-static-v42/);
+  const worker=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');assert.match(worker,/kb2-static-v43/);
   for(const file of ['src/data/classic-iron.js','src/domain/round-amrap-timer.js','src/domain/classic-iron-results.js','src/ui/round-amrap-training.js','src/ui/round-amrap-presentation.js','styles/hm-round-amrap.css'])assert.ok(worker.includes(`'./${file}'`),file);
 });
 const generalizedModules = new Set(['src/domain/classic-iron-results.js', 'src/domain/classic-iron-progress.js',
-  'src/ui/round-amrap-training.js', 'src/ui/round-amrap-presentation.js', 'src/ui/round-times.js']);
-// These modules now serve all released WODs; behavioral tests cover their compatibility.
+  'src/ui/round-amrap-training.js', 'src/ui/round-amrap-presentation.js', 'src/ui/round-times.js', 'styles/hm-progress.css']);
+// Shared workout modules and Progress styles have behavioral regression coverage.
 test('Untouched Classic Iron program, timer, audio, session store, auth and styles remain byte-identical to merged main',()=>{
   const hashes=JSON.parse(fs.readFileSync(new URL('./fixtures/classic-iron-preserved.json',import.meta.url)));
   for(const [file,hash] of Object.entries(hashes).filter(([file]) => !generalizedModules.has(file)))assert.equal(createHash('sha256').update(fs.readFileSync(new URL('../'+file,import.meta.url))).digest('hex'),hash,file);
